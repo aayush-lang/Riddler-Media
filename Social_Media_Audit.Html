@@ -3,702 +3,569 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Instagram Growth Dashboard — Riddler Media</title>
+<title>Social Media Dashboard — Riddler Media</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500&family=DM+Mono:wght@400&display=swap" rel="stylesheet" />
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-  :root {
-    --primary: #D85A30;
-    --accent: #1D9E75;
-    --bg: #f7f6f3;
-    --surface: #ffffff;
-    --surface2: #f1efe8;
-    --border: rgba(0,0,0,0.10);
-    --border2: rgba(0,0,0,0.18);
-    --text: #1a1a18;
-    --text2: #5f5e5a;
-    --text3: #9b9a96;
-    --radius: 10px;
-    --radius-lg: 14px;
-    --font: 'DM Sans', sans-serif;
-    --mono: 'DM Mono', monospace;
-  }
-
-  body {
-    font-family: var(--font);
-    background: var(--bg);
-    color: var(--text);
-    min-height: 100vh;
-    padding: 0;
-  }
-
-  /* ── Header ── */
-  .header {
-    background: var(--surface);
-    border-bottom: 0.5px solid var(--border);
-    padding: 14px 32px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 12px;
-    position: sticky;
-    top: 0;
-    z-index: 10;
-  }
-
-  .header-left {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-
-  .agency-badge {
-    font-size: 11px;
-    font-weight: 500;
-    letter-spacing: 0.08em;
-    color: var(--text3);
-    text-transform: uppercase;
-    border-right: 0.5px solid var(--border2);
-    padding-right: 14px;
-  }
-
-  .brand-dot {
-    width: 13px;
-    height: 13px;
-    border-radius: 50%;
-    background: var(--primary);
-    flex-shrink: 0;
-    transition: background 0.2s;
-  }
-
-  input.client-name {
-    font-family: var(--font);
-    font-size: 16px;
-    font-weight: 500;
-    color: var(--text);
-    background: transparent;
-    border: none;
-    outline: none;
-    border-bottom: 1.5px solid transparent;
-    padding-bottom: 1px;
-    transition: border-color 0.2s;
-    width: 200px;
-  }
-  input.client-name:focus { border-bottom-color: var(--border2); }
-
-  .header-right {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    flex-wrap: wrap;
-  }
-
-  .color-group {
-    display: flex;
-    align-items: center;
-    gap: 7px;
-  }
-  .color-label {
-    font-size: 11px;
-    color: var(--text3);
-  }
-  input[type="color"].cp {
-    width: 28px;
-    height: 28px;
-    border: 0.5px solid var(--border2);
-    border-radius: 6px;
-    padding: 2px;
-    cursor: pointer;
-    background: var(--surface);
-  }
-  input[type="color"].cp::-webkit-color-swatch-wrapper { padding: 0; }
-  input[type="color"].cp::-webkit-color-swatch { border-radius: 3px; border: none; }
-
-  /* ── Main ── */
-  .main {
-    max-width: 1160px;
-    margin: 0 auto;
-    padding: 28px 32px 48px;
-  }
-
-  /* ── Upload ── */
-  .upload-zone {
-    border: 1.5px dashed var(--border2);
-    border-radius: var(--radius-lg);
-    padding: 24px 20px;
-    text-align: center;
-    cursor: pointer;
-    transition: background 0.2s, border-color 0.2s;
-    margin-bottom: 10px;
-    background: var(--surface);
-  }
-  .upload-zone:hover { background: var(--surface2); border-color: var(--primary); }
-  .upload-zone.dragover { background: var(--surface2); border-color: var(--primary); }
-  .upload-zone p { font-size: 13px; color: var(--text2); margin-bottom: 5px; }
-  .upload-zone .hint { font-size: 11px; color: var(--text3); }
-  .upload-btn {
-    display: inline-block;
-    margin-top: 10px;
-    font-size: 12px;
-    font-family: var(--font);
-    font-weight: 500;
-    color: var(--primary);
-    border: 0.5px solid var(--primary);
-    background: transparent;
-    padding: 6px 16px;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: background 0.15s;
-  }
-  .upload-btn:hover { background: color-mix(in srgb, var(--primary) 8%, transparent); }
-
-  .status-bar {
-    font-size: 12px;
-    color: var(--text3);
-    font-family: var(--mono);
-    margin-bottom: 24px;
-    padding: 7px 12px;
-    background: var(--surface2);
-    border-radius: var(--radius);
-    border: 0.5px solid var(--border);
-  }
-
-  /* ── Period Nav ── */
-  .period-nav {
-    display: flex;
-    gap: 6px;
-    margin-bottom: 20px;
-  }
-  .period-btn {
-    font-size: 12px;
-    font-family: var(--font);
-    font-weight: 500;
-    padding: 5px 14px;
-    border-radius: 6px;
-    border: 0.5px solid var(--border2);
-    background: var(--surface);
-    color: var(--text2);
-    cursor: pointer;
-    transition: all 0.15s;
-  }
-  .period-btn.active {
-    background: var(--text);
-    color: #fff;
-    border-color: var(--text);
-  }
-
-  /* ── Section label ── */
-  .slabel {
-    font-size: 10px;
-    font-weight: 500;
-    letter-spacing: 0.09em;
-    text-transform: uppercase;
-    color: var(--text3);
-    margin-bottom: 10px;
-  }
-
-  /* ── Metric grid ── */
-  .metric-grid {
-    display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 10px;
-    margin-bottom: 20px;
-  }
-  .mc {
-    background: var(--surface);
-    border: 0.5px solid var(--border);
-    border-radius: var(--radius);
-    padding: 16px 18px;
-  }
-  .mc-label { font-size: 11px; color: var(--text3); margin-bottom: 6px; }
-  .mc-val { font-size: 24px; font-weight: 500; color: var(--text); line-height: 1.1; }
-  .mc-sub { font-size: 11px; margin-top: 5px; }
-  .pos { color: #1D9E75; }
-  .neg { color: #D85A30; }
-
-  /* ── Chart row ── */
-  .chart-row {
-    display: grid;
-    grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
-    gap: 14px;
-    margin-bottom: 14px;
-  }
-
-  .card {
-    background: var(--surface);
-    border: 0.5px solid var(--border);
-    border-radius: var(--radius-lg);
-    padding: 18px 20px;
-  }
-
-  .card-title {
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--text);
-    margin-bottom: 12px;
-  }
-
-  .legend {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 14px;
-    margin-bottom: 10px;
-    font-size: 11px;
-    color: var(--text2);
-  }
-  .legend span { display: flex; align-items: center; gap: 5px; }
-  .ldot { width: 9px; height: 9px; border-radius: 2px; flex-shrink: 0; }
-
-  /* ── Bottom row ── */
-  .bottom-row {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 14px;
-    margin-bottom: 14px;
-  }
-
-  /* ── Engagement bars ── */
-  .er-row { display: flex; align-items: center; gap: 8px; margin-bottom: 9px; }
-  .er-lbl { width: 68px; font-size: 11px; color: var(--text2); flex-shrink: 0; }
-  .er-track { flex: 1; height: 7px; background: var(--surface2); border-radius: 4px; overflow: hidden; }
-  .er-fill { height: 100%; border-radius: 4px; transition: width 0.4s ease; }
-  .er-val { width: 38px; text-align: right; font-size: 11px; font-weight: 500; color: var(--text); flex-shrink: 0; font-family: var(--mono); }
-
-  /* ── Content table ── */
-  .ctable { width: 100%; font-size: 12px; border-collapse: collapse; table-layout: fixed; }
-  .ctable th { font-size: 10px; color: var(--text3); font-weight: 500; text-align: left; padding: 0 0 8px; border-bottom: 0.5px solid var(--border); letter-spacing: 0.05em; text-transform: uppercase; }
-  .ctable td { padding: 7px 0; border-bottom: 0.5px solid var(--border); color: var(--text); vertical-align: middle; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .ctable tr:last-child td { border-bottom: none; }
-  .tag { display: inline-block; font-size: 10px; padding: 2px 7px; border-radius: 10px; font-weight: 500; }
-  .tag-reel { background: #E6F1FB; color: #185FA5; }
-  .tag-post { background: #EAF3DE; color: #3B6D11; }
-  .tag-story { background: #FAEEDA; color: #854F0B; }
-
-  /* ── Audience ── */
-  .aud-list { list-style: none; }
-  .aud-list li { display: flex; justify-content: space-between; align-items: center; padding: 7px 0; border-bottom: 0.5px solid var(--border); font-size: 12px; }
-  .aud-list li:last-child { border-bottom: none; }
-  .aud-bar-wrap { display: flex; align-items: center; gap: 6px; }
-  .aud-bar { width: 52px; height: 5px; background: var(--surface2); border-radius: 3px; overflow: hidden; }
-  .aud-fill { height: 100%; border-radius: 3px; background: var(--primary); transition: background 0.3s; }
-
-  /* ── Footer ── */
-  .footer {
-    text-align: center;
-    font-size: 11px;
-    color: var(--text3);
-    padding: 24px 0 0;
-    border-top: 0.5px solid var(--border);
-    font-family: var(--mono);
-  }
-
-  @media (max-width: 800px) {
-    .main { padding: 20px 16px 40px; }
-    .metric-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    .chart-row { grid-template-columns: minmax(0, 1fr); }
-    .bottom-row { grid-template-columns: minmax(0, 1fr); }
-    .header { padding: 12px 16px; }
-  }
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --p:#D85A30;--a:#1D9E75;
+  --bg:#f4f3f0;--surface:#fff;--surface2:#eeede9;
+  --border:rgba(0,0,0,0.09);--border2:rgba(0,0,0,0.16);
+  --text:#1a1a18;--text2:#5f5e5a;--text3:#9b9a96;
+  --r:10px;--rl:14px;
+  --font:'DM Sans',sans-serif;--mono:'DM Mono',monospace;
+}
+body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh}
+.hdr{background:var(--surface);border-bottom:0.5px solid var(--border);padding:12px 28px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;position:sticky;top:0;z-index:20}
+.hdr-l{display:flex;align-items:center;gap:10px}
+.agency{font-size:10px;font-weight:500;letter-spacing:.09em;text-transform:uppercase;color:var(--text3);border-right:0.5px solid var(--border2);padding-right:12px}
+.bdot{width:12px;height:12px;border-radius:50%;background:var(--p);flex-shrink:0;transition:background .2s}
+input.cname{font-family:var(--font);font-size:15px;font-weight:500;color:var(--text);background:transparent;border:none;outline:none;border-bottom:1.5px solid transparent;padding-bottom:1px;width:180px;transition:border-color .2s}
+input.cname:focus{border-bottom-color:var(--border2)}
+.hdr-r{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.clr-grp{display:flex;align-items:center;gap:6px}
+.clr-lbl{font-size:11px;color:var(--text3)}
+input[type=color].cp{width:26px;height:26px;border:0.5px solid var(--border2);border-radius:5px;padding:2px;cursor:pointer;background:var(--surface)}
+input[type=color].cp::-webkit-color-swatch-wrapper{padding:0}
+input[type=color].cp::-webkit-color-swatch{border-radius:3px;border:none}
+.ptabs{display:flex;gap:6px;padding:18px 28px 0;flex-wrap:wrap}
+.ptab{font-size:12px;font-weight:500;font-family:var(--font);padding:6px 15px;border-radius:20px;border:0.5px solid var(--border2);background:var(--surface);color:var(--text2);cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:5px}
+.ptab.active{background:var(--text);color:#fff;border-color:var(--text)}
+.pbadge{font-size:10px;padding:1px 5px;border-radius:7px;background:rgba(29,158,117,0.15);color:#1D9E75}
+.ptab.active .pbadge{background:rgba(255,255,255,0.2);color:#fff}
+.pnobadge{font-size:10px;color:var(--text3)}
+.ptab.active .pnobadge{color:rgba(255,255,255,0.5)}
+.main{max-width:1160px;margin:0 auto;padding:20px 28px 48px}
+.mode-toggle{display:flex;gap:7px;margin-bottom:16px}
+.mtbtn{font-size:12px;font-family:var(--font);font-weight:500;padding:5px 13px;border-radius:6px;border:0.5px solid var(--border2);background:var(--surface);color:var(--text2);cursor:pointer;transition:all .15s}
+.mtbtn.active{background:var(--p);color:#fff;border-color:var(--p)}
+.upload-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin-bottom:8px}
+.ucard{background:var(--surface);border:1.5px dashed var(--border2);border-radius:var(--r);padding:13px 10px;text-align:center;cursor:pointer;transition:all .15s;position:relative}
+.ucard:hover{border-color:var(--p);background:var(--surface2)}
+.ucard.loaded{border-style:solid;border-color:#1D9E75;background:#f0faf5}
+.uico{font-size:18px;margin-bottom:4px}
+.utitle{font-size:11px;font-weight:500;color:var(--text2);margin-bottom:2px}
+.uhint{font-size:10px;color:var(--text3)}
+.ucheck{position:absolute;top:5px;right:5px;width:14px;height:14px;border-radius:50%;background:#1D9E75;display:none;align-items:center;justify-content:center}
+.ucard.loaded .ucheck{display:flex}
+.ucheck svg{width:8px;height:8px}
+.statusbar{font-size:11px;color:var(--text3);font-family:var(--mono);padding:6px 10px;background:var(--surface2);border-radius:6px;margin-bottom:16px}
+.manual-panel{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--rl);padding:17px 19px;margin-bottom:16px}
+.manual-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:12px}
+.mfield label{font-size:11px;color:var(--text3);display:block;margin-bottom:4px}
+.mfield input{font-family:var(--mono);font-size:13px;width:100%;padding:7px 10px;border:0.5px solid var(--border2);border-radius:6px;background:var(--bg);color:var(--text);outline:none;transition:border-color .15s}
+.mfield input:focus{border-color:var(--p)}
+.apply-btn{font-family:var(--font);font-size:12px;font-weight:500;padding:7px 18px;border-radius:6px;border:none;background:var(--p);color:#fff;cursor:pointer;transition:opacity .15s}
+.apply-btn:hover{opacity:.85}
+.pnav{display:flex;gap:6px;margin-bottom:16px}
+.pbtn{font-size:12px;font-weight:500;font-family:var(--font);padding:5px 13px;border-radius:6px;border:0.5px solid var(--border2);background:var(--surface);color:var(--text2);cursor:pointer;transition:all .15s}
+.pbtn.active{background:var(--text);color:#fff;border-color:var(--text)}
+.slbl{font-size:10px;font-weight:500;letter-spacing:.09em;text-transform:uppercase;color:var(--text3);margin-bottom:10px}
+.mgrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:16px}
+.mc{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--r);padding:15px 17px}
+.mc-lbl{font-size:11px;color:var(--text3);margin-bottom:5px}
+.mc-val{font-size:22px;font-weight:500;color:var(--text);line-height:1.1}
+.mc-sub{font-size:11px;margin-top:4px}
+.pos{color:#1D9E75}.neg{color:#D85A30}.neu{color:var(--text3)}
+.crow{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(0,1fr);gap:12px;margin-bottom:12px}
+.card{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--rl);padding:17px 19px}
+.ctitle{font-size:13px;font-weight:500;color:var(--text);margin-bottom:11px}
+.legend{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:9px;font-size:11px;color:var(--text2)}
+.legend span{display:flex;align-items:center;gap:4px}
+.ldot{width:9px;height:9px;border-radius:2px;flex-shrink:0}
+.brow{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-bottom:12px}
+.er-row{display:flex;align-items:center;gap:7px;margin-bottom:8px}
+.er-lbl{width:68px;font-size:11px;color:var(--text2);flex-shrink:0}
+.er-track{flex:1;height:7px;background:var(--surface2);border-radius:4px;overflow:hidden}
+.er-fill{height:100%;border-radius:4px;transition:width .4s}
+.er-val{width:38px;text-align:right;font-size:11px;font-weight:500;color:var(--text);flex-shrink:0;font-family:var(--mono)}
+.ctbl{width:100%;font-size:12px;border-collapse:collapse;table-layout:fixed}
+.ctbl th{font-size:10px;color:var(--text3);font-weight:500;text-align:left;padding:0 0 7px;border-bottom:0.5px solid var(--border);text-transform:uppercase;letter-spacing:.05em}
+.ctbl td{padding:6px 0;border-bottom:0.5px solid var(--border);color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:middle}
+.ctbl tr:last-child td{border-bottom:none}
+.tag{display:inline-block;font-size:10px;padding:2px 6px;border-radius:9px;font-weight:500}
+.tag-r{background:#E6F1FB;color:#185FA5}.tag-p{background:#EAF3DE;color:#3B6D11}.tag-s{background:#FAEEDA;color:#854F0B}
+.aud-list{list-style:none}
+.aud-list li{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:0.5px solid var(--border);font-size:12px}
+.aud-list li:last-child{border-bottom:none}
+.aud-bw{display:flex;align-items:center;gap:5px}
+.aud-bar{width:46px;height:5px;background:var(--surface2);border-radius:3px;overflow:hidden}
+.aud-fill{height:100%;border-radius:3px}
+.platform-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:16px}
+.pcard{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--r);padding:14px 16px}
+.pcard-head{display:flex;align-items:center;gap:7px;margin-bottom:11px}
+.pcard-name{font-size:12px;font-weight:500;color:var(--text)}
+.pcard-sub{font-size:10px;color:var(--text3)}
+.pstat{margin-bottom:7px}
+.pstat-lbl{font-size:10px;color:var(--text3);margin-bottom:2px}
+.pstat-val{font-size:15px;font-weight:500;color:var(--text)}
+.pdivider{height:0.5px;background:var(--border);margin:8px 0}
+.footer{text-align:center;font-size:11px;color:var(--text3);padding:20px 0 0;border-top:0.5px solid var(--border);font-family:var(--mono)}
+@media(max-width:800px){
+  .main,.ptabs{padding-left:14px;padding-right:14px}
+  .mgrid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .crow,.brow{grid-template-columns:minmax(0,1fr)}
+  .upload-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .platform-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .manual-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
 </style>
 </head>
 <body>
 
-<header class="header">
-  <div class="header-left">
-    <span class="agency-badge">Riddler Media</span>
-    <div class="brand-dot" id="brand-dot"></div>
-    <input type="text" class="client-name" id="client-name" value="Client name" spellcheck="false" />
+<header class="hdr">
+  <div class="hdr-l">
+    <span class="agency">Riddler Media</span>
+    <div class="bdot" id="bdot"></div>
+    <input class="cname" id="cname" value="Client name" spellcheck="false" />
   </div>
-  <div class="header-right">
-    <div class="color-group">
-      <span class="color-label">Primary</span>
-      <input type="color" class="cp" id="cp1" value="#D85A30" title="Primary brand color" />
-    </div>
-    <div class="color-group">
-      <span class="color-label">Accent</span>
-      <input type="color" class="cp" id="cp2" value="#1D9E75" title="Accent color" />
-    </div>
+  <div class="hdr-r">
+    <div class="clr-grp"><span class="clr-lbl">Primary</span><input type="color" class="cp" id="cp1" value="#D85A30" /></div>
+    <div class="clr-grp"><span class="clr-lbl">Accent</span><input type="color" class="cp" id="cp2" value="#1D9E75" /></div>
   </div>
 </header>
 
+<div class="ptabs">
+  <button class="ptab active" data-plat="instagram">📸 Instagram <span class="pbadge" id="ig-badge">sample</span></button>
+  <button class="ptab" data-plat="facebook">📘 Facebook <span class="pnobadge" id="fb-badge">no data</span></button>
+  <button class="ptab" data-plat="youtube">▶ YouTube <span class="pnobadge" id="yt-badge">no data</span></button>
+  <button class="ptab" data-plat="linkedin">💼 LinkedIn <span class="pnobadge" id="li-badge">no data</span></button>
+  <button class="ptab" data-plat="all">⊞ All platforms</button>
+</div>
+
 <main class="main">
-
-  <div class="upload-zone" id="upload-zone">
-    <p>Drop your Meta Insights CSV here</p>
-    <div class="hint">Meta Business Suite → Insights → Export data → CSV</div>
-    <button class="upload-btn" onclick="document.getElementById('csv-input').click(); event.stopPropagation();">Choose file</button>
-    <input type="file" id="csv-input" accept=".csv,.tsv" style="display:none" />
-  </div>
-  <div class="status-bar" id="status-bar">using sample data — upload your Meta Insights CSV above to see real numbers</div>
-
-  <div class="period-nav" id="period-nav">
-    <button class="period-btn active" data-range="30d">Last 30 days</button>
-    <button class="period-btn" data-range="90d">Last 90 days</button>
-    <button class="period-btn" data-range="6m">6 months</button>
-    <button class="period-btn" data-range="1y">1 year</button>
+  <div class="mode-toggle">
+    <button class="mtbtn active" id="mode-csv" onclick="setMode('csv')">Upload CSV</button>
+    <button class="mtbtn" id="mode-manual" onclick="setMode('manual')">Enter manually</button>
   </div>
 
-  <div class="slabel">overview</div>
-  <div class="metric-grid">
-    <div class="mc">
-      <div class="mc-label">Followers</div>
-      <div class="mc-val" id="m-fol">24,810</div>
-      <div class="mc-sub pos" id="m-fol-d">↑ +1,240 this period</div>
+  <!-- CSV uploads -->
+  <div id="csv-section">
+    <div class="upload-grid" id="upload-grid">
+      <div class="ucard" id="uc-reach" onclick="triggerUpload('reach')">
+        <div class="ucheck"><svg viewBox="0 0 8 8" fill="none"><path d="M1 4l2 2 4-4" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg></div>
+        <div class="uico">📡</div><div class="utitle">Reach / Viewers</div><div class="uhint">reach export</div>
+      </div>
+      <div class="ucard" id="uc-impressions" onclick="triggerUpload('impressions')">
+        <div class="ucheck"><svg viewBox="0 0 8 8" fill="none"><path d="M1 4l2 2 4-4" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg></div>
+        <div class="uico">👁</div><div class="utitle">Views / Impressions</div><div class="uhint">views export</div>
+      </div>
+      <div class="ucard" id="uc-followers" onclick="triggerUpload('followers')">
+        <div class="ucheck"><svg viewBox="0 0 8 8" fill="none"><path d="M1 4l2 2 4-4" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg></div>
+        <div class="uico">👥</div><div class="utitle">Followers</div><div class="uhint">follows export</div>
+      </div>
+      <div class="ucard" id="uc-interactions" onclick="triggerUpload('interactions')">
+        <div class="ucheck"><svg viewBox="0 0 8 8" fill="none"><path d="M1 4l2 2 4-4" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg></div>
+        <div class="uico">💬</div><div class="utitle">Interactions</div><div class="uhint">interactions export</div>
+      </div>
+      <div class="ucard" id="uc-clicks" onclick="triggerUpload('clicks')">
+        <div class="ucheck"><svg viewBox="0 0 8 8" fill="none"><path d="M1 4l2 2 4-4" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg></div>
+        <div class="uico">🔗</div><div class="utitle">Link Clicks</div><div class="uhint">clicks export</div>
+      </div>
     </div>
-    <div class="mc">
-      <div class="mc-label">Avg engagement rate</div>
-      <div class="mc-val" id="m-er">4.7%</div>
-      <div class="mc-sub pos" id="m-er-d">↑ +0.6% vs prev</div>
-    </div>
-    <div class="mc">
-      <div class="mc-label">Total reach</div>
-      <div class="mc-val" id="m-reach">182K</div>
-      <div class="mc-sub pos" id="m-reach-d">↑ +22% vs prev</div>
-    </div>
-    <div class="mc">
-      <div class="mc-label">Total impressions</div>
-      <div class="mc-val" id="m-impr">401K</div>
-      <div class="mc-sub neg" id="m-impr-d">↓ −3% vs prev</div>
-    </div>
+    <input type="file" id="file-input" accept=".csv,.tsv,.txt" style="display:none" />
+    <div class="statusbar" id="statusbar">no CSV uploaded — use manual entry below or upload individual metric exports above</div>
   </div>
 
-  <div class="chart-row">
-    <div class="card">
-      <div class="card-title">Follower growth</div>
-      <div class="legend">
-        <span><span class="ldot" id="l-gained" style="background:#D85A30"></span>Gained</span>
-        <span><span class="ldot" style="background:#888780"></span>Lost</span>
+  <!-- Manual entry -->
+  <div id="manual-section" style="display:none">
+    <div class="manual-panel">
+      <div class="slbl" style="margin-bottom:12px">enter numbers for <span id="manual-plat-label">instagram</span></div>
+      <div class="manual-grid">
+        <div class="mfield"><label>Total followers</label><input type="number" id="m-fol" placeholder="2000" /></div>
+        <div class="mfield"><label>New followers</label><input type="number" id="m-gained" placeholder="120" /></div>
+        <div class="mfield"><label>Unfollows</label><input type="number" id="m-lost" placeholder="32" /></div>
+        <div class="mfield"><label>Reach</label><input type="number" id="m-reach" placeholder="5300" /></div>
+        <div class="mfield"><label>Views / Impressions</label><input type="number" id="m-impr" placeholder="39000" /></div>
+        <div class="mfield"><label>Likes</label><input type="number" id="m-likes" placeholder="340" /></div>
+        <div class="mfield"><label>Comments</label><input type="number" id="m-comments" placeholder="28" /></div>
+        <div class="mfield"><label>Saves</label><input type="number" id="m-saves" placeholder="45" /></div>
+        <div class="mfield"><label>Shares</label><input type="number" id="m-shares" placeholder="19" /></div>
+        <div class="mfield"><label>Link clicks</label><input type="number" id="m-clicks" placeholder="375" /></div>
+        <div class="mfield"><label>Period</label><input type="text" id="m-period" placeholder="Mar 2026" /></div>
       </div>
-      <div style="position:relative;width:100%;height:210px">
-        <canvas id="growthChart"></canvas>
-      </div>
-    </div>
-    <div class="card">
-      <div class="card-title">Reach vs impressions</div>
-      <div class="legend">
-        <span><span class="ldot" id="l-reach" style="background:#D85A30"></span>Reach</span>
-        <span><span class="ldot" id="l-impr" style="background:#1D9E75"></span>Impressions</span>
-      </div>
-      <div style="position:relative;width:100%;height:210px">
-        <canvas id="reachChart"></canvas>
-      </div>
+      <button class="apply-btn" onclick="applyManual()">Apply to dashboard</button>
     </div>
   </div>
 
-  <div class="bottom-row">
-    <div class="card">
-      <div class="card-title">Engagement breakdown</div>
-      <div class="er-row">
-        <span class="er-lbl">Likes</span>
-        <div class="er-track"><div class="er-fill" id="ef-likes" style="width:88%"></div></div>
-        <span class="er-val" id="ev-likes">8.8%</span>
-      </div>
-      <div class="er-row">
-        <span class="er-lbl">Saves</span>
-        <div class="er-track"><div class="er-fill" id="ef-saves" style="width:72%"></div></div>
-        <span class="er-val" id="ev-saves">7.2%</span>
-      </div>
-      <div class="er-row">
-        <span class="er-lbl">Shares</span>
-        <div class="er-track"><div class="er-fill" id="ef-shares" style="width:53%"></div></div>
-        <span class="er-val" id="ev-shares">5.3%</span>
-      </div>
-      <div class="er-row">
-        <span class="er-lbl">Comments</span>
-        <div class="er-track"><div class="er-fill" id="ef-comments" style="width:41%"></div></div>
-        <span class="er-val" id="ev-comments">4.1%</span>
-      </div>
-      <div class="er-row">
-        <span class="er-lbl">Profile visits</span>
-        <div class="er-track"><div class="er-fill" id="ef-visits" style="width:34%"></div></div>
-        <span class="er-val" id="ev-visits">3.4%</span>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="card-title">Top content by reach</div>
-      <table class="ctable">
-        <thead>
-          <tr>
-            <th style="width:52%">Post</th>
-            <th style="width:26%">Type</th>
-            <th style="width:22%">Reach</th>
-          </tr>
-        </thead>
-        <tbody id="top-content">
-          <tr><td>Festival season looks</td><td><span class="tag tag-reel">Reel</span></td><td>32.4K</td></tr>
-          <tr><td>Behind the scenes</td><td><span class="tag tag-story">Story</span></td><td>18.1K</td></tr>
-          <tr><td>Product reveal drop</td><td><span class="tag tag-reel">Reel</span></td><td>14.8K</td></tr>
-          <tr><td>Client testimonial</td><td><span class="tag tag-post">Post</span></td><td>11.2K</td></tr>
-          <tr><td>Day in the life</td><td><span class="tag tag-reel">Reel</span></td><td>9.6K</td></tr>
-        </tbody>
-      </table>
-    </div>
-
-    <div class="card">
-      <div class="card-title">Audience demographics</div>
-      <div class="slabel" style="margin-bottom:8px">age breakdown</div>
-      <ul class="aud-list" id="aud-age">
-        <li><span>18–24</span><div class="aud-bar-wrap"><span style="font-weight:500;font-size:12px;font-family:var(--mono)">28%</span><div class="aud-bar"><div class="aud-fill" style="width:56%"></div></div></div></li>
-        <li><span>25–34</span><div class="aud-bar-wrap"><span style="font-weight:500;font-size:12px;font-family:var(--mono)">41%</span><div class="aud-bar"><div class="aud-fill" style="width:82%"></div></div></div></li>
-        <li><span>35–44</span><div class="aud-bar-wrap"><span style="font-weight:500;font-size:12px;font-family:var(--mono)">18%</span><div class="aud-bar"><div class="aud-fill" style="width:36%"></div></div></div></li>
-        <li><span>45+</span><div class="aud-bar-wrap"><span style="font-weight:500;font-size:12px;font-family:var(--mono)">13%</span><div class="aud-bar"><div class="aud-fill" style="width:26%"></div></div></div></li>
-      </ul>
-      <div class="slabel" style="margin-top:14px;margin-bottom:8px">top cities</div>
-      <ul class="aud-list" id="aud-city">
-        <li><span>Mumbai</span><span style="font-weight:500;font-size:12px;font-family:var(--mono)">34%</span></li>
-        <li><span>Delhi</span><span style="font-weight:500;font-size:12px;font-family:var(--mono)">21%</span></li>
-        <li><span>Bangalore</span><span style="font-weight:500;font-size:12px;font-family:var(--mono)">17%</span></li>
-        <li><span>Pune</span><span style="font-weight:500;font-size:12px;font-family:var(--mono)">11%</span></li>
-      </ul>
+  <!-- All platforms -->
+  <div id="all-view" style="display:none">
+    <div class="slbl">all platforms — side by side</div>
+    <div class="platform-grid" id="platform-grid"></div>
+    <div class="card" style="margin-bottom:12px">
+      <div class="ctitle">Reach comparison</div>
+      <div style="position:relative;width:100%;height:200px"><canvas id="allChart"></canvas></div>
     </div>
   </div>
 
-  <div class="footer">
-    Instagram Growth Dashboard &nbsp;·&nbsp; Riddler Media &nbsp;·&nbsp; <span id="footer-client">Client name</span>
+  <!-- Single platform -->
+  <div id="single-view">
+    <div class="pnav" id="pnav">
+      <button class="pbtn active" data-range="30d">Last 30 days</button>
+      <button class="pbtn" data-range="90d">Last 90 days</button>
+      <button class="pbtn" data-range="6m">6 months</button>
+      <button class="pbtn" data-range="1y">1 year</button>
+    </div>
+    <div class="slbl">overview</div>
+    <div class="mgrid">
+      <div class="mc"><div class="mc-lbl">Followers</div><div class="mc-val" id="v-fol">—</div><div class="mc-sub neu" id="v-fol-d">—</div></div>
+      <div class="mc"><div class="mc-lbl">Engagement rate</div><div class="mc-val" id="v-er">—</div><div class="mc-sub neu" id="v-er-d">interactions ÷ reach</div></div>
+      <div class="mc"><div class="mc-lbl">Total reach</div><div class="mc-val" id="v-reach">—</div><div class="mc-sub neu" id="v-reach-d">—</div></div>
+      <div class="mc"><div class="mc-lbl">Views / impressions</div><div class="mc-val" id="v-impr">—</div><div class="mc-sub neu" id="v-impr-d">—</div></div>
+    </div>
+    <div class="crow">
+      <div class="card">
+        <div class="ctitle">Follower growth</div>
+        <div class="legend"><span><span class="ldot" id="l-g"></span>Gained</span><span><span class="ldot" style="background:#888780"></span>Lost</span></div>
+        <div style="position:relative;width:100%;height:200px"><canvas id="growthChart"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="ctitle">Reach vs views</div>
+        <div class="legend"><span><span class="ldot" id="l-r"></span>Reach</span><span><span class="ldot" id="l-i"></span>Views</span></div>
+        <div style="position:relative;width:100%;height:200px"><canvas id="reachChart"></canvas></div>
+      </div>
+    </div>
+    <div class="brow">
+      <div class="card">
+        <div class="ctitle">Engagement breakdown</div>
+        <div class="er-row"><span class="er-lbl">Likes</span><div class="er-track"><div class="er-fill" id="ef-likes" style="width:0%"></div></div><span class="er-val" id="ev-likes">—</span></div>
+        <div class="er-row"><span class="er-lbl">Saves</span><div class="er-track"><div class="er-fill" id="ef-saves" style="width:0%"></div></div><span class="er-val" id="ev-saves">—</span></div>
+        <div class="er-row"><span class="er-lbl">Shares</span><div class="er-track"><div class="er-fill" id="ef-shares" style="width:0%"></div></div><span class="er-val" id="ev-shares">—</span></div>
+        <div class="er-row"><span class="er-lbl">Comments</span><div class="er-track"><div class="er-fill" id="ef-comments" style="width:0%"></div></div><span class="er-val" id="ev-comments">—</span></div>
+        <div class="er-row"><span class="er-lbl">Link clicks</span><div class="er-track"><div class="er-fill" id="ef-clicks" style="width:0%"></div></div><span class="er-val" id="ev-clicks">—</span></div>
+      </div>
+      <div class="card">
+        <div class="ctitle">Top content by reach</div>
+        <table class="ctbl">
+          <thead><tr><th style="width:52%">Post</th><th style="width:26%">Type</th><th style="width:22%">Reach</th></tr></thead>
+          <tbody id="top-content">
+            <tr><td colspan="3" style="color:var(--text3);font-size:11px;padding-top:6px">enter data to populate</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="card">
+        <div class="ctitle">Audience</div>
+        <div class="slbl" style="margin-bottom:7px">age breakdown</div>
+        <ul class="aud-list" id="aud-age">
+          <li><span>18–24</span><span style="font-size:12px;font-weight:500;color:var(--text3);font-family:var(--mono)">—</span></li>
+          <li><span>25–34</span><span style="font-size:12px;font-weight:500;color:var(--text3);font-family:var(--mono)">—</span></li>
+          <li><span>35–44</span><span style="font-size:12px;font-weight:500;color:var(--text3);font-family:var(--mono)">—</span></li>
+          <li><span>45+</span><span style="font-size:12px;font-weight:500;color:var(--text3);font-family:var(--mono)">—</span></li>
+        </ul>
+        <div class="slbl" style="margin-top:12px;margin-bottom:7px">link clicks</div>
+        <div style="font-size:22px;font-weight:500;color:var(--text)" id="v-clicks-big">—</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:3px">total this period</div>
+      </div>
+    </div>
   </div>
 
+  <div class="footer">Social Media Dashboard &nbsp;·&nbsp; Riddler Media &nbsp;·&nbsp; <span id="footer-client">Client name</span></div>
 </main>
 
 <script>
-  let primary = '#D85A30';
-  let accent = '#1D9E75';
-  let growthChart, reachChart;
-  let uploadedData = null;
-  let currentRange = '30d';
+let primary='#D85A30', accent='#1D9E75';
+let growthChart, reachChart, allChart;
+let currentMode='csv', currentPlatform='instagram';
 
-  const sampleDatasets = {
-    '30d': { labels:['W1','W2','W3','W4'], gained:[380,290,310,260], lost:[80,60,55,75], reach:[41,48,52,41], impr:[89,102,115,95], fol:'24,810', folD:'↑ +1,240 this period', er:'4.7%', erD:'↑ +0.6% vs prev', reach_m:'182K', reachD:'↑ +22% vs prev', impr_m:'401K', imprD:'↓ −3% vs prev' },
-    '90d': { labels:['Jan','Feb','Mar'], gained:[920,1050,1240], lost:[210,185,220], reach:[130,152,182], impr:[285,320,401], fol:'24,810', folD:'↑ +3,210 this period', er:'4.4%', erD:'↑ +0.9% vs prev', reach_m:'464K', reachD:'↑ +31% vs prev', impr_m:'1.0M', imprD:'↑ +8% vs prev' },
-    '6m':  { labels:['Oct','Nov','Dec','Jan','Feb','Mar'], gained:[780,840,900,920,1050,1240], lost:[190,200,220,210,185,220], reach:[110,120,125,130,152,182], impr:[240,260,270,285,320,401], fol:'24,810', folD:'↑ +6,730 this period', er:'4.2%', erD:'↑ +1.1% vs prev', reach_m:'819K', reachD:'↑ +45% vs prev', impr_m:'1.8M', imprD:'↑ +18% vs prev' },
-    '1y':  { labels:['Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec','Jan','Feb','Mar'], gained:[520,600,680,700,740,760,780,840,900,920,1050,1240], lost:[160,170,180,175,190,185,190,200,220,210,185,220], reach:[70,80,90,95,100,105,110,120,125,130,152,182], impr:[155,175,200,210,215,225,240,260,270,285,320,401], fol:'24,810', folD:'↑ +9,730 this period', er:'3.8%', erD:'↑ +1.4% vs prev', reach_m:'1.36M', reachD:'↑ +78% vs prev', impr_m:'2.96M', imprD:'↑ +32% vs prev' }
-  };
+const store={
+  instagram:{reach:null,impressions:null,followers:null,interactions:null,clicks:null,manual:null},
+  facebook:{reach:null,impressions:null,followers:null,interactions:null,clicks:null,manual:null},
+  youtube:{reach:null,impressions:null,followers:null,interactions:null,clicks:null,manual:null},
+  linkedin:{reach:null,impressions:null,followers:null,interactions:null,clicks:null,manual:null}
+};
 
-  function fmtK(n) {
-    n = Math.round(n);
-    if (n >= 1000000) return (n/1000000).toFixed(1)+'M';
-    if (n >= 1000) return (n/1000).toFixed(1)+'K';
-    return String(n);
-  }
+function fmtK(n){
+  n=Math.round(n);
+  if(n>=1000000) return (n/1000000).toFixed(1)+'M';
+  if(n>=1000) return (n/1000).toFixed(1)+'K';
+  return String(n);
+}
 
-  function buildGrowth(data) {
-    if (growthChart) growthChart.destroy();
-    growthChart = new Chart(document.getElementById('growthChart'), {
-      type: 'bar',
-      data: {
-        labels: data.labels,
-        datasets: [
-          { label:'Gained', data:data.gained, backgroundColor:primary, borderRadius:4, stack:'a' },
-          { label:'Lost', data:data.lost.map(v => -v), backgroundColor:'#888780', borderRadius:4, stack:'a' }
-        ]
-      },
-      options: {
-        responsive:true, maintainAspectRatio:false,
-        plugins:{ legend:{ display:false }, tooltip:{ callbacks:{ label:ctx => ctx.dataset.label+': '+Math.abs(ctx.raw) } } },
-        scales:{
-          x:{ stacked:true, ticks:{ font:{ size:11 }, color:'#888' }, grid:{ display:false } },
-          y:{ stacked:true, ticks:{ font:{ size:11 }, color:'#888' }, grid:{ color:'rgba(130,130,130,0.1)' } }
-        }
-      }
-    });
-  }
+function applyColors(){
+  primary=document.getElementById('cp1').value;
+  accent=document.getElementById('cp2').value;
+  document.documentElement.style.setProperty('--p',primary);
+  document.documentElement.style.setProperty('--a',accent);
+  document.getElementById('bdot').style.background=primary;
+  document.getElementById('l-g').style.background=primary;
+  document.getElementById('l-r').style.background=primary;
+  document.getElementById('l-i').style.background=accent;
+  document.getElementById('ef-likes').style.background=primary;
+  document.getElementById('ef-saves').style.background=accent;
+  document.getElementById('ef-shares').style.background=accent;
+  document.getElementById('ef-comments').style.background='#888780';
+  document.getElementById('ef-clicks').style.background=primary;
+  renderDashboard();
+}
 
-  function buildReach(data) {
-    if (reachChart) reachChart.destroy();
-    reachChart = new Chart(document.getElementById('reachChart'), {
-      type: 'line',
-      data: {
-        labels: data.labels,
-        datasets: [
-          { label:'Reach', data:data.reach, borderColor:primary, backgroundColor:primary+'22', fill:true, tension:0.4, pointRadius:3 },
-          { label:'Impressions', data:data.impr, borderColor:accent, backgroundColor:accent+'18', fill:true, tension:0.4, pointRadius:3 }
-        ]
-      },
-      options: {
-        responsive:true, maintainAspectRatio:false,
-        plugins:{ legend:{ display:false } },
-        scales:{
-          x:{ ticks:{ font:{ size:11 }, color:'#888' }, grid:{ display:false } },
-          y:{ ticks:{ font:{ size:11 }, color:'#888', callback:v => v+'K' }, grid:{ color:'rgba(130,130,130,0.1)' } }
-        }
-      }
-    });
-  }
+function setMode(m){
+  currentMode=m;
+  document.getElementById('csv-section').style.display=m==='csv'?'block':'none';
+  document.getElementById('manual-section').style.display=m==='manual'?'block':'none';
+  document.getElementById('mode-csv').classList.toggle('active',m==='csv');
+  document.getElementById('mode-manual').classList.toggle('active',m==='manual');
+}
 
-  function renderSample(range) {
-    const d = sampleDatasets[range];
-    document.getElementById('m-fol').textContent = d.fol;
-    document.getElementById('m-fol-d').textContent = d.folD;
-    document.getElementById('m-er').textContent = d.er;
-    document.getElementById('m-er-d').textContent = d.erD;
-    document.getElementById('m-reach').textContent = d.reach_m;
-    document.getElementById('m-reach-d').textContent = d.reachD;
-    document.getElementById('m-impr').textContent = d.impr_m;
-    document.getElementById('m-impr-d').textContent = d.imprD;
-    ['m-fol-d','m-er-d','m-reach-d','m-impr-d'].forEach(id => {
-      const el = document.getElementById(id);
-      el.className = 'mc-sub ' + (el.textContent.startsWith('↑') ? 'pos' : 'neg');
-    });
-    buildGrowth(d);
-    buildReach(d);
-  }
-
-  function renderUploaded(parsed) {
-    document.getElementById('m-fol').textContent = fmtK(parsed.totalGained);
-    document.getElementById('m-fol-d').textContent = '↑ net new this period';
-    document.getElementById('m-fol-d').className = 'mc-sub pos';
-    document.getElementById('m-er').textContent = parsed.avgER + '%';
-    document.getElementById('m-er-d').textContent = 'from uploaded data';
-    document.getElementById('m-er-d').className = 'mc-sub';
-    document.getElementById('m-reach').textContent = fmtK(parsed.totalReach);
-    document.getElementById('m-reach-d').textContent = 'total reach';
-    document.getElementById('m-reach-d').className = 'mc-sub pos';
-    document.getElementById('m-impr').textContent = fmtK(parsed.totalImpr);
-    document.getElementById('m-impr-d').textContent = 'total impressions';
-    document.getElementById('m-impr-d').className = 'mc-sub';
-
-    const maxEng = Math.max(parsed.totalLikes, parsed.totalSaves, parsed.totalShares, parsed.totalComments, 1);
-    const setBar = (key, val) => {
-      const pct = Math.round((val / maxEng) * 100);
-      document.getElementById('ef-'+key).style.width = pct+'%';
-      document.getElementById('ev-'+key).textContent = fmtK(val);
-    };
-    setBar('likes', parsed.totalLikes);
-    setBar('saves', parsed.totalSaves);
-    setBar('shares', parsed.totalShares);
-    setBar('comments', parsed.totalComments);
-    setBar('visits', 0);
-
-    buildGrowth({ labels:parsed.labels, gained:parsed.gained, lost:parsed.lost });
-    buildReach({ labels:parsed.labels, reach:parsed.reach, impr:parsed.impr });
-  }
-
-  function applyColors() {
-    primary = document.getElementById('cp1').value;
-    accent  = document.getElementById('cp2').value;
-    document.documentElement.style.setProperty('--primary', primary);
-    document.documentElement.style.setProperty('--accent', accent);
-    document.getElementById('brand-dot').style.background = primary;
-    document.getElementById('l-gained').style.background = primary;
-    document.getElementById('l-reach').style.background  = primary;
-    document.getElementById('l-impr').style.background   = accent;
-    document.getElementById('ef-likes').style.background = primary;
-    document.getElementById('ef-saves').style.background = accent;
-    document.querySelectorAll('.aud-fill').forEach(el => el.style.background = primary);
-    if (uploadedData) renderUploaded(uploadedData);
-    else renderSample(currentRange);
-  }
-
-  function parseCSV(text) {
-    const result = Papa.parse(text, { header:true, skipEmptyLines:true });
-    const rows = result.data;
-    if (!rows.length) return null;
-
-    const findCol = (...keywords) => {
-      for (const k of keywords) {
-        const match = Object.keys(rows[0]).find(c => c.toLowerCase().includes(k.toLowerCase()));
-        if (match) return match;
-      }
-      return null;
-    };
-
-    const dateCol    = findCol('date','week','period','day','month');
-    const reachCol   = findCol('reach');
-    const imprCol    = findCol('impression');
-    const gainedCol  = findCol('follower gained','new follower','followers gained','gained');
-    const lostCol    = findCol('follower lost','unfollower','followers lost','lost');
-    const likesCol   = findCol('like');
-    const commentsCol= findCol('comment');
-    const savesCol   = findCol('save');
-    const sharesCol  = findCol('share');
-
-    if (!reachCol && !imprCol && !gainedCol) return null;
-
-    const getCol = col => col ? rows.map(r => parseFloat((r[col]||'0').replace(/,/g,''))||0) : rows.map(() => 0);
-    const labels   = rows.map(r => dateCol ? r[dateCol] : '').slice(-12);
-    const reachRaw = getCol(reachCol).slice(-12);
-    const imprRaw  = getCol(imprCol).slice(-12);
-    const gained   = getCol(gainedCol).slice(-12);
-    const lost     = getCol(lostCol).slice(-12);
-
-    const sum = arr => arr.reduce((a,b)=>a+b,0);
-    const totalReach    = sum(reachRaw);
-    const totalImpr     = sum(imprRaw);
-    const totalGained   = sum(gained);
-    const totalLikes    = sum(getCol(likesCol));
-    const totalComments = sum(getCol(commentsCol));
-    const totalSaves    = sum(getCol(savesCol));
-    const totalShares   = sum(getCol(sharesCol));
-    const totalEng      = totalLikes + totalComments + totalSaves + totalShares;
-    const avgER         = totalReach > 0 ? ((totalEng / totalReach)*100).toFixed(1) : '—';
-
-    return {
-      labels,
-      reach: reachRaw.map(v => Math.round(v/1000)),
-      impr:  imprRaw.map(v => Math.round(v/1000)),
-      gained, lost,
-      totalReach, totalImpr, totalGained,
-      totalLikes, totalComments, totalSaves, totalShares,
-      avgER
-    };
-  }
-
-  function handleFile(file) {
-    const reader = new FileReader();
-    reader.onload = ev => {
-      const parsed = parseCSV(ev.target.result);
-      if (parsed) {
-        uploadedData = parsed;
-        renderUploaded(parsed);
-        document.getElementById('status-bar').textContent =
-          'data loaded: ' + file.name + ' · ' + parsed.labels.length + ' periods';
-        document.getElementById('period-nav').style.opacity = '0.4';
-        document.getElementById('period-nav').style.pointerEvents = 'none';
-      } else {
-        document.getElementById('status-bar').textContent =
-          'could not parse file — check it is a Meta Insights CSV export. showing sample data.';
-      }
-    };
-    reader.readAsText(file);
-  }
-
-  document.getElementById('cp1').addEventListener('input', applyColors);
-  document.getElementById('cp2').addEventListener('input', applyColors);
-
-  document.getElementById('client-name').addEventListener('input', function() {
-    document.getElementById('footer-client').textContent = this.value || 'Client name';
-  });
-
-  document.getElementById('period-nav').addEventListener('click', e => {
-    const btn = e.target.closest('.period-btn');
-    if (!btn) return;
-    document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
+document.querySelectorAll('.ptab').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.ptab').forEach(b=>b.classList.remove('active'));
     btn.classList.add('active');
-    currentRange = btn.dataset.range;
-    if (!uploadedData) renderSample(currentRange);
+    currentPlatform=btn.dataset.plat;
+    document.getElementById('all-view').style.display=currentPlatform==='all'?'block':'none';
+    document.getElementById('single-view').style.display=currentPlatform!=='all'?'block':'none';
+    if(currentPlatform==='all') renderAllPlatforms();
+    else { document.getElementById('manual-plat-label').textContent=currentPlatform; renderDashboard(); }
+  });
+});
+
+document.getElementById('pnav').addEventListener('click',e=>{
+  const btn=e.target.closest('.pbtn');
+  if(!btn) return;
+  document.querySelectorAll('.pbtn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderDashboard();
+});
+
+let pendingMetric=null;
+function triggerUpload(metric){
+  pendingMetric=metric;
+  document.getElementById('file-input').value='';
+  document.getElementById('file-input').click();
+}
+document.getElementById('file-input').addEventListener('change',e=>{
+  if(e.target.files[0]) handleFile(e.target.files[0],pendingMetric);
+});
+
+function handleFile(file,metric){
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    const parsed=parseCSV(ev.target.result,metric);
+    if(parsed){
+      store[currentPlatform][metric]=parsed;
+      document.getElementById('uc-'+metric).classList.add('loaded');
+      updateBadge(currentPlatform,'live');
+      document.getElementById('statusbar').textContent=metric+' loaded from: '+file.name+' ('+parsed.values.length+' rows)';
+      renderDashboard();
+    } else {
+      document.getElementById('statusbar').textContent='could not read '+file.name+'. Try a different export or use manual entry.';
+    }
+  };
+  reader.readAsText(file);
+}
+
+function parseCSV(text,metric){
+  // Try comma first, then tab
+  let r=Papa.parse(text.trim(),{header:true,skipEmptyLines:true});
+  if(!r.data.length) r=Papa.parse(text.trim(),{header:true,skipEmptyLines:true,delimiter:'\t'});
+  const rows=r.data;
+  if(!rows.length) return null;
+  const keys=Object.keys(rows[0]);
+
+  // Date column — first column that looks like a date
+  const dateKey=keys.find(k=>/date|day|week|period|month|time/i.test(k)) || keys[0];
+
+  // Value column — loose match by metric keyword, fallback to any numeric column
+  const metricKeywords={
+    reach:['reach','viewer'],
+    impressions:['view','impression'],
+    followers:['follow'],
+    interactions:['interact','engag','like','comment','reaction','content'],
+    clicks:['click','link']
+  };
+  const kws=metricKeywords[metric]||[];
+  let valKey=keys.find(k=> kws.some(kw=>k.toLowerCase().includes(kw)));
+  // fallback: first non-date column that has numeric data
+  if(!valKey){
+    valKey=keys.find(k=>{
+      if(k===dateKey) return false;
+      const sample=rows.slice(0,3).map(r=>parseFloat(String(r[k]||'').replace(/,/g,''))).filter(v=>!isNaN(v));
+      return sample.length>0;
+    });
+  }
+  if(!valKey) return null;
+
+  const labels=rows.map(r=>String(r[dateKey]||'').trim());
+  const values=rows.map(r=>{ const v=String(r[valKey]||'0').replace(/[^0-9.-]/g,''); return parseFloat(v)||0; });
+  const total=values.reduce((a,b)=>a+b,0);
+  return {labels,values,total};
+}
+
+function applyManual(){
+  const g=id=>parseFloat(document.getElementById(id).value)||0;
+  const gs=id=>document.getElementById(id).value||'';
+  const d={
+    fol:g('m-fol'),gained:g('m-gained'),lost:g('m-lost'),
+    reach:g('m-reach'),impr:g('m-impr'),
+    likes:g('m-likes'),comments:g('m-comments'),saves:g('m-saves'),shares:g('m-shares'),clicks:g('m-clicks'),
+    period:gs('m-period')||'This period'
+  };
+  store[currentPlatform].manual=d;
+  updateBadge(currentPlatform,'live');
+  renderDashboard();
+}
+
+function updateBadge(plat,text){
+  const map={instagram:'ig',facebook:'fb',youtube:'yt',linkedin:'li'};
+  const id=map[plat]+'-badge';
+  const el=document.getElementById(id);
+  if(!el) return;
+  el.textContent=text;
+  el.className=text==='live'?'pbadge':'pnobadge';
+}
+
+function renderDashboard(){
+  if(currentPlatform==='all') return;
+  const s=store[currentPlatform];
+  if(s.manual){
+    const d=s.manual;
+    setMetrics(d.fol,d.gained,d.lost,d.reach,d.impr,d.likes,d.comments,d.saves,d.shares,d.clicks);
+    setEngBars(d.likes,d.comments,d.saves,d.shares,d.clicks);
+    buildGrowthSingle(d.gained,d.lost,d.period);
+    buildReachSingle(d.reach,d.impr,d.period);
+    document.getElementById('v-clicks-big').textContent=d.clicks>0?fmtK(d.clicks):'—';
+  } else if(s.reach||s.impressions||s.followers||s.interactions||s.clicks){
+    const reach=s.reach?s.reach.total:0;
+    const impr=s.impressions?s.impressions.total:0;
+    const gained=s.followers?s.followers.total:0;
+    const inter=s.interactions?s.interactions.total:0;
+    const clicks=s.clicks?s.clicks.total:0;
+    setMetrics(null,gained,0,reach,impr,inter,0,0,0,clicks);
+    setEngBars(inter,0,0,0,clicks);
+    const labels=s.reach?s.reach.labels:(s.impressions?s.impressions.labels:(s.followers?s.followers.labels:['Period']));
+    buildGrowthCSV(s.followers?s.followers.values:null,labels);
+    buildReachCSV(s.reach?s.reach.values:null,s.impressions?s.impressions.values:null,labels);
+    document.getElementById('v-clicks-big').textContent=clicks>0?fmtK(clicks):'—';
+  } else {
+    // empty state
+    ['v-fol','v-er','v-reach','v-impr'].forEach(id=>document.getElementById(id).textContent='—');
+    ['v-fol-d','v-er-d','v-reach-d','v-impr-d'].forEach(id=>{ document.getElementById(id).textContent='enter data above'; document.getElementById(id).className='mc-sub neu'; });
+    setEngBars(0,0,0,0,0);
+    buildGrowthSingle(0,0,'—');
+    buildReachSingle(0,0,'—');
+    document.getElementById('v-clicks-big').textContent='—';
+  }
+}
+
+function setMetrics(fol,gained,lost,reach,impr,likes,comments,saves,shares,clicks){
+  if(fol!==null && fol>0) document.getElementById('v-fol').textContent=fmtK(fol);
+  else if(fol===null && gained>0) document.getElementById('v-fol').textContent='+'+fmtK(gained);
+  const folD=document.getElementById('v-fol-d');
+  if(gained>0){ folD.textContent='↑ +'+fmtK(gained)+' gained'+(lost>0?' / −'+fmtK(lost)+' lost':''); folD.className='mc-sub pos'; }
+  else { folD.textContent='no follower data'; folD.className='mc-sub neu'; }
+  const totalEng=(likes||0)+(comments||0)+(saves||0)+(shares||0);
+  const er=reach>0?((totalEng/reach)*100).toFixed(1):null;
+  document.getElementById('v-er').textContent=er?er+'%':'—';
+  document.getElementById('v-er-d').textContent=er?'interactions ÷ reach':'upload interactions + reach';
+  document.getElementById('v-er-d').className='mc-sub '+(er?'pos':'neu');
+  document.getElementById('v-reach').textContent=reach>0?fmtK(reach):'—';
+  document.getElementById('v-impr').textContent=impr>0?fmtK(impr):'—';
+  document.getElementById('v-reach-d').textContent=reach>0?'total this period':'—';
+  document.getElementById('v-impr-d').textContent=impr>0?'total this period':'—';
+}
+
+function setEngBars(likes,comments,saves,shares,clicks){
+  const max=Math.max(likes||0,comments||0,saves||0,shares||0,clicks||0,1);
+  const set=(key,val)=>{
+    document.getElementById('ef-'+key).style.width=Math.round(((val||0)/max)*100)+'%';
+    document.getElementById('ev-'+key).textContent=(val||0)>0?fmtK(val):'—';
+  };
+  set('likes',likes);set('saves',saves);set('shares',shares);set('comments',comments);set('clicks',clicks);
+}
+
+function buildGrowthSingle(gained,lost,label){
+  if(growthChart) growthChart.destroy();
+  growthChart=new Chart(document.getElementById('growthChart'),{
+    type:'bar',
+    data:{labels:[label],datasets:[
+      {label:'Gained',data:[gained||0],backgroundColor:primary,borderRadius:4,stack:'a'},
+      {label:'Lost',data:[-(lost||0)],backgroundColor:'#888780',borderRadius:4,stack:'a'}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>ctx.dataset.label+': '+Math.abs(ctx.raw)}}},scales:{x:{stacked:true,ticks:{font:{size:11},color:'#888'},grid:{display:false}},y:{stacked:true,ticks:{font:{size:11},color:'#888'},grid:{color:'rgba(130,130,130,0.1)'}}}}
+  });
+}
+
+function buildGrowthCSV(values,labels){
+  if(growthChart) growthChart.destroy();
+  growthChart=new Chart(document.getElementById('growthChart'),{
+    type:'bar',
+    data:{labels,datasets:[{label:'Followers',data:values||[],backgroundColor:primary,borderRadius:3}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{font:{size:10},color:'#888',maxRotation:45,autoSkip:true,maxTicksLimit:8},grid:{display:false}},y:{ticks:{font:{size:11},color:'#888'},grid:{color:'rgba(130,130,130,0.1)'}}}}
+  });
+}
+
+function buildReachSingle(reach,impr,label){
+  if(reachChart) reachChart.destroy();
+  reachChart=new Chart(document.getElementById('reachChart'),{
+    type:'bar',
+    data:{labels:[label],datasets:[
+      {label:'Reach',data:[reach||0],backgroundColor:primary+'cc',borderRadius:4},
+      {label:'Views',data:[impr||0],backgroundColor:accent+'cc',borderRadius:4}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>ctx.dataset.label+': '+fmtK(ctx.raw)}}},scales:{x:{ticks:{font:{size:11},color:'#888'},grid:{display:false}},y:{ticks:{font:{size:11},color:'#888',callback:v=>fmtK(v)},grid:{color:'rgba(130,130,130,0.1)'}}}}
+  });
+}
+
+function buildReachCSV(rVals,iVals,labels){
+  if(reachChart) reachChart.destroy();
+  reachChart=new Chart(document.getElementById('reachChart'),{
+    type:'line',
+    data:{labels,datasets:[
+      {label:'Reach',data:rVals||[],borderColor:primary,backgroundColor:primary+'18',fill:true,tension:0.4,pointRadius:2},
+      {label:'Views',data:iVals||[],borderColor:accent,backgroundColor:accent+'15',fill:true,tension:0.4,pointRadius:2}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{font:{size:10},color:'#888',maxRotation:45,autoSkip:true,maxTicksLimit:8},grid:{display:false}},y:{ticks:{font:{size:11},color:'#888',callback:v=>fmtK(v)},grid:{color:'rgba(130,130,130,0.1)'}}}}
+  });
+}
+
+function renderAllPlatforms(){
+  const platforms=[
+    {id:'instagram',name:'Instagram',icon:'📸'},
+    {id:'facebook',name:'Facebook',icon:'📘'},
+    {id:'youtube',name:'YouTube',icon:'▶'},
+    {id:'linkedin',name:'LinkedIn',icon:'💼'}
+  ];
+  const grid=document.getElementById('platform-grid');
+  grid.innerHTML='';
+  const allLabels=[],allReach=[];
+
+  platforms.forEach(p=>{
+    const s=store[p.id];
+    let fol=0,reach=0,impr=0,eng=0,gained=0;
+    if(s.manual){fol=s.manual.fol||0;reach=s.manual.reach||0;impr=s.manual.impr||0;eng=(s.manual.likes||0)+(s.manual.comments||0)+(s.manual.saves||0)+(s.manual.shares||0);gained=s.manual.gained||0;}
+    if(s.reach) reach=s.reach.total;
+    if(s.impressions) impr=s.impressions.total;
+    if(s.followers) gained=s.followers.total;
+    if(s.interactions) eng=s.interactions.total;
+    const er=reach>0?((eng/reach)*100).toFixed(1)+'%':'—';
+    const hasData=fol||reach||impr||eng;
+    allLabels.push(p.name);
+    allReach.push(reach);
+    grid.innerHTML+=`<div class="pcard">
+      <div class="pcard-head"><span style="font-size:16px">${p.icon}</span><div><div class="pcard-name">${p.name}</div><div class="pcard-sub">${hasData?(fol>0?fmtK(fol)+' followers':'data loaded'):'no data — switch tab to enter'}</div></div></div>
+      <div class="pstat"><div class="pstat-lbl">Reach</div><div class="pstat-val">${reach>0?fmtK(reach):'—'}</div></div>
+      <div class="pdivider"></div>
+      <div class="pstat"><div class="pstat-lbl">Views / impressions</div><div class="pstat-val">${impr>0?fmtK(impr):'—'}</div></div>
+      <div class="pdivider"></div>
+      <div class="pstat"><div class="pstat-lbl">Engagement rate</div><div class="pstat-val" style="font-size:14px">${er}</div></div>
+    </div>`;
   });
 
-  const zone = document.getElementById('upload-zone');
-  zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('dragover'); });
-  zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
-  zone.addEventListener('drop', e => {
-    e.preventDefault();
-    zone.classList.remove('dragover');
-    if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
+  if(allChart) allChart.destroy();
+  allChart=new Chart(document.getElementById('allChart'),{
+    type:'bar',
+    data:{labels:allLabels,datasets:[{label:'Reach',data:allReach,backgroundColor:[primary,primary+'bb',primary+'77',primary+'44'],borderRadius:6}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{font:{size:12},color:'#888'},grid:{display:false}},y:{ticks:{font:{size:11},color:'#888',callback:v=>fmtK(v)},grid:{color:'rgba(130,130,130,0.1)'}}}}
   });
-  zone.addEventListener('click', () => document.getElementById('csv-input').click());
-  document.getElementById('csv-input').addEventListener('change', e => {
-    if (e.target.files[0]) handleFile(e.target.files[0]);
-  });
+}
 
-  applyColors();
-  renderSample('30d');
+document.getElementById('cp1').addEventListener('input',applyColors);
+document.getElementById('cp2').addEventListener('input',applyColors);
+document.getElementById('cname').addEventListener('input',function(){ document.getElementById('footer-client').textContent=this.value||'Client name'; });
+
+applyColors();
+renderDashboard();
 </script>
 </body>
 </html>
