@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Performance Marketing Dashboard — Riddler Media</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--r:#E8192C;--rd:#b5121f;--ra:rgba(232,25,44,.18);--bg:#0e0e10;--sf:#16161a;--s2:#1e1e24;--s3:#28282f;--bd:#2e2e38;--tx:#f0f0f4;--mu:#8888a0;--gn:#22c55e;--ga:rgba(34,197,94,.18);--am:#f59e0b;--aa:rgba(245,158,11,.18);--bl:#3b82f6;--ba:rgba(59,130,246,.18);--pu:#a78bfa;--pa:rgba(167,139,250,.18);--fd:'Syne',sans-serif;--fb:'DM Sans',sans-serif;--fm:'DM Mono',monospace}
+*{margin:0;padding:0;box-sizing:border-box}body{background:var(--bg);color:var(--tx);font-family:var(--fb);font-size:14px}
+::-webkit-scrollbar{width:4px;height:4px}::-webkit-scrollbar-track{background:var(--sf)}::-webkit-scrollbar-thumb{background:var(--s3);border-radius:2px}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:0 28px;height:56px;background:var(--sf);border-bottom:1px solid var(--bd);position:sticky;top:0;z-index:100}
+.brand{display:flex;align-items:center;gap:10px;font-family:var(--fd);font-weight:700;font-size:15px;letter-spacing:.04em}
+.dot{width:8px;height:8px;background:var(--r);border-radius:50%;box-shadow:0 0 8px var(--r)}.brand span{color:var(--r)}
+.topm{display:flex;align-items:center;gap:16px;font-size:12px;color:var(--mu);font-family:var(--fm)}
+.cf{background:var(--s2);border:1px solid var(--bd);border-radius:6px;padding:4px 10px;color:var(--tx);font-family:var(--fm);font-size:12px;width:160px;outline:none}.cf:focus{border-color:var(--r)}
+.tbar{display:flex;background:var(--sf);border-bottom:1px solid var(--bd);padding:0 28px;gap:2px;overflow-x:auto}
+.tb{padding:10px 14px;border:none;background:none;color:var(--mu);font-family:var(--fd);font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;cursor:pointer;border-bottom:2px solid transparent;transition:all .2s;position:relative;top:1px;white-space:nowrap}.tb:hover{color:var(--tx)}.tb.active{color:var(--r);border-bottom-color:var(--r)}
+.main{padding:24px 28px;max-width:1440px;margin:0 auto}.tp{display:none}.tp.active{display:block}
+.ups{display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap}
+.uc{flex:1;min-width:155px;background:var(--sf);border:1px dashed var(--bd);border-radius:10px;padding:12px 14px;cursor:pointer;transition:border-color .2s,background .2s;position:relative}.uc:hover{border-color:var(--r);background:var(--s2)}.uc.ok{border-color:var(--gn);border-style:solid}
+.uc input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%}
+.ul{font-family:var(--fm);font-size:10px;color:var(--mu);text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px}
+.ut{font-family:var(--fd);font-size:12px;font-weight:700;color:var(--tx)}.us{font-size:10px;color:var(--mu);margin-top:2px;font-family:var(--fm)}.uc.ok .us{color:var(--gn)}
+.mbar{background:var(--sf);border:1px solid var(--bd);border-radius:10px;padding:14px 18px;margin-bottom:18px;display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end}
+.mbar label{display:flex;flex-direction:column;gap:4px;font-size:10px;color:var(--mu);font-family:var(--fm);text-transform:uppercase;letter-spacing:.06em}
+.mbar input{background:var(--s2);border:1px solid var(--bd);border-radius:6px;padding:5px 9px;color:var(--tx);font-family:var(--fm);font-size:12px;width:115px;outline:none}.mbar input:focus{border-color:var(--r)}
+.gbtn{background:var(--r);color:#fff;border:none;border-radius:7px;padding:7px 16px;font-family:var(--fd);font-weight:700;font-size:11px;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;transition:background .2s;align-self:flex-end}.gbtn:hover{background:var(--rd)}
+.kr{display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:10px;margin-bottom:18px}
+.kc{background:var(--sf);border:1px solid var(--bd);border-radius:10px;padding:14px;position:relative;overflow:hidden}.kc::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--r)}
+.kl{font-family:var(--fm);font-size:10px;color:var(--mu);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px}
+.kv{font-family:var(--fd);font-size:22px;font-weight:800;color:var(--tx);line-height:1;margin-bottom:5px}
+.kch{font-size:11px;font-family:var(--fm)}.kch.up{color:var(--gn)}.kch.dn{color:var(--r)}.kch.nt{color:var(--mu)}
+.cg{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+@media(max-width:900px){.cg{grid-template-columns:1fr}}
+.cc{background:var(--sf);border:1px solid var(--bd);border-radius:10px;padding:18px}
+.ct{font-family:var(--fd);font-size:12px;font-weight:700;color:var(--tx);margin-bottom:3px;text-transform:uppercase;letter-spacing:.04em}
+.cs{font-size:10px;color:var(--mu);font-family:var(--fm);margin-bottom:14px}
+.cw{position:relative;height:200px}.cw.t{height:260px}
+.tc{background:var(--sf);border:1px solid var(--bd);border-radius:10px;padding:18px;margin-bottom:14px;overflow-x:auto}
+.dt{width:100%;border-collapse:collapse;font-size:12px}
+.dt th{font-family:var(--fm);font-size:10px;color:var(--mu);text-transform:uppercase;letter-spacing:.08em;padding:7px 10px;text-align:left;border-bottom:1px solid var(--bd);white-space:nowrap}
+.dt td{padding:9px 10px;border-bottom:1px solid var(--s3);font-family:var(--fm);color:var(--tx);white-space:nowrap}
+.dt tr:last-child td{border-bottom:none}.dt tr:hover td{background:var(--s2)}.dt .tot td{background:var(--s2);font-weight:700}
+.bdg{display:inline-block;padding:2px 7px;border-radius:4px;font-size:10px;font-family:var(--fm);font-weight:500}
+.bg{background:rgba(34,197,94,.15);color:var(--gn)}.bdr{background:rgba(232,25,44,.15);color:var(--r)}.ba{background:rgba(245,158,11,.15);color:var(--am)}.bb{background:rgba(59,130,246,.15);color:var(--bl)}.bp{background:rgba(167,139,250,.15);color:var(--pu)}
+.ibox{background:var(--sf);border:1px solid var(--bd);border-left:3px solid var(--r);border-radius:10px;padding:18px 22px;margin-bottom:18px}
+.it{font-family:var(--fd);font-size:12px;font-weight:700;color:var(--r);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px}
+.ii{display:flex;gap:9px;margin-bottom:7px;font-size:13px;color:var(--tx);line-height:1.5}.id{color:var(--r);font-weight:700;flex-shrink:0;margin-top:1px}
+.sl{font-family:var(--fm);font-size:10px;color:var(--mu);text-transform:uppercase;letter-spacing:.1em;margin-bottom:9px;padding-bottom:5px;border-bottom:1px solid var(--s3)}
+.es{text-align:center;padding:36px 20px;color:var(--mu)}.ei{font-size:28px;margin-bottom:8px;opacity:.35}.en{font-family:var(--fd);font-size:14px;font-weight:700;color:var(--tx);margin-bottom:5px}.em{font-size:12px;max-width:300px;margin:0 auto;line-height:1.6}
+.mg{display:grid;grid-template-columns:repeat(auto-fill,minmax(195px,1fr));gap:10px;margin-bottom:18px}
+.mc2{background:var(--sf);border:1px solid var(--bd);border-radius:10px;padding:14px 16px}
+.ml{font-family:var(--fm);font-size:10px;color:var(--mu);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px}
+.mr2{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
+.mv{font-family:var(--fd);font-size:16px;font-weight:800}.mvs{font-family:var(--fm);font-size:10px;color:var(--mu)}
+.mch{font-family:var(--fm);font-size:11px;font-weight:600;padding:2px 8px;border-radius:4px}
+.mup{background:rgba(34,197,94,.15);color:var(--gn)}.mdn{background:rgba(232,25,44,.15);color:var(--r)}.mnt{background:var(--s2);color:var(--mu)}
+.hw{overflow-x:auto;margin-bottom:14px}.hm{border-collapse:collapse;font-family:var(--fm);font-size:10px}
+.hm th{color:var(--mu);padding:4px 5px;text-align:center;white-space:nowrap}
+.hm td{width:32px;height:26px;text-align:center;border-radius:3px;font-size:9px;cursor:default}.hm td:hover{opacity:.75;outline:1px solid var(--tx)}
+.dl{color:var(--mu);padding-right:8px;text-align:right;white-space:nowrap;font-size:10px}
+@media print{.topbar,.tbar,.ups,.mbar{display:none!important}}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="brand"><div class="dot"></div>RIDDLER <span>MEDIA</span> &nbsp;/&nbsp; Performance Marketing</div>
+  <div class="topm"><span>Client:</span><input class="cf" id="cn" placeholder="Enter client name…"><span id="pl">Period: —</span></div>
+</div>
+<div class="tbar">
+  <button class="tb active" onclick="sw('ov',this)">Overview</button>
+  <button class="tb" onclick="sw('meta',this)">Meta Ads</button>
+  <button class="tb" onclick="sw('goog',this)">Google Ads</button>
+  <button class="tb" onclick="sw('lp',this)">Landing Pages</button>
+  <button class="tb" onclick="sw('aud',this)">Audience</button>
+  <button class="tb" onclick="sw('sched',this)">Schedule</button>
+  <button class="tb" onclick="sw('mom',this)">MoM Compare</button>
+</div>
+<div class="main">
+
+<!-- OVERVIEW -->
+<div class="tp active" id="tp-ov">
+  <div class="ups">
+    <div class="uc" id="uc-mc"><input type="file" accept=".csv" onchange="ld(this,'mc')"><div class="ul">Meta Ads Manager</div><div class="ut">Campaign Export CSV</div><div class="us" id="su-mc">Ads Manager → Reports → Export</div></div>
+    <div class="uc" id="uc-gc"><input type="file" accept=".csv" onchange="ld(this,'gc')"><div class="ul">Google Ads</div><div class="ut">Campaign Report CSV</div><div class="us" id="su-gc">Reports → Predefined → Campaigns</div></div>
+    <div class="uc" id="uc-gd"><input type="file" accept=".csv" onchange="ld(this,'gd')"><div class="ul">Google Ads</div><div class="ut">Daily Performance CSV</div><div class="us" id="su-gd">Reports → Custom → Segment by Day</div></div>
+    <div class="uc" id="uc-lpa"><input type="file" accept=".csv" onchange="ld(this,'lp')"><div class="ul">GA4 Export</div><div class="ut">Landing Pages CSV</div><div class="us" id="su-lpa">Explore → Landing Page → Export</div></div>
+  </div>
+  <div class="mbar">
+    <label>Total Spend (₹)<input type="number" id="ms" placeholder="0" oninput="mr()"></label>
+    <label>Clicks<input type="number" id="mcc" placeholder="0" oninput="mr()"></label>
+    <label>Conversions<input type="number" id="mcv" placeholder="0" oninput="mr()"></label>
+    <label>Revenue (₹)<input type="number" id="mrv" placeholder="0" oninput="mr()"></label>
+    <label>Impressions<input type="number" id="mi" placeholder="0" oninput="mr()"></label>
+    <label>Period<input type="text" id="mp" placeholder="e.g. Mar 2026" oninput="document.getElementById('pl').textContent='Period: '+this.value" style="width:95px"></label>
+    <button class="gbtn" onclick="ra()">↻ Refresh</button>
+  </div>
+  <div class="kr" id="kr"></div>
+  <div class="cg">
+    <div class="cc"><div class="ct">Spend vs Conversions</div><div class="cs">Per campaign — Meta + Google combined</div><div class="cw"><canvas id="c-sc"></canvas></div></div>
+    <div class="cc"><div class="ct">Daily Spend Burn Rate</div><div class="cs">Daily vs cumulative — from Google daily CSV</div><div class="cw"><canvas id="c-burn"></canvas></div></div>
+  </div>
+  <div class="cg">
+    <div class="cc"><div class="ct">ROAS by Platform</div><div class="cs">Enter revenue above to calculate</div><div class="cw"><canvas id="c-roas"></canvas></div></div>
+    <div class="cc"><div class="ct">Conversion Funnel</div><div class="cs">Impressions → Clicks → Conversions</div><div class="cw"><canvas id="c-fun"></canvas></div></div>
+  </div>
+  <div class="cg">
+    <div class="cc"><div class="ct">Budget Utilisation</div><div class="cs">Spend share by platform</div><div class="cw"><canvas id="c-bud"></canvas></div></div>
+    <div class="cc"><div class="ct">Device Split — Combined</div><div class="cs">Upload device CSVs in Audience tab</div><div class="cw"><canvas id="c-dev"></canvas></div></div>
+  </div>
+  <div class="ibox" id="ib" style="display:none"><div class="it">⚡ Auto-Generated Insights</div><div id="il"></div></div>
+</div>
+
+<!-- META -->
+<div class="tp" id="tp-meta">
+  <div class="ups">
+    <div class="uc" id="uc-mc2"><input type="file" accept=".csv" onchange="ld(this,'mc')"><div class="ul">Meta Ads Manager → Reports</div><div class="ut">Campaign Performance CSV</div><div class="us" id="su-mc2">All campaigns → Export table</div></div>
+    <div class="uc" id="uc-mad"><input type="file" accept=".csv" onchange="ld(this,'mad')"><div class="ul">Meta — Ad Level</div><div class="ut">Creatives Report CSV</div><div class="us" id="su-mad">Breakdown → By Ad Name → Export</div></div>
+    <div class="uc" id="uc-mdev"><input type="file" accept=".csv" onchange="ld(this,'mdev')"><div class="ul">Meta — Breakdown</div><div class="ut">Device Type CSV</div><div class="us" id="su-mdev">Breakdown → By Device → Export</div></div>
+    <div class="uc" id="uc-mda"><input type="file" accept=".csv" onchange="ld(this,'mda')"><div class="ul">Meta — Time</div><div class="ut">Day / Hour CSV</div><div class="us" id="su-mda">Breakdown → By Time → Export</div></div>
+  </div>
+  <div class="sl">Campaign Performance</div>
+  <div class="tc"><table class="dt"><thead><tr><th>Campaign</th><th>Spend (₹)</th><th>Impressions</th><th>Reach</th><th>Clicks</th><th>CTR%</th><th>CPC (₹)</th><th>Results</th><th>CPA (₹)</th><th>Status</th></tr></thead>
+  <tbody id="mt"><tr><td colspan="10"><div class="es"><div class="ei">📊</div><div class="en">No Meta data</div><div class="em">Upload Meta campaign CSV above</div></div></td></tr></tbody></table></div>
+  <div class="cg">
+    <div class="cc"><div class="ct">Spend by Campaign</div><div class="cs">₹ distribution across campaigns</div><div class="cw"><canvas id="c-msp"></canvas></div></div>
+    <div class="cc"><div class="ct">CTR by Campaign</div><div class="cs">Click-through rate per campaign</div><div class="cw"><canvas id="c-mctr"></canvas></div></div>
+  </div>
+  <div class="cg">
+    <div class="cc"><div class="ct">Top Creatives by CTR</div><div class="cs">Best performing ad names — from ad-level CSV</div><div class="cw"><canvas id="c-cre"></canvas></div></div>
+    <div class="cc"><div class="ct">Meta Device Split</div><div class="cs">Mobile vs Desktop — from device CSV</div><div class="cw"><canvas id="c-mdevch"></canvas></div></div>
+  </div>
+</div>
+
+<!-- GOOGLE -->
+<div class="tp" id="tp-goog">
+  <div class="ups">
+    <div class="uc" id="uc-gc2"><input type="file" accept=".csv" onchange="ld(this,'gc')"><div class="ul">Google Ads → Reports</div><div class="ut">Campaign Report CSV</div><div class="us" id="su-gc2">Reports → Predefined → Campaigns</div></div>
+    <div class="uc" id="uc-gk"><input type="file" accept=".csv" onchange="ld(this,'gk')"><div class="ul">Google Ads</div><div class="ut">Keywords CSV</div><div class="us" id="su-gk">Keywords tab → Download</div></div>
+    <div class="uc" id="uc-gd2"><input type="file" accept=".csv" onchange="ld(this,'gd')"><div class="ul">Google Ads</div><div class="ut">Daily Performance CSV</div><div class="us" id="su-gd2">Reports → Custom → by Day</div></div>
+    <div class="uc" id="uc-gdev"><input type="file" accept=".csv" onchange="ld(this,'gdev')"><div class="ul">Google Ads</div><div class="ut">Device Report CSV</div><div class="us" id="su-gdev">Segment → Device → Export</div></div>
+  </div>
+  <div class="sl">Campaign Performance</div>
+  <div class="tc"><table class="dt"><thead><tr><th>Campaign</th><th>Type</th><th>Spend (₹)</th><th>Impressions</th><th>Clicks</th><th>CTR%</th><th>Avg CPC (₹)</th><th>Conversions</th><th>Cost/Conv (₹)</th></tr></thead>
+  <tbody id="gt"><tr><td colspan="9"><div class="es"><div class="ei">🔍</div><div class="en">No Google data</div><div class="em">Upload Google campaign CSV above</div></div></td></tr></tbody></table></div>
+  <div class="cg">
+    <div class="cc"><div class="ct">Daily Clicks &amp; Conversions</div><div class="cs">Trend from daily CSV</div><div class="cw t"><canvas id="c-gdly"></canvas></div></div>
+    <div class="cc"><div class="ct">Top Keywords by CTR</div><div class="cs">From keyword report CSV</div><div class="cw t"><canvas id="c-gkw"></canvas></div></div>
+  </div>
+  <div class="cg">
+    <div class="cc"><div class="ct">Google Device Split</div><div class="cs">Mobile vs Desktop vs Tablet</div><div class="cw"><canvas id="c-gdevch"></canvas></div></div>
+    <div class="cc"><div class="ct">Spend vs Conversions</div><div class="cs">Per campaign</div><div class="cw"><canvas id="c-gsc"></canvas></div></div>
+  </div>
+</div>
+
+<!-- LANDING PAGES -->
+<div class="tp" id="tp-lp">
+  <div class="ups">
+    <div class="uc" id="uc-lp2"><input type="file" accept=".csv" onchange="ld(this,'lp')"><div class="ul">GA4 — Explore</div><div class="ut">Landing Page Report CSV</div><div class="us" id="su-lp2">GA4 → Explore → Landing Page → Export</div></div>
+    <div class="uc" id="uc-lpcv"><input type="file" accept=".csv" onchange="ld(this,'lpcv')"><div class="ul">GA4 — Conversions</div><div class="ut">Page Conversion CSV</div><div class="us" id="su-lpcv">GA4 → Conversions → by Page → Export</div></div>
+  </div>
+  <div class="sl">Landing Page Performance</div>
+  <div class="tc"><table class="dt"><thead><tr><th>Landing Page</th><th>Sessions</th><th>Bounce Rate%</th><th>Avg Session</th><th>Conversions</th><th>Conv Rate%</th><th>Revenue (₹)</th><th>Assessment</th></tr></thead>
+  <tbody id="lpt"><tr><td colspan="8"><div class="es"><div class="ei">🛬</div><div class="en">No landing page data</div><div class="em">Upload GA4 landing page CSV above</div></div></td></tr></tbody></table></div>
+  <div class="cg">
+    <div class="cc"><div class="ct">Sessions by Landing Page</div><div class="cs">Top pages receiving paid traffic</div><div class="cw t"><canvas id="c-lpses"></canvas></div></div>
+    <div class="cc"><div class="ct">Conversion Rate by Page</div><div class="cs">Which pages convert best</div><div class="cw t"><canvas id="c-lpcvr"></canvas></div></div>
+  </div>
+</div>
+
+<!-- AUDIENCE -->
+<div class="tp" id="tp-aud">
+  <div class="ups">
+    <div class="uc" id="uc-mage"><input type="file" accept=".csv" onchange="ld(this,'mage')"><div class="ul">Meta — Demographics</div><div class="ut">Age &amp; Gender CSV</div><div class="us" id="su-mage">Breakdown → Age/Gender → Export</div></div>
+    <div class="uc" id="uc-mret"><input type="file" accept=".csv" onchange="ld(this,'mret')"><div class="ul">Meta — Audience</div><div class="ut">Retargeting vs Cold CSV</div><div class="us" id="su-mret">Custom Audience breakdown → Export</div></div>
+    <div class="uc" id="uc-mdev2"><input type="file" accept=".csv" onchange="ld(this,'mdev')"><div class="ul">Meta — Device</div><div class="ut">Device Breakdown CSV</div><div class="us" id="su-mdev2">Breakdown → Device → Export</div></div>
+    <div class="uc" id="uc-gdev2"><input type="file" accept=".csv" onchange="ld(this,'gdev')"><div class="ul">Google — Device</div><div class="ut">Device Report CSV</div><div class="us" id="su-gdev2">Segment → Device → Export</div></div>
+  </div>
+  <div class="cg">
+    <div class="cc"><div class="ct">Age Group Breakdown</div><div class="cs">Reach by age — Meta demographics CSV</div><div class="cw t"><canvas id="c-age"></canvas></div></div>
+    <div class="cc"><div class="ct">Gender Split</div><div class="cs">Spend and reach by gender</div><div class="cw t"><canvas id="c-gen"></canvas></div></div>
+  </div>
+  <div class="cg">
+    <div class="cc"><div class="ct">Retargeting vs Cold Audience</div><div class="cs">Spend and conversions by audience type</div><div class="cw"><canvas id="c-ret"></canvas></div></div>
+    <div class="cc"><div class="ct">Device Split — All Platforms</div><div class="cs">Mobile vs Desktop combined</div><div class="cw"><canvas id="c-alldev"></canvas></div></div>
+  </div>
+</div>
+
+<!-- SCHEDULE -->
+<div class="tp" id="tp-sched">
+  <div class="ups">
+    <div class="uc" id="uc-mda2"><input type="file" accept=".csv" onchange="ld(this,'mda')"><div class="ul">Meta — Time Breakdown</div><div class="ut">Day / Hour CSV</div><div class="us" id="su-mda2">Breakdown → By Time → Export</div></div>
+    <div class="uc" id="uc-gda"><input type="file" accept=".csv" onchange="ld(this,'gda')"><div class="ul">Google Ads</div><div class="ut">Ad Schedule Report CSV</div><div class="us" id="su-gda">Reports → Predefined → Ad Schedule</div></div>
+  </div>
+  <div class="sl">Performance Heatmap — Best Days &amp; Hours</div>
+  <div class="cc" style="margin-bottom:14px">
+    <div class="ct">Heatmap — CTR / Conversions by Day &amp; Hour</div>
+    <div class="cs">Darker red = higher performance. Upload daypart CSV to populate.</div>
+    <div class="hw" id="hmwrap"><div class="es"><div class="ei">🕐</div><div class="en">No schedule data</div><div class="em">Upload Meta or Google daypart CSV to generate heatmap</div></div></div>
+  </div>
+  <div class="cg">
+    <div class="cc"><div class="ct">Best Day of Week</div><div class="cs">Performance by day</div><div class="cw"><canvas id="c-dow"></canvas></div></div>
+    <div class="cc"><div class="ct">Best Hour of Day</div><div class="cs">Performance by hour (24h)</div><div class="cw"><canvas id="c-hod"></canvas></div></div>
+  </div>
+</div>
+
+<!-- MOM -->
+<div class="tp" id="tp-mom">
+  <div class="ups">
+    <div class="uc" id="uc-lmmc"><input type="file" accept=".csv" onchange="ld(this,'lm_mc')"><div class="ul">Last Month — Meta</div><div class="ut">Campaign Export (prev month)</div><div class="us" id="su-lmmc">Same Meta export, different date range</div></div>
+    <div class="uc" id="uc-lmgc"><input type="file" accept=".csv" onchange="ld(this,'lm_gc')"><div class="ul">Last Month — Google</div><div class="ut">Campaign Report (prev month)</div><div class="us" id="su-lmgc">Same Google export, different date range</div></div>
+    <div class="uc" id="uc-lmgd"><input type="file" accept=".csv" onchange="ld(this,'lm_gd')"><div class="ul">Last Month — Daily</div><div class="ut">Daily Performance (prev month)</div><div class="us" id="su-lmgd">Same daily export, different date range</div></div>
+  </div>
+  <div class="sl">Month-over-Month KPI Comparison</div>
+  <div class="mg" id="momg"><div class="es" style="grid-column:1/-1"><div class="ei">📅</div><div class="en">No comparison data</div><div class="em">Upload this month's CSVs in Overview, then upload last month's CSVs above</div></div></div>
+  <div class="cg">
+    <div class="cc"><div class="ct">Spend Trend — This vs Last Month</div><div class="cs">Daily spend overlay</div><div class="cw t"><canvas id="c-moms"></canvas></div></div>
+    <div class="cc"><div class="ct">Conversions Trend — MoM</div><div class="cs">Daily conversion overlay</div><div class="cw t"><canvas id="c-momc"></canvas></div></div>
+  </div>
+</div>
+
+</div>
+<script>
+const S={mc:[],gc:[],gd:[],lp:[],lpcv:[],mad:[],mdev:[],mda:[],mage:[],mret:[],gk:[],gdev:[],gda:[],lm_mc:[],lm_gc:[],lm_gd:[],manual:{spend:0,clicks:0,conv:0,rev:0,impr:0},ch:{}};
+function sw(id,btn){document.querySelectorAll('.tp').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.tb').forEach(b=>b.classList.remove('active'));document.getElementById('tp-'+id).classList.add('active');btn.classList.add('active');setTimeout(rc,80);}
+function pcsv(t){const lines=t.split(/\r?\n/).filter(l=>l.trim()&&!l.trim().startsWith('sep='));if(!lines.length)return[];const h=lines[0].split(',').map(x=>x.trim().replace(/^"|"$/g,'').toLowerCase());return lines.slice(1).map(line=>{const v=scsv(line);const r={};h.forEach((k,i)=>{r[k]=(v[i]||'').trim().replace(/^"|"$/g,'');});return r;}).filter(r=>Object.values(r).some(v=>v));}
+function scsv(l){const r=[];let c='';let q=false;for(let i=0;i<l.length;i++){if(l[i]==='"'){q=!q;continue;}if(l[i]===',' && !q){r.push(c);c='';continue;}c+=l[i];}r.push(c);return r;}
+function n(v){if(!v||v==='-'||v==='')return 0;return parseFloat(v.replace(/[₹,% \u20b9]/g,''))||0;}
+function fmt(v,p='',s=''){if(!v&&v!==0)return'—';if(Math.abs(v)>=1e7)return p+(v/1e7).toFixed(1)+'Cr'+s;if(Math.abs(v)>=1e5)return p+(v/1e5).toFixed(1)+'L'+s;if(Math.abs(v)>=1e3)return p+(v/1e3).toFixed(1)+'K'+s;return p+v.toLocaleString('en-IN')+s;}
+function sn(s,m=16){return s&&s.length>m?s.slice(0,m)+'…':s||'?';}
+const UM={mc:['uc-mc','uc-mc2'],gc:['uc-gc','uc-gc2'],gd:['uc-gd','uc-gd2'],lp:['uc-lpa','uc-lp2'],lpcv:['uc-lpcv'],mad:['uc-mad'],mdev:['uc-mdev','uc-mdev2'],mda:['uc-mda','uc-mda2'],mage:['uc-mage'],mret:['uc-mret'],gk:['uc-gk'],gdev:['uc-gdev','uc-gdev2'],gda:['uc-gda'],lm_mc:['uc-lmmc'],lm_gc:['uc-lmgc'],lm_gd:['uc-lmgd']};
+function ld(inp,key){const f=inp.files[0];if(!f)return;const te=enc=>new Promise(res=>{const r=new FileReader();r.onload=e=>res(e.target.result);r.readAsText(f,enc);});te('UTF-16').then(t=>{let rows=pcsv(t);if(!rows.length||Object.keys(rows[0]||{}).join('').includes('\uFFFD'))return te('UTF-8').then(t2=>pcsv(t2));return rows;}).then(rows=>{S[key]=rows;(UM[key]||[]).forEach(id=>{const c=document.getElementById(id);if(!c)return;c.classList.add('ok');const us=document.getElementById('su-'+id.replace('uc-',''));if(us)us.textContent='\u2713 '+f.name+' ('+rows.length+' rows)';});ra();});}
+function fc(row,...keys){for(const k of keys){const m=Object.keys(row).find(r=>r.includes(k.toLowerCase()));if(m)return row[m];}return'';}
+function sc(rows,...keys){return rows.reduce((s,r)=>s+n(fc(r,...keys)),0);}
+function mkpi(rows){rows=rows||S.mc;if(!rows.length)return null;const spend=sc(rows,'amount spent','spend');const impr=sc(rows,'impressions');const clicks=sc(rows,'link clicks','clicks');const conv=sc(rows,'results','conversions','leads','purchases');const reach=sc(rows,'reach');return{spend,impr,clicks,conv,reach,ctr:impr?clicks/impr*100:0,cpc:clicks?spend/clicks:0,cpa:conv?spend/conv:0};}
+function gkpi(rows){rows=rows||S.gc;if(!rows.length)return null;const spend=sc(rows,'cost','spend');const impr=sc(rows,'impr','impression');const clicks=sc(rows,'clicks');const conv=sc(rows,'conv');return{spend,impr,clicks,conv,ctr:impr?clicks/impr*100:0,cpc:clicks?spend/clicks:0,cpa:conv?spend/conv:0};}
+function cmb(mc,gc){mc=mc||S.mc;gc=gc||S.gc;const m=mkpi(mc),g=gkpi(gc),man=S.manual;return{spend:(m?.spend||0)+(g?.spend||0)||man.spend,clicks:(m?.clicks||0)+(g?.clicks||0)||man.clicks,conv:(m?.conv||0)+(g?.conv||0)||man.conv,impr:(m?.impr||0)+(g?.impr||0)||man.impr,rev:man.rev};}
+function mr(){S.manual={spend:n(document.getElementById('ms').value),clicks:n(document.getElementById('mcc').value),conv:n(document.getElementById('mcv').value),rev:n(document.getElementById('mrv').value),impr:n(document.getElementById('mi').value)};}
+function rkpi(){const c=cmb();const m=mkpi();const g=gkpi();const roas=c.spend&&c.rev?c.rev/c.spend:null;const ctr=c.impr?c.clicks/c.impr*100:null;const cpa=c.conv&&c.spend?c.spend/c.conv:null;const cards=[{l:'Total Spend',v:c.spend?'\u20b9'+fmt(c.spend):'\u2014',ch:'all platforms',cls:'nt'},{l:'ROAS',v:roas?roas.toFixed(2)+'x':'\u2014',ch:roas?roas>=3?'\u2191 Strong':roas>=1.5?'\u2191 Healthy':'\u2193 Below target':'Enter revenue above',cls:roas?roas>=1.5?'up':'dn':'nt'},{l:'Conversions',v:fmt(c.conv)||'\u2014',ch:'total results',cls:'nt'},{l:'CPA / CPL',v:cpa?'\u20b9'+Math.round(cpa):'\u2014',ch:'cost per result',cls:'nt'},{l:'Clicks',v:fmt(c.clicks)||'\u2014',ch:'CTR: '+(ctr?ctr.toFixed(2)+'%':'\u2014'),cls:'nt'},{l:'Impressions',v:fmt(c.impr)||'\u2014',ch:'total reach',cls:'nt'},{l:'Meta Spend',v:m?'\u20b9'+fmt(m.spend):'\u2014',ch:m?'CTR: '+m.ctr.toFixed(2)+'%':'No CSV',cls:'nt'},{l:'Google Spend',v:g?'\u20b9'+fmt(g.spend):'\u2014',ch:g?'CTR: '+g.ctr.toFixed(2)+'%':'No CSV',cls:'nt'}];document.getElementById('kr').innerHTML=cards.map(x=>'<div class="kc"><div class="kl">'+x.l+'</div><div class="kv">'+x.v+'</div><div class="kch '+x.cls+'">'+x.ch+'</div></div>').join('');}
+function rtmt(){const tb=document.getElementById('mt');if(!S.mc.length)return;const tot={spend:0,impr:0,reach:0,clicks:0,conv:0};tb.innerHTML=S.mc.slice(0,20).map(r=>{const name=fc(r,'campaign name','campaign','name')||'\u2014';const spend=n(fc(r,'amount spent','spend'));tot.spend+=spend;const impr=n(fc(r,'impressions'));tot.impr+=impr;const reach=n(fc(r,'reach'));tot.reach+=reach;const clicks=n(fc(r,'link clicks','clicks'));tot.clicks+=clicks;const conv=n(fc(r,'results','conversions','leads'));tot.conv+=conv;const ctr=impr?clicks/impr*100:0;const cpa=conv?spend/conv:0;const st=spend>0?'<span class="bdg bg">Active</span>':'<span class="bdg ba">Paused</span>';return'<tr><td><b>'+name+'</b></td><td>\u20b9'+fmt(spend)+'</td><td>'+fmt(impr)+'</td><td>'+fmt(reach)+'</td><td>'+fmt(clicks)+'</td><td>'+ctr.toFixed(2)+'%</td><td>\u20b9'+(spend/Math.max(clicks,1)).toFixed(0)+'</td><td>'+fmt(conv)+'</td><td>'+(cpa?'\u20b9'+Math.round(cpa):'\u2014')+'</td><td>'+st+'</td></tr>';}).join('')+'<tr class="tot"><td>TOTAL</td><td>\u20b9'+fmt(tot.spend)+'</td><td>'+fmt(tot.impr)+'</td><td>'+fmt(tot.reach)+'</td><td>'+fmt(tot.clicks)+'</td><td>\u2014</td><td>\u2014</td><td>'+fmt(tot.conv)+'</td><td>\u2014</td><td>\u2014</td></tr>';}
+function rtgt(){const tb=document.getElementById('gt');if(!S.gc.length)return;tb.innerHTML=S.gc.slice(0,20).map(r=>{const name=fc(r,'campaign','name')||'\u2014';const type=fc(r,'campaign type','type','network')||'\u2014';const spend=n(fc(r,'cost','spend'));const impr=n(fc(r,'impr','impression'));const clicks=n(fc(r,'clicks'));const conv=n(fc(r,'conv'));const ctr=impr?clicks/impr*100:0;return'<tr><td><b>'+name+'</b></td><td><span class="bdg bb">'+type+'</span></td><td>\u20b9'+fmt(spend)+'</td><td>'+fmt(impr)+'</td><td>'+fmt(clicks)+'</td><td>'+ctr.toFixed(2)+'%</td><td>\u20b9'+(clicks?(spend/clicks).toFixed(0):0)+'</td><td>'+fmt(conv)+'</td><td>'+(conv?'\u20b9'+Math.round(spend/conv):'\u2014')+'</td></tr>';}).join('');}
+function rtlp(){const tb=document.getElementById('lpt');if(!S.lp.length)return;tb.innerHTML=S.lp.slice(0,15).map(r=>{const page=fc(r,'landing page','page','url','path')||'\u2014';const sess=n(fc(r,'sessions','users'));const bounce=n(fc(r,'bounce rate','bounce'));const dur=n(fc(r,'avg. session duration','avg session','session duration'));const conv=n(fc(r,'conversions','goal completions','events'));const cvr=sess?conv/sess*100:0;const rev=n(fc(r,'revenue','transaction revenue'));let as='<span class="bdg ba">Review</span>';if(cvr>3)as='<span class="bdg bg">Strong</span>';else if(bounce>80)as='<span class="bdg bdr">High Bounce</span>';else if(cvr>1)as='<span class="bdg bb">Average</span>';return'<tr><td style="max-width:180px;overflow:hidden;text-overflow:ellipsis" title="'+page+'">'+page+'</td><td>'+fmt(sess)+'</td><td>'+(bounce?bounce.toFixed(1)+'%':'\u2014')+'</td><td>'+(dur?Math.round(dur)+'s':'\u2014')+'</td><td>'+fmt(conv)+'</td><td>'+(cvr?cvr.toFixed(2)+'%':'\u2014')+'</td><td>'+(rev?'\u20b9'+fmt(rev):'\u2014')+'</td><td>'+as+'</td></tr>';}).join('');}
+function rmom(){const cur=cmb();const lm=cmb(S.lm_mc,S.lm_gc);if(!S.lm_mc.length&&!S.lm_gc.length)return;const metrics=[{l:'Total Spend',cur:cur.spend,prev:lm.spend,fmt:v=>v?'\u20b9'+fmt(v):'\u2014',cost:true},{l:'Conversions',cur:cur.conv,prev:lm.conv,fmt:v=>fmt(v)||'\u2014',cost:false},{l:'Clicks',cur:cur.clicks,prev:lm.clicks,fmt:v=>fmt(v)||'\u2014',cost:false},{l:'Impressions',cur:cur.impr,prev:lm.impr,fmt:v=>fmt(v)||'\u2014',cost:false},{l:'ROAS',cur:cur.rev&&cur.spend?cur.rev/cur.spend:0,prev:S.manual.rev&&lm.spend?S.manual.rev/lm.spend:0,fmt:v=>v?v.toFixed(2)+'x':'\u2014',cost:false},{l:'CPA / CPL',cur:cur.conv&&cur.spend?cur.spend/cur.conv:0,prev:lm.conv&&lm.spend?lm.spend/lm.conv:0,fmt:v=>v?'\u20b9'+Math.round(v):'\u2014',cost:true}];document.getElementById('momg').innerHTML=metrics.map(m=>{const chg=m.prev?((m.cur-m.prev)/m.prev*100):null;const good=chg===null?false:(m.cost?chg<0:chg>0);const cls=chg===null?'mnt':good?'mup':'mdn';const sign=chg===null?'':chg>0?'\u2191 ':'\u2193 ';return'<div class="mc2"><div class="ml">'+m.l+'</div><div class="mr2"><span class="mv">'+m.fmt(m.cur)+'</span>'+(chg!==null?'<span class="mch '+cls+'">'+sign+Math.abs(chg).toFixed(1)+'%</span>':'<span class="mch mnt">No prev</span>')+'</div><div class="mvs">vs '+m.fmt(m.prev)+' last month</div></div>';}).join('');}
+function rhmx(){const rows=S.mda.length?S.mda:S.gda;const wrap=document.getElementById('hmwrap');if(!rows.length){wrap.innerHTML='<div class="es"><div class="ei">\u{1F550}</div><div class="en">No schedule data</div><div class="em">Upload Meta or Google daypart CSV</div></div>';return;}const days=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];const hours=Array.from({length:24},(_,i)=>i);const mx={};days.forEach(d=>{mx[d]={};hours.forEach(h=>mx[d][h]=0);});rows.forEach(r=>{const day=fc(r,'day of week','day','weekday')||'';const hour=fc(r,'hour of day','hour')||'';const val=n(fc(r,'ctr','conversions','clicks','results'))||0;const d=days.find(x=>day.toLowerCase().startsWith(x.toLowerCase()));const h=parseInt(hour);if(d&&!isNaN(h))mx[d][h]=(mx[d][h]||0)+val;});const all=days.flatMap(d=>hours.map(h=>mx[d][h]));const maxV=Math.max(...all,1);const gc=(v)=>{const t=v/maxV;return t<0.05?'rgba(46,46,56,0.5)':'rgba(232,'+(Math.round(25*(1-t)))+','+(Math.round(44*(1-t)))+','+(0.15+t*0.85)+')';};wrap.innerHTML='<table class="hm"><tr><th></th>'+hours.map(h=>'<th>'+h+'</th>').join('')+'</tr>'+days.map(d=>'<tr><td class="dl">'+d+'</td>'+hours.map(h=>'<td style="background:'+gc(mx[d][h])+'" title="'+d+' '+h+':00 - '+mx[d][h].toFixed(0)+'">'+( mx[d][h]>0?mx[d][h].toFixed(0):'' )+'</td>').join('')+'</tr>').join('')+'</table>';}
+const C={r:'#E8192C',ra:'rgba(232,25,44,.2)',g:'#22c55e',ga:'rgba(34,197,94,.2)',b:'#3b82f6',ba:'rgba(59,130,246,.2)',a:'#f59e0b',aa:'rgba(245,158,11,.2)',p:'#a78bfa',pa:'rgba(167,139,250,.2)',mu:'#8888a0',bd:'#2e2e38'};
+Chart.defaults.color=C.mu;Chart.defaults.borderColor=C.bd;Chart.defaults.font.family="'DM Mono',monospace";Chart.defaults.font.size=10;
+function mk(id,cfg){const el=document.getElementById(id);if(!el)return;if(S.ch[id])S.ch[id].destroy();try{S.ch[id]=new Chart(el,cfg);}catch(e){}}
+const go={responsive:true,maintainAspectRatio:false};
+function rc(){
+  const c=cmb();const m=mkpi();const g=gkpi();const camps=[...S.mc,...S.gc];
+  if(camps.length){const names=camps.slice(0,8).map(r=>sn(fc(r,'campaign name','campaign','name')));mk('c-sc',{type:'bar',data:{labels:names,datasets:[{label:'Spend',data:camps.slice(0,8).map(r=>n(fc(r,'amount spent','spend','cost'))),backgroundColor:C.ra,borderColor:C.r,borderWidth:1,yAxisID:'y'},{label:'Conversions',data:camps.slice(0,8).map(r=>n(fc(r,'results','conversions','conv','leads'))),backgroundColor:C.ga,borderColor:C.g,borderWidth:1,type:'line',tension:.3,pointRadius:4,yAxisID:'y1'}]},options:{...go,plugins:{legend:{labels:{boxWidth:10}}},scales:{y:{ticks:{callback:v=>'\u20b9'+fmt(v)},grid:{color:C.bd}},y1:{position:'right',grid:{drawOnChartArea:false}}}}});}
+  if(S.gd.length){const days=S.gd.map(r=>fc(r,'date','day')||'?');const spends=S.gd.map(r=>n(fc(r,'cost','spend')));let run=0;const cum=spends.map(s=>{run+=s;return run;});mk('c-burn',{type:'line',data:{labels:days,datasets:[{label:'Daily',data:spends,borderColor:C.a,backgroundColor:C.aa,tension:.3,fill:true},{label:'Cumulative',data:cum,borderColor:C.r,backgroundColor:'transparent',tension:.3,borderDash:[4,3],yAxisID:'y1'}]},options:{...go,plugins:{legend:{labels:{boxWidth:10}}},scales:{y:{ticks:{callback:v=>'\u20b9'+fmt(v)},grid:{color:C.bd}},y1:{position:'right',grid:{drawOnChartArea:false},ticks:{callback:v=>'\u20b9'+fmt(v)}}}}});}
+  const rM=m&&m.spend&&c.rev?c.rev*.6/m.spend:0;const rG=g&&g.spend&&c.rev?c.rev*.4/g.spend:0;
+  mk('c-roas',{type:'bar',data:{labels:['Meta','Google'],datasets:[{data:[rM.toFixed(2),rG.toFixed(2)],backgroundColor:[C.ra,C.ba],borderColor:[C.r,C.b],borderWidth:2}]},options:{...go,plugins:{legend:{display:false}},scales:{y:{ticks:{callback:v=>v+'x'},beginAtZero:true,grid:{color:C.bd}}}}});
+  mk('c-fun',{type:'bar',data:{labels:['Impressions','Clicks','Conversions'],datasets:[{data:[c.impr||0,c.clicks||0,c.conv||0],backgroundColor:[C.ba,C.aa,C.ga],borderColor:[C.b,C.a,C.g],borderWidth:2}]},options:{indexAxis:'y',...go,plugins:{legend:{display:false}},scales:{x:{ticks:{callback:v=>fmt(v)},grid:{color:C.bd}}}}});
+  const ms=m?.spend||0;const gs2=g?.spend||0;mk('c-bud',{type:'doughnut',data:{labels:['Meta','Google'],datasets:[{data:[ms,gs2],backgroundColor:[C.r,C.b],borderColor:'#16161a',borderWidth:2}]},options:{...go,cutout:'65%',plugins:{legend:{position:'bottom',labels:{boxWidth:8,padding:10}}}}});
+  const devD=bdev();if(devD.labels.length){const dCfg={type:'doughnut',data:{labels:devD.labels,datasets:[{data:devD.vals,backgroundColor:[C.g,C.b,C.a,C.p],borderColor:'#16161a',borderWidth:2}]},options:{...go,cutout:'60%',plugins:{legend:{position:'bottom',labels:{boxWidth:8,padding:10}}}}};mk('c-dev',JSON.parse(JSON.stringify(dCfg)));mk('c-alldev',JSON.parse(JSON.stringify(dCfg)));}
+  if(S.mc.length){const names=S.mc.slice(0,6).map(r=>sn(fc(r,'campaign name','campaign','name')));const spends=S.mc.slice(0,6).map(r=>n(fc(r,'amount spent','spend')));mk('c-msp',{type:'doughnut',data:{labels:names,datasets:[{data:spends,backgroundColor:[C.r,'#ff6b6b','#ff9966','#c0392b','#e74c3c','#ff4757'],borderColor:'#16161a',borderWidth:2}]},options:{...go,cutout:'60%',plugins:{legend:{position:'bottom',labels:{boxWidth:8,padding:6,font:{size:10}}}}}});mk('c-mctr',{type:'bar',data:{labels:names,datasets:[{data:S.mc.slice(0,6).map(r=>{const i=n(fc(r,'impressions'));const cl=n(fc(r,'link clicks','clicks'));return i?cl/i*100:0;}),backgroundColor:C.ra,borderColor:C.r,borderWidth:1}]},options:{...go,plugins:{legend:{display:false}},scales:{y:{ticks:{callback:v=>v+'%'},beginAtZero:true,grid:{color:C.bd}}}}});}
+  if(S.mad.length){mk('c-cre',{type:'bar',data:{labels:S.mad.slice(0,6).map(r=>sn(fc(r,'ad name','name','creative'),13)),datasets:[{data:S.mad.slice(0,6).map(r=>{const i=n(fc(r,'impressions'));const cl=n(fc(r,'link clicks','clicks'));return i?cl/i*100:0;}),backgroundColor:C.aa,borderColor:C.a,borderWidth:1}]},options:{...go,plugins:{legend:{display:false}},scales:{y:{ticks:{callback:v=>v+'%'},beginAtZero:true,grid:{color:C.bd}}}}});}
+  if(S.mdev.length){mk('c-mdevch',{type:'doughnut',data:{labels:S.mdev.map(r=>fc(r,'device platform','device','platform')||'?'),datasets:[{data:S.mdev.map(r=>n(fc(r,'reach','impressions','clicks'))),backgroundColor:[C.g,C.b,C.a],borderColor:'#16161a',borderWidth:2}]},options:{...go,cutout:'60%',plugins:{legend:{position:'bottom',labels:{boxWidth:8,padding:10}}}}});}
+  if(S.gd.length){mk('c-gdly',{type:'line',data:{labels:S.gd.map(r=>fc(r,'date','day')||'?'),datasets:[{label:'Clicks',data:S.gd.map(r=>n(fc(r,'clicks'))),borderColor:C.b,backgroundColor:C.ba,tension:.3,fill:true},{label:'Conversions',data:S.gd.map(r=>n(fc(r,'conv','conversions'))),borderColor:C.g,backgroundColor:'transparent',tension:.3,pointRadius:4}]},options:{...go,plugins:{legend:{labels:{boxWidth:10}}},scales:{y:{beginAtZero:true,grid:{color:C.bd}}}}});}
+  if(S.gk.length){mk('c-gkw',{type:'bar',data:{labels:S.gk.slice(0,8).map(r=>sn(fc(r,'keyword','search term','query'))),datasets:[{data:S.gk.slice(0,8).map(r=>{const i=n(fc(r,'impr','impressions'));const cl=n(fc(r,'clicks'));return i?cl/i*100:0;}),backgroundColor:C.ga,borderColor:C.g,borderWidth:1}]},options:{indexAxis:'y',...go,plugins:{legend:{display:false}},scales:{x:{ticks:{callback:v=>v+'%'},beginAtZero:true,grid:{color:C.bd}}}}});}
+  if(S.gdev.length){mk('c-gdevch',{type:'doughnut',data:{labels:S.gdev.map(r=>fc(r,'device','device category','device type')||'?'),datasets:[{data:S.gdev.map(r=>n(fc(r,'clicks','cost','impressions'))),backgroundColor:[C.g,C.b,C.a],borderColor:'#16161a',borderWidth:2}]},options:{...go,cutout:'60%',plugins:{legend:{position:'bottom',labels:{boxWidth:8,padding:10}}}}});}
+  if(S.gc.length){mk('c-gsc',{type:'bar',data:{labels:S.gc.slice(0,6).map(r=>sn(fc(r,'campaign','name'))),datasets:[{label:'Spend',data:S.gc.slice(0,6).map(r=>n(fc(r,'cost','spend'))),backgroundColor:C.ba,borderColor:C.b,borderWidth:1,yAxisID:'y'},{label:'Conv',data:S.gc.slice(0,6).map(r=>n(fc(r,'conv','conversions'))),backgroundColor:C.ga,borderColor:C.g,borderWidth:1,type:'line',tension:.3,yAxisID:'y1'}]},options:{...go,plugins:{legend:{labels:{boxWidth:10}}},scales:{y:{ticks:{callback:v=>'\u20b9'+fmt(v)},grid:{color:C.bd}},y1:{position:'right',grid:{drawOnChartArea:false}}}}});}
+  if(S.lp.length){const pages=S.lp.slice(0,6).map(r=>sn(fc(r,'landing page','page','url','path')));mk('c-lpses',{type:'bar',data:{labels:pages,datasets:[{data:S.lp.slice(0,6).map(r=>n(fc(r,'sessions','users'))),backgroundColor:C.ba,borderColor:C.b,borderWidth:1}]},options:{indexAxis:'y',...go,plugins:{legend:{display:false}},scales:{x:{ticks:{callback:v=>fmt(v)},grid:{color:C.bd}}}}});mk('c-lpcvr',{type:'bar',data:{labels:pages,datasets:[{data:S.lp.slice(0,6).map(r=>{const s=n(fc(r,'sessions','users'));const cv=n(fc(r,'conversions','goal completions'));return s?cv/s*100:0;}),backgroundColor:C.ga,borderColor:C.g,borderWidth:1}]},options:{indexAxis:'y',...go,plugins:{legend:{display:false}},scales:{x:{ticks:{callback:v=>v+'%'},beginAtZero:true,grid:{color:C.bd}}}}});}
+  if(S.mage.length){const ages=S.mage.map(r=>fc(r,'age','age group')||'?');mk('c-age',{type:'bar',data:{labels:ages,datasets:[{data:S.mage.map(r=>n(fc(r,'reach','impressions'))),backgroundColor:C.ba,borderColor:C.b,borderWidth:1}]},options:{...go,plugins:{legend:{display:false}},scales:{y:{ticks:{callback:v=>fmt(v)},grid:{color:C.bd}}}}});const gMap={};S.mage.forEach(r=>{const gen=(fc(r,'gender','sex')||'unknown').toLowerCase();const v=n(fc(r,'reach','impressions'));gMap[gen]=(gMap[gen]||0)+v;});const gl=Object.keys(gMap);mk('c-gen',{type:'doughnut',data:{labels:gl,datasets:[{data:gl.map(k=>gMap[k]),backgroundColor:[C.b,C.p,C.a],borderColor:'#16161a',borderWidth:2}]},options:{...go,cutout:'60%',plugins:{legend:{position:'bottom',labels:{boxWidth:8,padding:10}}}}});}
+  if(S.mret.length){const types=[...new Set(S.mret.map(r=>fc(r,'audience','custom audience','audience name')||'Unknown'))].slice(0,4);mk('c-ret',{type:'bar',data:{labels:types,datasets:[{label:'Spend',data:types.map(t=>sc(S.mret.filter(r=>(fc(r,'audience','custom audience','audience name')||'').includes(t)),'spend','amount spent','cost')),backgroundColor:C.ra,borderColor:C.r,borderWidth:1},{label:'Conversions',data:types.map(t=>sc(S.mret.filter(r=>(fc(r,'audience','custom audience','audience name')||'').includes(t)),'results','conv','conversions')),backgroundColor:C.ga,borderColor:C.g,borderWidth:1}]},options:{...go,plugins:{legend:{labels:{boxWidth:10}}},scales:{y:{beginAtZero:true,grid:{color:C.bd}}}}});}
+  const dpR=S.mda.length?S.mda:S.gda;
+  if(dpR.length){const sd=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];mk('c-dow',{type:'bar',data:{labels:sd,datasets:[{data:sd.map(d=>{const match=dpR.filter(r=>fc(r,'day of week','day','weekday').toLowerCase().startsWith(d.toLowerCase()));return sc(match,'ctr','conversions','clicks','results');}),backgroundColor:C.pa,borderColor:C.p,borderWidth:1}]},options:{...go,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,grid:{color:C.bd}}}}});const hrs=Array.from({length:24},(_,i)=>i);mk('c-hod',{type:'line',data:{labels:hrs.map(h=>h+':00'),datasets:[{data:hrs.map(h=>{const match=dpR.filter(r=>parseInt(fc(r,'hour of day','hour'))||0===h);return sc(match,'ctr','conversions','clicks','results');}),borderColor:C.a,backgroundColor:C.aa,tension:.4,fill:true}]},options:{...go,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,grid:{color:C.bd}}}}});}
+  if(S.lm_gd.length&&S.gd.length){const labs=S.gd.map(r=>fc(r,'date','day')||'?');mk('c-moms',{type:'line',data:{labels:labs,datasets:[{label:'This Month',data:S.gd.map(r=>n(fc(r,'cost','spend'))),borderColor:C.r,backgroundColor:C.ra,tension:.3,fill:true},{label:'Last Month',data:S.lm_gd.slice(0,S.gd.length).map(r=>n(fc(r,'cost','spend'))),borderColor:C.mu,backgroundColor:'transparent',borderDash:[4,3],tension:.3}]},options:{...go,plugins:{legend:{labels:{boxWidth:10}}},scales:{y:{ticks:{callback:v=>'\u20b9'+fmt(v)},grid:{color:C.bd}}}}});mk('c-momc',{type:'line',data:{labels:labs,datasets:[{label:'This Month',data:S.gd.map(r=>n(fc(r,'conv','conversions'))),borderColor:C.g,backgroundColor:C.ga,tension:.3,fill:true},{label:'Last Month',data:S.lm_gd.slice(0,S.gd.length).map(r=>n(fc(r,'conv','conversions'))),borderColor:C.mu,backgroundColor:'transparent',borderDash:[4,3],tension:.3}]},options:{...go,plugins:{legend:{labels:{boxWidth:10}}},scales:{y:{beginAtZero:true,grid:{color:C.bd}}}}});}
+}
+function bdev(){const rows=[...S.mdev,...S.gdev];if(!rows.length)return{labels:[],vals:[]};const map={};rows.forEach(r=>{const d=(fc(r,'device platform','device','platform','device category','device type')||'Unknown').toLowerCase();const k=d.includes('mobile')||d.includes('phone')?'Mobile':d.includes('desk')||d.includes('computer')?'Desktop':d.includes('tablet')?'Tablet':'Other';map[k]=(map[k]||0)+n(fc(r,'reach','clicks','impressions','cost'));});return{labels:Object.keys(map),vals:Object.values(map)};}
+function rins(){const c=cmb();const m=mkpi();const g=gkpi();const ins=[];if(c.spend&&c.rev){const roas=c.rev/c.spend;ins.push(roas>=3?'ROAS '+roas.toFixed(1)+'x — strong returns. Consider scaling top campaigns.':roas>=1.5?'ROAS '+roas.toFixed(1)+'x — profitable. Optimise for further gains.':'ROAS '+roas.toFixed(1)+'x — below breakeven. Review targeting and creatives urgently.');}if(m){ins.push(m.ctr<1?'Meta CTR '+m.ctr.toFixed(2)+'% — below 1% benchmark. Ad creatives likely need refreshing.':'Meta CTR '+m.ctr.toFixed(2)+'% — above 1% benchmark. Creative performance is healthy.');}if(g){ins.push(g.ctr<3?'Google CTR '+g.ctr.toFixed(2)+'% — below 3% benchmark. Review ad copy and match types.':'Google CTR '+g.ctr.toFixed(2)+'% — solid for search campaigns.');}if(m&&g){const ms=m.spend/(m.spend+g.spend)*100;ins.push(ms>85?ms.toFixed(0)+'% budget on Meta — consider diversifying to Google for intent-based traffic.':ms<15?'Only '+ms.toFixed(0)+'% on Meta — awareness campaigns may be under-utilised.':'Budget split '+ms.toFixed(0)+'% Meta / '+(100-ms).toFixed(0)+'% Google — balanced.');}if(S.gd.length){const spends=S.gd.map(r=>n(fc(r,'cost','spend')));const avg=spends.reduce((a,b)=>a+b,0)/spends.length;const last3=spends.slice(-3).reduce((a,b)=>a+b,0)/3;ins.push(last3>avg*1.3?'Last 3 days spend is '+((last3/avg-1)*100).toFixed(0)+'% above daily average — budget may run out early.':last3<avg*.6?'Spend under-pacing over last 3 days — budget may expire unused.':'Daily spend is pacing evenly within budget.');}if(!ins.length)return;document.getElementById('ib').style.display='block';document.getElementById('il').innerHTML=ins.map(i=>'<div class="ii"><span class="id">\u203a</span><span>'+i+'</span></div>').join('');}
+function ra(){mr();rkpi();rtmt();rtgt();rtlp();rmom();rhmx();rc();rins();}
+rkpi();rc();
+</script>
+</body>
+</html>
