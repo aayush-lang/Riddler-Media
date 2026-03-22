@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SEO Audit Report — Riddler Media</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --black: #0e0e0e; --white: #fafaf8; --accent: #c8f135; --accent-dark: #a8d020;
+  --muted: #6b6b6b; --border: #e0e0da; --surface: #f4f4f0;
+  --danger: #e84040; --warn: #f0a020; --good: #22a060;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Instrument Sans', sans-serif; background: var(--white); color: var(--black); font-size: 15px; line-height: 1.6; }
+#app { display: flex; min-height: 100vh; }
+
+/* FORM PANEL */
+#form-panel { width: 460px; min-width: 460px; background: var(--black); color: var(--white); display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh; overflow: hidden; }
+.form-top { padding: 24px 32px 0; flex-shrink: 0; }
+.form-logo { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.15em; color: var(--accent); margin-bottom: 16px; text-transform: uppercase; }
+.form-title { font-family: 'DM Serif Display', serif; font-size: 20px; color: var(--white); margin-bottom: 2px; }
+.form-sub { font-size: 12px; color: #555; margin-bottom: 16px; }
+
+/* STEP TABS */
+.step-tabs { display: flex; margin: 0 32px; border-bottom: 1px solid #1e1e1e; }
+.step-tab { flex: 1; text-align: center; padding: 9px 2px; font-size: 10px; font-family: 'DM Mono', monospace; color: #3a3a3a; cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.2s; letter-spacing: 0.04em; position: relative; }
+.step-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+.step-tab.done { color: #555; }
+.step-tab.done::after { content: '✓'; position: absolute; top: 5px; right: 4px; font-size: 8px; color: var(--accent); }
+
+/* PROGRESS */
+.progress-bar { height: 2px; background: #181818; margin: 0 32px; }
+.progress-fill { height: 100%; background: var(--accent); transition: width 0.4s ease; }
+
+/* STEPS */
+.steps-wrap { flex: 1; overflow-y: auto; padding: 0 32px 24px; }
+.step { display: none; padding-top: 18px; }
+.step.active { display: block; }
+.step-num { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--accent); letter-spacing: 0.1em; margin-bottom: 3px; }
+.step-title { font-size: 15px; font-weight: 600; color: var(--white); margin-bottom: 3px; }
+.step-desc { font-size: 12px; color: #666; line-height: 1.5; margin-bottom: 18px; }
+
+/* SOURCE BADGE */
+.source-badge { display: inline-flex; align-items: center; gap: 6px; background: #141414; border: 1px solid #242424; border-radius: 20px; padding: 4px 10px; font-size: 11px; color: #777; margin-bottom: 14px; font-family: 'DM Mono', monospace; }
+.source-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--accent); flex-shrink: 0; }
+
+/* FIELDS */
+.field { margin-bottom: 13px; }
+.field-label-row { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; }
+.field label { font-size: 11px; color: #888; font-family: 'DM Mono', monospace; }
+.field input, .field select, .field textarea { width: 100%; background: #161616; border: 1px solid #262626; color: var(--white); padding: 8px 11px; border-radius: 6px; font-size: 13px; font-family: 'Instrument Sans', sans-serif; outline: none; transition: border-color 0.2s; }
+.field input:focus, .field select:focus, .field textarea:focus { border-color: var(--accent); }
+.field textarea { resize: vertical; min-height: 60px; }
+.field select option { background: #161616; }
+.row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.field-hint { font-size: 11px; color: #3d3d3d; margin-top: 3px; }
+
+/* TOOLTIP */
+.field-help { position: relative; display: inline-flex; }
+.help-icon { width: 15px; height: 15px; border-radius: 50%; background: #1e1e1e; border: 1px solid #303030; font-size: 9px; color: #555; display: flex; align-items: center; justify-content: center; cursor: pointer; font-family: 'DM Mono', monospace; transition: border-color 0.2s; flex-shrink: 0; }
+.help-icon:hover { border-color: var(--accent); color: var(--accent); }
+.tooltip { display: none; position: absolute; left: 20px; top: -4px; z-index: 200; background: #1c1c1c; border: 1px solid #303030; border-radius: 8px; padding: 10px 12px; width: 230px; font-size: 11px; color: #999; line-height: 1.5; font-family: 'Instrument Sans', sans-serif; box-shadow: 0 6px 24px rgba(0,0,0,0.5); }
+.tooltip strong { color: #fff; display: block; margin-bottom: 3px; font-size: 12px; }
+.tooltip .find-it { margin-top: 6px; padding-top: 6px; border-top: 1px solid #282828; color: var(--accent); font-size: 10px; font-family: 'DM Mono', monospace; line-height: 1.4; }
+.field-help:hover .tooltip { display: block; }
+
+/* NAV BUTTONS */
+.step-nav { display: flex; gap: 10px; margin-top: 20px; }
+.btn-next, .btn-generate { flex: 1; padding: 11px; background: var(--accent); color: var(--black); border: none; border-radius: 7px; font-size: 13px; font-weight: 600; font-family: 'Instrument Sans', sans-serif; cursor: pointer; transition: background 0.2s; }
+.btn-next:hover, .btn-generate:hover { background: var(--accent-dark); }
+.btn-back { padding: 11px 16px; background: transparent; color: #555; border: 1px solid #242424; border-radius: 7px; font-size: 13px; font-family: 'Instrument Sans', sans-serif; cursor: pointer; transition: all 0.2s; }
+.btn-back:hover { color: #888; border-color: #383838; }
+
+/* REPORT PANEL */
+#report-panel { flex: 1; padding: 52px 56px; overflow-y: auto; }
+#placeholder { height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 60px 40px; }
+.ph-mark { font-family: 'DM Serif Display', serif; font-size: 56px; color: #ddd; margin-bottom: 16px; }
+#placeholder p { font-size: 13px; color: #aaa; line-height: 1.7; max-width: 260px; margin-bottom: 24px; }
+.steps-hint { display: flex; flex-direction: column; gap: 8px; text-align: left; }
+.hint-row { display: flex; align-items: center; gap: 10px; font-size: 12px; color: #999; }
+.hint-num { width: 22px; height: 22px; border-radius: 50%; background: var(--surface); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 10px; font-family: 'DM Mono', monospace; color: var(--muted); flex-shrink: 0; }
+.report-hidden { display: none !important; }
+
+/* REPORT STYLES */
+.rpt-eyebrow { font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
+.rpt-brand { font-family: 'DM Serif Display', serif; font-size: 42px; line-height: 1.1; margin-bottom: 4px; }
+.rpt-meta { font-size: 13px; color: var(--muted); margin-bottom: 36px; }
+.rpt-divider { height: 1px; background: var(--border); margin: 28px 0; }
+.score-row { display: flex; align-items: center; gap: 36px; margin-bottom: 28px; }
+.score-ring-wrap { position: relative; width: 106px; height: 106px; flex-shrink: 0; }
+.score-ring-wrap svg { width: 106px; height: 106px; transform: rotate(-90deg); }
+.score-center { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); text-align: center; }
+.score-num { font-family: 'DM Serif Display', serif; font-size: 26px; line-height: 1; }
+.score-sub { font-size: 10px; color: var(--muted); font-family: 'DM Mono', monospace; }
+.score-breakdown { flex: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.score-item { background: var(--surface); border-radius: 8px; padding: 11px 13px; }
+.score-item-label { font-size: 11px; color: var(--muted); font-family: 'DM Mono', monospace; margin-bottom: 3px; }
+.score-item-val { font-size: 19px; font-weight: 600; }
+.rpt-section { margin-bottom: 32px; }
+.rpt-section-title { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); margin-bottom: 14px; padding-bottom: 8px; border-bottom: 1.5px solid var(--border); display: flex; align-items: center; gap: 8px; }
+.rpt-section-title span { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); display: inline-block; }
+.metrics-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; margin-bottom: 14px; }
+.metrics-grid-3 { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin-bottom: 14px; }
+.m-card { background: var(--surface); border-radius: 9px; padding: 14px 16px; border: 1px solid var(--border); }
+.m-card-label { font-size: 11px; color: var(--muted); margin-bottom: 5px; }
+.m-card-val { font-size: 22px; font-weight: 600; font-family: 'DM Serif Display', serif; }
+.m-card-note { font-size: 11px; color: var(--muted); margin-top: 3px; }
+.health-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.health-item { background: var(--surface); border-radius: 8px; padding: 12px 14px; border: 1px solid var(--border); }
+.health-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 7px; }
+.health-name { font-size: 13px; font-weight: 500; }
+.health-val { font-size: 13px; font-weight: 600; }
+.health-bar-track { height: 5px; background: var(--border); border-radius: 3px; overflow: hidden; }
+.health-bar-fill { height: 100%; border-radius: 3px; }
+.finding-list { display: flex; flex-direction: column; gap: 9px; }
+.finding { display: flex; gap: 12px; align-items: flex-start; background: var(--surface); border-radius: 8px; padding: 13px 15px; border: 1px solid var(--border); border-left: 3px solid transparent; }
+.finding.critical { border-left-color: var(--danger); }
+.finding.warning { border-left-color: var(--warn); }
+.finding.good { border-left-color: var(--good); }
+.finding-badge { font-size: 10px; font-family: 'DM Mono', monospace; padding: 2px 7px; border-radius: 4px; white-space: nowrap; margin-top: 1px; }
+.finding-badge.critical { background: #fde8e8; color: var(--danger); }
+.finding-badge.warning { background: #fff3e0; color: var(--warn); }
+.finding-badge.good { background: #e6f7ef; color: var(--good); }
+.finding-title { font-size: 13px; font-weight: 500; margin-bottom: 3px; }
+.finding-desc { font-size: 12px; color: var(--muted); line-height: 1.5; }
+.rec-list { display: flex; flex-direction: column; gap: 9px; }
+.rec { display: flex; gap: 13px; padding: 13px 15px; border-radius: 8px; background: var(--surface); border: 1px solid var(--border); }
+.rec-num { font-family: 'DM Serif Display', serif; font-size: 20px; color: var(--accent-dark); line-height: 1; min-width: 26px; }
+.rec-title { font-size: 13px; font-weight: 600; margin-bottom: 3px; }
+.rec-body { font-size: 12px; color: var(--muted); line-height: 1.5; }
+.rec-impact { font-size: 10px; font-family: 'DM Mono', monospace; color: var(--accent-dark); margin-top: 4px; }
+.kw-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.kw-table th { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.07em; text-transform: uppercase; color: var(--muted); padding: 7px 11px; text-align: left; border-bottom: 1px solid var(--border); }
+.kw-table td { padding: 9px 11px; border-bottom: 1px solid var(--border); }
+.kw-table tr:last-child td { border-bottom: none; }
+.notes-box { font-size: 13px; color: var(--muted); background: var(--surface); padding: 11px 14px; border-radius: 8px; margin-top: 10px; border-left: 3px solid var(--accent); line-height: 1.6; }
+.rpt-footer { margin-top: 44px; padding-top: 18px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+.rpt-footer-logo { font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.1em; color: var(--muted); }
+.rpt-footer-date { font-size: 12px; color: var(--muted); }
+
+@media print {
+  #form-panel { display: none; }
+  #report-panel { padding: 32px; }
+  .m-card, .health-item, .finding, .rec { break-inside: avoid; }
+}
+</style>
+</head>
+<body>
+<div id="app">
+
+<!-- FORM PANEL -->
+<div id="form-panel">
+  <div class="form-top">
+    <div class="form-logo">Riddler Media</div>
+    <div class="form-title">SEO Audit Generator</div>
+    <div class="form-sub">5 steps · ~3 minutes · hover ? for where to find each number</div>
+  </div>
+  <div class="progress-bar"><div class="progress-fill" id="progress" style="width:20%"></div></div>
+  <div class="step-tabs">
+    <div class="step-tab active" id="tab-1" onclick="goStep(1)">Brand</div>
+    <div class="step-tab" id="tab-2" onclick="goStep(2)">GSC</div>
+    <div class="step-tab" id="tab-3" onclick="goStep(3)">Technical</div>
+    <div class="step-tab" id="tab-4" onclick="goStep(4)">Authority</div>
+    <div class="step-tab" id="tab-5" onclick="goStep(5)">Context</div>
+  </div>
+  <div class="steps-wrap">
+
+    <!-- STEP 1 -->
+    <div class="step active" id="step-1">
+      <div class="step-num">Step 1 of 5</div>
+      <div class="step-title">Brand basics</div>
+      <div class="step-desc">Basic client info — no tools needed, you know this already.</div>
+      <div class="field"><div class="field-label-row"><label>Brand / client name</label></div><input id="f-brand" type="text" placeholder="e.g. Otaku Haus"></div>
+      <div class="field"><div class="field-label-row"><label>Website URL</label></div><input id="f-url" type="text" placeholder="e.g. otakuhaus.com"></div>
+      <div class="field"><div class="field-label-row"><label>Industry / niche</label></div><input id="f-industry" type="text" placeholder="e.g. Anime Streetwear, D2C Fashion"></div>
+      <div class="field">
+        <div class="field-label-row">
+          <label>Audit period</label>
+          <div class="field-help"><div class="help-icon">?</div><div class="tooltip"><strong>What to write</strong>The date range you're analysing.<div class="find-it">e.g. "Last 28 days — Feb 22 to Mar 21, 2026"</div></div></div>
+        </div>
+        <input id="f-period" type="text" placeholder="e.g. Last 28 days — Feb 22 to Mar 21, 2026">
+      </div>
+      <div class="step-nav"><button class="btn-next" onclick="goStep(2)">Next: Search Console →</button></div>
+    </div>
+
+    <!-- STEP 2 -->
+    <div class="step" id="step-2">
+      <div class="step-num">Step 2 of 5</div>
+      <div class="step-title">Google Search Console</div>
+      <div class="step-desc">Open GSC → Performance → set the date range. The 4 summary numbers at the top are what you need here.</div>
+      <div class="source-badge"><div class="source-dot"></div>GSC → Performance → Overview (top 4 tiles)</div>
+      <div class="row2">
+        <div class="field">
+          <div class="field-label-row">
+            <label>Total clicks</label>
+            <div class="field-help"><div class="help-icon">?</div><div class="tooltip"><strong>Total Clicks</strong>Times someone clicked your site from Google search results.<div class="find-it">GSC → Performance → "Total clicks" tile (top)</div></div></div>
+          </div>
+          <input id="f-clicks" type="number" placeholder="e.g. 20">
+        </div>
+        <div class="field">
+          <div class="field-label-row">
+            <label>Total impressions</label>
+            <div class="field-help"><div class="help-icon">?</div><div class="tooltip"><strong>Total Impressions</strong>How many times the site showed up in search results (clicked or not).<div class="find-it">GSC → Performance → "Total impressions" tile (top)</div></div></div>
+          </div>
+          <input id="f-impr" type="number" placeholder="e.g. 314">
+        </div>
+      </div>
+      <div class="row2">
+        <div class="field">
+          <div class="field-label-row">
+            <label>Avg. CTR (%)</label>
+            <div class="field-help"><div class="help-icon">?</div><div class="tooltip"><strong>Average CTR</strong>% of people who saw the site in results and clicked it. GSC shows it with a % sign — just enter the number.<div class="find-it">GSC → Performance → "Average CTR" tile (top)</div></div></div>
+          </div>
+          <input id="f-ctr" type="number" placeholder="e.g. 6.4" step="0.1">
+        </div>
+        <div class="field">
+          <div class="field-label-row">
+            <label>Avg. position</label>
+            <div class="field-help"><div class="help-icon">?</div><div class="tooltip"><strong>Average Position</strong>Average Google ranking across all keywords. 1 = top result. Lower = better.<div class="find-it">GSC → Performance → "Average position" tile (top)</div></div></div>
+          </div>
+          <input id="f-pos" type="number" placeholder="e.g. 6.3" step="0.1">
+        </div>
+      </div>
+      <div class="field">
+        <div class="field-label-row">
+          <label>Top page by impressions</label>
+          <div class="field-help"><div class="help-icon">?</div><div class="tooltip"><strong>Highest impression page</strong>The page appearing most in search results — usually the homepage or a key blog post.<div class="find-it">GSC → Performance → Pages tab → sort by Impressions ↓</div></div></div>
+        </div>
+        <input id="f-toppage" type="text" placeholder="e.g. Blog: Rise of Anime Streetwear">
+      </div>
+      <div class="row2">
+        <div class="field"><div class="field-label-row"><label>Top page impressions</label></div><input id="f-toppage-impr" type="number" placeholder="e.g. 169"></div>
+        <div class="field"><div class="field-label-row"><label>Top page clicks</label></div><input id="f-toppage-clicks" type="number" placeholder="e.g. 0"></div>
+      </div>
+      <div class="field">
+        <div class="field-label-row">
+          <label>Top keywords (comma separated)</label>
+          <div class="field-help"><div class="help-icon">?</div><div class="tooltip"><strong>Top search queries</strong>The actual words people typed to find the site.<div class="find-it">GSC → Performance → Queries tab → top 5–10 rows</div></div></div>
+        </div>
+        <textarea id="f-keywords" placeholder="e.g. otaku streetwear, anime fashion india, break rules tshirt"></textarea>
+      </div>
+      <div class="step-nav"><button class="btn-back" onclick="goStep(1)">← Back</button><button class="btn-next" onclick="goStep(3)">Next: Technical →</button></div>
+    </div>
+
+    <!-- STEP 3 -->
+    <div class="step" id="step-3">
+      <div class="step-num">Step 3 of 5</div>
+      <div class="step-title">Technical health</div>
+      <div class="step-desc">All these numbers live in SEMrush Site Audit. Run a fresh crawl first if it's been more than 2 weeks.</div>
+      <div class="source-badge"><div class="source-dot"></div>SEMrush → Site Audit → Overview</div>
+      <div class="row2">
+        <div class="field">
+          <div class="field-label-row">
+            <label>Site health score (%)</label>
+            <div class="field-help"><div class="help-icon">?</div><div class="tooltip"><strong>Site Health Score</strong>SEMrush's overall technical health score. 90%+ is good. Below 80% needs attention.<div class="find-it">SEMrush → Site Audit → the big % circle on the overview page</div></div></div>
+          </div>
+          <input id="f-health" type="number" placeholder="e.g. 80">
+        </div>
+        <div class="field">
+          <div class="field-label-row">
+            <label>Pages crawled</label>
+            <div class="field-help"><div class="help-icon">?</div><div class="tooltip"><strong>Pages crawled</strong>How many pages SEMrush found vs the crawl limit.<div class="find-it">SEMrush → Site Audit → "X/100 pages crawled" near the top</div></div></div>
+          </div>
+          <input id="f-pages" type="text" placeholder="e.g. 76/100">
+        </div>
+      </div>
+      <div class="row2">
+        <div class="field">
+          <div class="field-label-row">
+            <label>Critical errors</label>
+            <div class="field-help"><div class="help-icon">?</div><div class="tooltip"><strong>Errors</strong>Serious issues that directly hurt rankings — broken links, missing titles, server errors.<div class="find-it">SEMrush → Site Audit → red "Errors" count</div></div></div>
+          </div>
+          <input id="f-errors" type="number" placeholder="e.g. 11">
+        </div>
+        <div class="field">
+          <div class="field-label-row">
+            <label>Warnings</label>
+            <div class="field-help"><div class="help-icon">?</div><div class="tooltip"><strong>Warnings</strong>Issues that hurt rankings but aren't critical — missing metas, duplicate content, slow images.<div class="find-it">SEMrush → Site Audit → yellow "Warnings" count</div></div></div>
+          </div>
+          <input id="f-warnings" type="number" placeholder="e.g. 104">
+        </div>
+      </div>
+      <div class="row2">
+        <div class="field">
+          <div class="field-label-row">
+            <label>Crawlability (%)</label>
+            <div class="field-help"><div class="help-icon">?</div><div class="tooltip"><strong>Crawlability</strong>% of pages Google can actually access and index. Should be 90%+.<div class="find-it">SEMrush → Site Audit → "Crawlability" score card</div></div></div>
+          </div>
+          <input id="f-crawl" type="number" placeholder="e.g. 94">
+        </div>
+        <div class="field">
+          <div class="field-label-row">
+            <label>HTTPS (%)</label>
+            <div class="field-help"><div class="help-icon">?</div><div class="tooltip"><strong>HTTPS</strong>% of pages served securely. Should be 100%. Anything below means some pages are on HTTP — Google penalises this.<div class="find-it">SEMrush → Site Audit → "HTTPS" score card</div></div></div>
+          </div>
+          <input id="f-https" type="number" placeholder="e.g. 100">
+        </div>
+      </div>
+      <div class="row2">
+        <div class="field">
+          <div class="field-label-row">
+            <label>Internal linking (%)</label>
+            <div class="field-help"><div class="help-icon">?</div><div class="tooltip"><strong>Internal Linking</strong>How well pages on the site link to each other. Good internal links help Google discover all pages.<div class="find-it">SEMrush → Site Audit → "Internal Linking" score card</div></div></div>
+          </div>
+          <input id="f-intlink" type="number" placeholder="e.g. 90">
+        </div>
+        <div class="field">
+          <div class="field-label-row">
+            <label>Site performance (%)</label>
+            <div class="field-help"><div class="help-icon">?</div><div class="tooltip"><strong>Site Performance</strong>How fast pages load. Google uses speed as a ranking factor. 90%+ is ideal.<div class="find-it">SEMrush → Site Audit → "Site Performance" score card</div></div></div>
+          </div>
+          <input id="f-perf" type="number" placeholder="e.g. 93">
+        </div>
+      </div>
+      <div class="field">
+        <div class="field-label-row">
+          <label>Core Web Vitals status</label>
+          <div class="field-help"><div class="help-icon">?</div><div class="tooltip"><strong>Core Web Vitals</strong>Google's page experience scores (LCP, CLS, INP). A direct ranking factor.<div class="find-it">GSC → Experience → Core Web Vitals — OR — run PageSpeed Insights on the homepage</div></div></div>
+        </div>
+        <select id="f-cwv">
+          <option value="">— Select status —</option>
+          <option value="pass">Pass — all green in GSC / PageSpeed</option>
+          <option value="fail">Fail — red or orange scores</option>
+          <option value="not-implemented">Not enough data / not measured yet</option>
+        </select>
+      </div>
+      <div class="step-nav"><button class="btn-back" onclick="goStep(2)">← Back</button><button class="btn-next" onclick="goStep(4)">Next: Authority →</button></div>
+    </div>
+
+    <!-- STEP 4 -->
+    <div class="step" id="step-4">
+      <div class="step-num">Step 4 of 5</div>
+      <div class="step-title">Domain authority</div>
+      <div class="step-desc">How much Google trusts this domain. Type the client's URL into SEMrush Domain Overview — all numbers are on that one page.</div>
+      <div class="source-badge"><div class="source-dot"></div>SEMrush → Domain Overview → enter domain</div>
+      <div class="row2">
+        <div class="field">
+          <div class="field-label-row">
+            <label>Authority score (0–100)</label>
+            <div class="field-help"><div class="help-icon">?</div><div class="tooltip"><strong>Authority Score</strong>SEMrush's domain trust score. New sites = 1–5. Established brands = 40–80+. Directly affects how easily pages rank.<div class="find-it">SEMrush → Domain Overview → big number top-left labelled "Authority Score"</div></div></div>
+          </div>
+          <input id="f-da" type="number" placeholder="e.g. 2">
+        </div>
+        <div class="field">
+          <div class="field-label-row">
+            <label>Referring domains</label>
+            <div class="field-help"><div class="help-icon">?</div><div class="tooltip"><strong>Referring Domains</strong>Number of unique websites linking to this site. Quality matters more than quantity.<div class="find-it">SEMrush → Domain Overview → "Ref. Domains" number</div></div></div>
+          </div>
+          <input id="f-refdomains" type="number" placeholder="e.g. 48">
+        </div>
+      </div>
+      <div class="row2">
+        <div class="field">
+          <div class="field-label-row">
+            <label>Total backlinks</label>
+            <div class="field-help"><div class="help-icon">?</div><div class="tooltip"><strong>Backlinks</strong>Total links pointing to the site (can include multiple from the same domain).<div class="find-it">SEMrush → Domain Overview → "Backlinks" number</div></div></div>
+          </div>
+          <input id="f-backlinks" type="number" placeholder="e.g. 491">
+        </div>
+        <div class="field">
+          <div class="field-label-row">
+            <label>Organic keywords</label>
+            <div class="field-help"><div class="help-icon">?</div><div class="tooltip"><strong>Organic Keywords</strong>Number of keywords the site ranks for in Google's top 100. The most direct measure of SEO reach.<div class="find-it">SEMrush → Domain Overview → "Organic Keywords" number</div></div></div>
+          </div>
+          <input id="f-orgkw" type="number" placeholder="e.g. 2">
+        </div>
+      </div>
+      <div class="field">
+        <div class="field-label-row">
+          <label>Organic traffic (SEMrush estimate)</label>
+          <div class="field-help"><div class="help-icon">?</div><div class="tooltip"><strong>Organic Traffic</strong>SEMrush's estimate of monthly organic visitors. May differ from GA4 — use GA4 for actuals, this for context.<div class="find-it">SEMrush → Domain Overview → "Organic Traffic" number</div></div></div>
+        </div>
+        <input id="f-semrush-traffic" type="number" placeholder="e.g. 0 or 120">
+      </div>
+      <div class="step-nav"><button class="btn-back" onclick="goStep(3)">← Back</button><button class="btn-next" onclick="goStep(5)">Next: Context →</button></div>
+    </div>
+
+    <!-- STEP 5 -->
+    <div class="step" id="step-5">
+      <div class="step-num">Step 5 of 5</div>
+      <div class="step-title">Context & observations</div>
+      <div class="step-desc">The stuff only you know. This shapes the recommendations and the overall narrative of the report.</div>
+      <div class="field">
+        <div class="field-label-row">
+          <label>When did SEO work start?</label>
+          <div class="field-help"><div class="help-icon">?</div><div class="tooltip"><strong>SEO start date</strong>When Riddler Media (or whoever) began active SEO work. Helps set expectations — SEO takes 3–6 months to compound.<div class="find-it">Your own records / client onboarding date</div></div></div>
+        </div>
+        <input id="f-started" type="text" placeholder="e.g. November 2024 (~4 months ago)">
+      </div>
+      <div class="field">
+        <div class="field-label-row">
+          <label>GA4 organic sessions (28 days)</label>
+          <div class="field-help"><div class="help-icon">?</div><div class="tooltip"><strong>Organic sessions from GA4</strong>Real traffic from Google search, as tracked by GA4. More accurate than SEMrush estimate.<div class="find-it">GA4 → Reports → Acquisition → Traffic acquisition → filter channel = "Organic Search"</div></div></div>
+        </div>
+        <input id="f-ga4-sessions" type="number" placeholder="e.g. 58">
+      </div>
+      <div class="field">
+        <div class="field-label-row">
+          <label>Traffic trend</label>
+          <div class="field-help"><div class="help-icon">?</div><div class="tooltip"><strong>Overall trend</strong>What direction is the data moving?<div class="find-it">Your read of the GSC Performance chart over time</div></div></div>
+        </div>
+        <select id="f-trend">
+          <option value="">— Select trend —</option>
+          <option value="growing">Growing — impressions/clicks are going up</option>
+          <option value="flat">Flat — no meaningful change</option>
+          <option value="declining">Declining — traffic is dropping</option>
+          <option value="early">Too early to tell — site is new or SEO just started</option>
+          <option value="spike">Recent spike — sudden impressions jump</option>
+        </select>
+      </div>
+      <div class="field">
+        <div class="field-label-row"><label>Key observations / analyst notes</label></div>
+        <textarea id="f-notes" placeholder="e.g. Blog post has 169 impressions but 0 clicks — title/meta issue. Impressions spiked from Mar 15. Homepage driving all actual clicks."></textarea>
+        <div class="field-hint">These appear as highlighted analyst notes at the top of the report</div>
+      </div>
+      <div class="step-nav"><button class="btn-back" onclick="goStep(4)">← Back</button><button class="btn-generate" onclick="generateReport()">Generate Report →</button></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- REPORT PANEL -->
+<div id="report-panel">
+  <div id="placeholder">
+    <div class="ph-mark">◎</div>
+    <p>Fill in the 5 steps on the left to generate a full SEO audit report.</p>
+    <div class="steps-hint">
+      <div class="hint-row"><div class="hint-num">1</div>Brand basics — name, URL, niche</div>
+      <div class="hint-row"><div class="hint-num">2</div>GSC data — clicks, impressions, CTR, position</div>
+      <div class="hint-row"><div class="hint-num">3</div>Technical health — from SEMrush Site Audit</div>
+      <div class="hint-row"><div class="hint-num">4</div>Domain authority — from SEMrush Domain Overview</div>
+      <div class="hint-row"><div class="hint-num">5</div>Context — notes, trend, GA4 sessions</div>
+    </div>
+  </div>
+  <div id="report-output" class="report-hidden"></div>
+</div>
+
+</div>
+
+<script>
+let currentStep = 1;
+function goStep(n) {
+  document.getElementById('step-'+currentStep).classList.remove('active');
+  document.getElementById('tab-'+currentStep).classList.remove('active');
+  if (currentStep < n) document.getElementById('tab-'+currentStep).classList.add('done');
+  currentStep = n;
+  document.getElementById('step-'+n).classList.add('active');
+  document.getElementById('tab-'+n).classList.add('active');
+  document.getElementById('progress').style.width = (n*20)+'%';
+  document.querySelector('.steps-wrap').scrollTop = 0;
+}
+function val(id) { return document.getElementById(id).value.trim(); }
+function num(id) { return parseFloat(document.getElementById(id).value)||0; }
+function scoreColor(v,good,warn) { return v>=good?'var(--good)':v>=warn?'var(--warn)':'var(--danger)'; }
+function ringPath(pct,color) {
+  const r=44,cx=55,cy=55,circ=2*Math.PI*r,dash=(pct/100)*circ;
+  return `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="#e8e8e0" stroke-width="9"/>
+    <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${color}" stroke-width="9" stroke-dasharray="${dash.toFixed(1)} ${circ.toFixed(1)}" stroke-linecap="round"/>`;
+}
+function overallScore(h,da,clicks,impr,pos) {
+  let s=0;
+  s+=Math.min(h,100)*0.3;
+  s+=Math.min(da,100)*0.25;
+  s+=Math.min((clicks/Math.max(impr,1))*100*2,20);
+  s+=Math.max(0,(20-pos)/20*25);
+  return Math.round(Math.min(s,100));
+}
+function getFindings(d) {
+  const f=[];
+  if(d.errors>10) f.push({type:'critical',title:`${d.errors} critical errors detected`,desc:'Critical errors directly block indexing and rankings. Broken redirects, missing canonicals, and server errors are the usual culprits. Fix these before anything else.'});
+  else if(d.errors>0) f.push({type:'warning',title:`${d.errors} critical errors to fix`,desc:'A small number of errors exist. These have the most ranking impact — resolve before moving to warnings.'});
+  else f.push({type:'good',title:'No critical errors',desc:'Clean at the error level. Shift focus to warnings next.'});
+
+  if(d.warnings>80) f.push({type:'critical',title:`${d.warnings} warnings suppressing site health to ${d.health}%`,desc:'This volume typically means missing meta descriptions, duplicate title tags, thin content, and unoptimised images across the site. Clearing 50% would push health above 90%.'});
+  else if(d.warnings>30) f.push({type:'warning',title:`${d.warnings} warnings to address`,desc:'Prioritise product pages and blog posts first — they carry the most traffic value.'});
+  else f.push({type:'good',title:'Warning count is manageable',desc:`Only ${d.warnings} warnings. Work through these systematically, high-traffic pages first.`});
+
+  if(d.da<=5) f.push({type:'critical',title:`Authority score critically low at ${d.da}/100`,desc:'Google does not yet consider this domain trustworthy. Even well-optimised pages will underperform until authority is built through quality backlinks from niche-relevant sources.'});
+  else if(d.da<=20) f.push({type:'warning',title:`Authority score of ${d.da}/100 needs building`,desc:'Below average. Focus on earning backlinks from industry-relevant sites, not generic directories.'});
+  else f.push({type:'good',title:`Authority score of ${d.da}/100`,desc:'Reasonable domain authority. Continue building quality links consistently.'});
+
+  if(d.orgkw<=5) f.push({type:'critical',title:`Only ${d.orgkw} organic keywords ranking`,desc:'Near-zero search visibility. More indexed content, stronger keyword targeting, and technical cleanup need to happen in parallel.'});
+  else if(d.orgkw<=20) f.push({type:'warning',title:`${d.orgkw} keywords ranking`,desc:'Low keyword footprint. Content production targeting long-tail keywords should be the next big push.'});
+  else f.push({type:'good',title:`${d.orgkw} keywords in Google's index`,desc:'Healthy keyword presence. Focus on moving mid-page rankings into the top 3.'});
+
+  if(d.impr>100&&d.clicks<d.impr*0.05) f.push({type:'warning',title:'High impressions, low CTR — title/meta issue',desc:'The site is appearing in search results but users aren\'t clicking. Rewriting title tags and meta descriptions on high-impression pages can 3–5x clicks without any ranking change.'});
+  else if(d.ctr>8) f.push({type:'good',title:`Strong CTR of ${d.ctr}%`,desc:'Users click when shown the site — good title and meta quality.'});
+
+  if(d.pos>10) f.push({type:'warning',title:`Avg. position ${d.pos} — mostly page 2+`,desc:'Page 2 gets under 1% of clicks. Near-miss keywords at positions 8–15 need targeted on-page work to break onto page 1.'});
+  else if(d.pos<=5) f.push({type:'good',title:`Strong avg. position of ${d.pos}`,desc:'Most impressions from page 1. Work on pushing priority keywords into the top 3.'});
+  else f.push({type:'warning',title:`Avg. position ${d.pos} — page 1 boundary`,desc:'On the cusp of page 1. Targeted on-page work could move key pages into the top 5.'});
+
+  const cwvT={fail:{type:'critical',title:'Core Web Vitals failing',desc:'Google uses CWV as a direct ranking signal. A failing LCP, CLS, or INP score = active penalisation. Page speed is a ranking emergency.'},'not-implemented':{type:'warning',title:'Core Web Vitals not yet measured',desc:'Run PageSpeed Insights on the homepage to get an instant read. Until CWV data exists, potential issues are invisible.'},pass:{type:'good',title:'Core Web Vitals passing',desc:'No performance penalty. Site meets Google\'s speed threshold.'}};
+  if(d.cwv&&cwvT[d.cwv]) f.push(cwvT[d.cwv]);
+  return f;
+}
+function getRecommendations(d) {
+  const r=[];
+  if(d.errors>0) r.push({title:'Fix all critical errors first',body:`${d.errors} critical errors are the highest-priority action. Export the error list from SEMrush and resolve broken redirects, missing canonicals, and crawl blocks. Can improve rankings within 2–4 weeks.`,impact:'Impact: High · Timeline: 1–2 weeks'});
+  if(d.warnings>50) r.push({title:'Work through SEMrush warnings systematically',body:`${d.warnings} warnings are suppressing site health. Start with missing meta descriptions, then duplicate title tags, then image alt text. Target clearing 20 per week until below 30.`,impact:'Impact: High · Timeline: 4–6 weeks'});
+  if(d.impr>50&&(d.clicks/Math.max(d.impr,1))<0.08) r.push({title:'Rewrite title tags and meta descriptions on high-impression pages',body:'High impressions + low CTR = a messaging problem, not a ranking problem. Take the top 5 impression pages from GSC and rewrite their title tags with a clear value prop, primary keyword, and hook.',impact:'Impact: High · Timeline: 1 week'});
+  if(d.da<=10) r.push({title:'Start a targeted backlink building campaign',body:`Authority score of ${d.da} is critical. Focus on: guest posts on anime/fashion/streetwear blogs, D2C roundup features, PR outreach for brand story coverage, and community mentions on Reddit/Discord. Even 5–10 quality links can move the score meaningfully.`,impact:'Impact: Very High · Timeline: 2–3 months'});
+  if(d.orgkw<=10) r.push({title:'Build a keyword-targeted content calendar',body:`With only ${d.orgkw} keywords ranking, search visibility is minimal. Map out 12–16 blog posts targeting long-tail keywords with clear search intent. Each post targets one primary keyword.`,impact:'Impact: High · Timeline: 3–6 months'});
+  if(d.pos>8) r.push({title:'On-page optimisation for near-miss keywords',body:'Keywords at positions 8–15 are one solid optimisation from page 1. For each: add the keyword to H1, first paragraph, a subheading, and image alt text. Build 2–3 internal links to each of these pages.',impact:'Impact: Medium-High · Timeline: 2–4 weeks'});
+  r.push({title:'Set up a monthly SEO reporting cadence',body:'Track impressions, clicks, avg. position, and organic sessions in GA4 monthly. Summarise in three numbers for the client: impressions trend, organic sessions, and organic-attributed conversions.',impact:'Impact: Relationship · Timeline: Ongoing'});
+  return r.slice(0,6);
+}
+function generateReport() {
+  const d={
+    brand:val('f-brand')||'Brand Name', url:val('f-url')||'website.com',
+    industry:val('f-industry')||'—', period:val('f-period')||'Last 28 Days',
+    clicks:num('f-clicks'), impr:num('f-impr'), ctr:num('f-ctr'), pos:num('f-pos'),
+    toppage:val('f-toppage'), toppageImpr:num('f-toppage-impr'), toppageClicks:num('f-toppage-clicks'),
+    keywords:val('f-keywords'),
+    health:num('f-health'), pages:val('f-pages')||'—',
+    errors:num('f-errors'), warnings:num('f-warnings'),
+    crawl:num('f-crawl'), https:num('f-https'), intlink:num('f-intlink'), perf:num('f-perf'),
+    cwv:val('f-cwv'),
+    da:num('f-da'), refdomains:num('f-refdomains'), backlinks:num('f-backlinks'), orgkw:num('f-orgkw'),
+    semrushTraffic:num('f-semrush-traffic'),
+    started:val('f-started'), ga4:num('f-ga4-sessions'),
+    trend:val('f-trend'), notes:val('f-notes')
+  };
+  const overall=overallScore(d.health,d.da,d.clicks,d.impr,d.pos);
+  const overallColor=scoreColor(overall,70,45);
+  const findings=getFindings(d);
+  const recs=getRecommendations(d);
+  const today=new Date().toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'});
+  const kwList=d.keywords?d.keywords.split(',').map(k=>k.trim()).filter(Boolean):[];
+  const trendMap={growing:{label:'Growing',color:'var(--good)'},flat:{label:'Flat',color:'var(--muted)'},declining:{label:'Declining',color:'var(--danger)'},early:{label:'Early stage',color:'var(--warn)'},spike:{label:'Recent spike',color:'var(--good)'}};
+  const cwvLabel={pass:'Passing',fail:'Failing','not-implemented':'Not measured','':'—'}[d.cwv]||'—';
+  const cwvColor={pass:'var(--good)',fail:'var(--danger)','not-implemented':'var(--warn)'}[d.cwv]||'var(--muted)';
+  const healthItems=[
+    {name:'Site health',val:d.health+'%',pct:d.health,good:85,warn:70},
+    {name:'Crawlability',val:d.crawl+'%',pct:d.crawl,good:90,warn:75},
+    {name:'HTTPS',val:d.https+'%',pct:d.https,good:100,warn:95},
+    {name:'Internal linking',val:d.intlink+'%',pct:d.intlink,good:85,warn:70},
+    {name:'Site performance',val:d.perf+'%',pct:d.perf,good:85,warn:70},
+    {name:'Authority score',val:d.da+'/100',pct:d.da,good:40,warn:20},
+  ].map(h=>{const c=scoreColor(h.pct,h.good,h.warn);return`<div class="health-item"><div class="health-top"><span class="health-name">${h.name}</span><span class="health-val" style="color:${c}">${h.val}</span></div><div class="health-bar-track"><div class="health-bar-fill" style="width:${h.pct}%;background:${c}"></div></div></div>`;}).join('');
+  const findingsHTML=findings.map(f=>`<div class="finding ${f.type}"><span class="finding-badge ${f.type}">${f.type==='critical'?'Critical':f.type==='warning'?'Warning':'Good'}</span><div class="finding-body"><div class="finding-title">${f.title}</div><div class="finding-desc">${f.desc}</div></div></div>`).join('');
+  const recsHTML=recs.map((r,i)=>`<div class="rec"><div class="rec-num">${String(i+1).padStart(2,'0')}</div><div><div class="rec-title">${r.title}</div><div class="rec-body">${r.body}</div><div class="rec-impact">${r.impact}</div></div></div>`).join('');
+  const kwRows=kwList.length?kwList.map(k=>`<tr><td>${k}</td><td style="color:var(--muted)">—</td><td style="color:var(--muted)">tracking</td></tr>`).join(''):`<tr><td colspan="3" style="color:var(--muted);text-align:center;padding:18px">No keywords entered</td></tr>`;
+  const trendInfo=trendMap[d.trend];
+  document.getElementById('placeholder').classList.add('report-hidden');
+  const out=document.getElementById('report-output');
+  out.classList.remove('report-hidden');
+  out.innerHTML=`
+    <div class="rpt-eyebrow">SEO Audit Report — Riddler Media</div>
+    <div class="rpt-brand">${d.brand}</div>
+    <div class="rpt-meta">${d.url} &nbsp;·&nbsp; ${d.industry} &nbsp;·&nbsp; ${d.period} &nbsp;·&nbsp; ${today}</div>
+    <div class="score-row">
+      <div class="score-ring-wrap"><svg viewBox="0 0 110 110">${ringPath(overall,overallColor)}</svg><div class="score-center"><div class="score-num" style="color:${overallColor}">${overall}</div><div class="score-sub">/ 100</div></div></div>
+      <div class="score-breakdown">
+        <div class="score-item"><div class="score-item-label">Organic clicks</div><div class="score-item-val" style="color:${scoreColor(d.clicks,100,20)}">${d.clicks}</div></div>
+        <div class="score-item"><div class="score-item-label">Impressions</div><div class="score-item-val">${d.impr}</div></div>
+        <div class="score-item"><div class="score-item-label">Avg. position</div><div class="score-item-val" style="color:${scoreColor(20-d.pos,15,8)}">${d.pos}</div></div>
+        <div class="score-item"><div class="score-item-label">CTR</div><div class="score-item-val" style="color:${scoreColor(d.ctr,8,3)}">${d.ctr}%</div></div>
+      </div>
+    </div>
+    ${(d.started||trendInfo||d.ga4)?`<div style="display:flex;gap:20px;flex-wrap:wrap;margin-bottom:10px;font-size:13px;color:var(--muted)">
+      ${d.started?`<span>SEO started: <strong style="color:var(--black)">${d.started}</strong></span>`:''}
+      ${trendInfo?`<span>Trend: <strong style="color:${trendInfo.color}">${trendInfo.label}</strong></span>`:''}
+      ${d.ga4?`<span>GA4 organic sessions: <strong style="color:var(--black)">${d.ga4}</strong></span>`:''}
+    </div>`:''}
+    ${d.notes?`<div class="notes-box">${d.notes}</div>`:''}
+    <div class="rpt-divider"></div>
+    <div class="rpt-section">
+      <div class="rpt-section-title"><span></span>Google Search Console</div>
+      <div class="metrics-grid">
+        <div class="m-card"><div class="m-card-label">Total clicks</div><div class="m-card-val" style="color:${scoreColor(d.clicks,100,20)}">${d.clicks}</div><div class="m-card-note">28-day organic</div></div>
+        <div class="m-card"><div class="m-card-label">Impressions</div><div class="m-card-val">${d.impr}</div><div class="m-card-note">Search appearances</div></div>
+        <div class="m-card"><div class="m-card-label">Avg. CTR</div><div class="m-card-val" style="color:${scoreColor(d.ctr,8,3)}">${d.ctr}%</div><div class="m-card-note">Clicks ÷ impressions</div></div>
+        <div class="m-card"><div class="m-card-label">Avg. position</div><div class="m-card-val" style="color:${scoreColor(20-d.pos,15,8)}">${d.pos}</div><div class="m-card-note">Lower = better</div></div>
+      </div>
+      ${d.toppage?`<div style="font-size:13px;color:var(--muted);background:var(--surface);padding:10px 14px;border-radius:8px;border:1px solid var(--border)">Top impression page: <strong style="color:var(--black)">${d.toppage}</strong>${d.toppageImpr?' — '+d.toppageImpr+' impressions':''}${d.toppageClicks===0?' · <span style="color:var(--warn)">0 clicks</span>':d.toppageClicks?' · '+d.toppageClicks+' clicks':''}</div>`:''}
+    </div>
+    <div class="rpt-section">
+      <div class="rpt-section-title"><span></span>Technical health</div>
+      <div class="metrics-grid-3">
+        <div class="m-card"><div class="m-card-label">Critical errors</div><div class="m-card-val" style="color:${d.errors>0?'var(--danger)':'var(--good)'}">${d.errors}</div></div>
+        <div class="m-card"><div class="m-card-label">Warnings</div><div class="m-card-val" style="color:${scoreColor(100-d.warnings,70,40)}">${d.warnings}</div></div>
+        <div class="m-card"><div class="m-card-label">Core Web Vitals</div><div class="m-card-val" style="font-size:15px;color:${cwvColor}">${cwvLabel}</div></div>
+      </div>
+      <div class="health-grid">${healthItems}</div>
+    </div>
+    <div class="rpt-section">
+      <div class="rpt-section-title"><span></span>Domain authority & backlinks</div>
+      <div class="metrics-grid">
+        <div class="m-card"><div class="m-card-label">Authority score</div><div class="m-card-val" style="color:${scoreColor(d.da,40,20)}">${d.da}<span style="font-size:13px;color:var(--muted)">/100</span></div></div>
+        <div class="m-card"><div class="m-card-label">Referring domains</div><div class="m-card-val">${d.refdomains}</div></div>
+        <div class="m-card"><div class="m-card-label">Total backlinks</div><div class="m-card-val">${d.backlinks}</div></div>
+        <div class="m-card"><div class="m-card-label">Organic keywords</div><div class="m-card-val" style="color:${scoreColor(d.orgkw,30,10)}">${d.orgkw}</div></div>
+      </div>
+    </div>
+    ${kwList.length?`<div class="rpt-section"><div class="rpt-section-title"><span></span>Tracked keywords</div><table class="kw-table"><thead><tr><th>Keyword</th><th>Volume (est.)</th><th>Status</th></tr></thead><tbody>${kwRows}</tbody></table></div>`:''}
+    <div class="rpt-section"><div class="rpt-section-title"><span></span>Audit findings</div><div class="finding-list">${findingsHTML}</div></div>
+    <div class="rpt-section"><div class="rpt-section-title"><span></span>Priority recommendations</div><div class="rec-list">${recsHTML}</div></div>
+    <div class="rpt-footer"><div class="rpt-footer-logo">RIDDLER MEDIA &nbsp;·&nbsp; SEO AUDIT</div><div class="rpt-footer-date">${today}</div></div>
+  `;
+  document.getElementById('report-panel').scrollTop=0;
+}
+</script>
+</body>
+</html>
