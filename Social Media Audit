@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Instagram Growth Dashboard — Riddler Media</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --primary: #D85A30;
+    --accent: #1D9E75;
+    --bg: #f7f6f3;
+    --surface: #ffffff;
+    --surface2: #f1efe8;
+    --border: rgba(0,0,0,0.10);
+    --border2: rgba(0,0,0,0.18);
+    --text: #1a1a18;
+    --text2: #5f5e5a;
+    --text3: #9b9a96;
+    --radius: 10px;
+    --radius-lg: 14px;
+    --font: 'DM Sans', sans-serif;
+    --mono: 'DM Mono', monospace;
+  }
+
+  body {
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 0;
+  }
+
+  /* ── Header ── */
+  .header {
+    background: var(--surface);
+    border-bottom: 0.5px solid var(--border);
+    padding: 14px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .agency-badge {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    color: var(--text3);
+    text-transform: uppercase;
+    border-right: 0.5px solid var(--border2);
+    padding-right: 14px;
+  }
+
+  .brand-dot {
+    width: 13px;
+    height: 13px;
+    border-radius: 50%;
+    background: var(--primary);
+    flex-shrink: 0;
+    transition: background 0.2s;
+  }
+
+  input.client-name {
+    font-family: var(--font);
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--text);
+    background: transparent;
+    border: none;
+    outline: none;
+    border-bottom: 1.5px solid transparent;
+    padding-bottom: 1px;
+    transition: border-color 0.2s;
+    width: 200px;
+  }
+  input.client-name:focus { border-bottom-color: var(--border2); }
+
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .color-group {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+  }
+  .color-label {
+    font-size: 11px;
+    color: var(--text3);
+  }
+  input[type="color"].cp {
+    width: 28px;
+    height: 28px;
+    border: 0.5px solid var(--border2);
+    border-radius: 6px;
+    padding: 2px;
+    cursor: pointer;
+    background: var(--surface);
+  }
+  input[type="color"].cp::-webkit-color-swatch-wrapper { padding: 0; }
+  input[type="color"].cp::-webkit-color-swatch { border-radius: 3px; border: none; }
+
+  /* ── Main ── */
+  .main {
+    max-width: 1160px;
+    margin: 0 auto;
+    padding: 28px 32px 48px;
+  }
+
+  /* ── Upload ── */
+  .upload-zone {
+    border: 1.5px dashed var(--border2);
+    border-radius: var(--radius-lg);
+    padding: 24px 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: background 0.2s, border-color 0.2s;
+    margin-bottom: 10px;
+    background: var(--surface);
+  }
+  .upload-zone:hover { background: var(--surface2); border-color: var(--primary); }
+  .upload-zone.dragover { background: var(--surface2); border-color: var(--primary); }
+  .upload-zone p { font-size: 13px; color: var(--text2); margin-bottom: 5px; }
+  .upload-zone .hint { font-size: 11px; color: var(--text3); }
+  .upload-btn {
+    display: inline-block;
+    margin-top: 10px;
+    font-size: 12px;
+    font-family: var(--font);
+    font-weight: 500;
+    color: var(--primary);
+    border: 0.5px solid var(--primary);
+    background: transparent;
+    padding: 6px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .upload-btn:hover { background: color-mix(in srgb, var(--primary) 8%, transparent); }
+
+  .status-bar {
+    font-size: 12px;
+    color: var(--text3);
+    font-family: var(--mono);
+    margin-bottom: 24px;
+    padding: 7px 12px;
+    background: var(--surface2);
+    border-radius: var(--radius);
+    border: 0.5px solid var(--border);
+  }
+
+  /* ── Period Nav ── */
+  .period-nav {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 20px;
+  }
+  .period-btn {
+    font-size: 12px;
+    font-family: var(--font);
+    font-weight: 500;
+    padding: 5px 14px;
+    border-radius: 6px;
+    border: 0.5px solid var(--border2);
+    background: var(--surface);
+    color: var(--text2);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .period-btn.active {
+    background: var(--text);
+    color: #fff;
+    border-color: var(--text);
+  }
+
+  /* ── Section label ── */
+  .slabel {
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--text3);
+    margin-bottom: 10px;
+  }
+
+  /* ── Metric grid ── */
+  .metric-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  .mc {
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px 18px;
+  }
+  .mc-label { font-size: 11px; color: var(--text3); margin-bottom: 6px; }
+  .mc-val { font-size: 24px; font-weight: 500; color: var(--text); line-height: 1.1; }
+  .mc-sub { font-size: 11px; margin-top: 5px; }
+  .pos { color: #1D9E75; }
+  .neg { color: #D85A30; }
+
+  /* ── Chart row ── */
+  .chart-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+    gap: 14px;
+    margin-bottom: 14px;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 18px 20px;
+  }
+
+  .card-title {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text);
+    margin-bottom: 12px;
+  }
+
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    margin-bottom: 10px;
+    font-size: 11px;
+    color: var(--text2);
+  }
+  .legend span { display: flex; align-items: center; gap: 5px; }
+  .ldot { width: 9px; height: 9px; border-radius: 2px; flex-shrink: 0; }
+
+  /* ── Bottom row ── */
+  .bottom-row {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+    margin-bottom: 14px;
+  }
+
+  /* ── Engagement bars ── */
+  .er-row { display: flex; align-items: center; gap: 8px; margin-bottom: 9px; }
+  .er-lbl { width: 68px; font-size: 11px; color: var(--text2); flex-shrink: 0; }
+  .er-track { flex: 1; height: 7px; background: var(--surface2); border-radius: 4px; overflow: hidden; }
+  .er-fill { height: 100%; border-radius: 4px; transition: width 0.4s ease; }
+  .er-val { width: 38px; text-align: right; font-size: 11px; font-weight: 500; color: var(--text); flex-shrink: 0; font-family: var(--mono); }
+
+  /* ── Content table ── */
+  .ctable { width: 100%; font-size: 12px; border-collapse: collapse; table-layout: fixed; }
+  .ctable th { font-size: 10px; color: var(--text3); font-weight: 500; text-align: left; padding: 0 0 8px; border-bottom: 0.5px solid var(--border); letter-spacing: 0.05em; text-transform: uppercase; }
+  .ctable td { padding: 7px 0; border-bottom: 0.5px solid var(--border); color: var(--text); vertical-align: middle; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .ctable tr:last-child td { border-bottom: none; }
+  .tag { display: inline-block; font-size: 10px; padding: 2px 7px; border-radius: 10px; font-weight: 500; }
+  .tag-reel { background: #E6F1FB; color: #185FA5; }
+  .tag-post { background: #EAF3DE; color: #3B6D11; }
+  .tag-story { background: #FAEEDA; color: #854F0B; }
+
+  /* ── Audience ── */
+  .aud-list { list-style: none; }
+  .aud-list li { display: flex; justify-content: space-between; align-items: center; padding: 7px 0; border-bottom: 0.5px solid var(--border); font-size: 12px; }
+  .aud-list li:last-child { border-bottom: none; }
+  .aud-bar-wrap { display: flex; align-items: center; gap: 6px; }
+  .aud-bar { width: 52px; height: 5px; background: var(--surface2); border-radius: 3px; overflow: hidden; }
+  .aud-fill { height: 100%; border-radius: 3px; background: var(--primary); transition: background 0.3s; }
+
+  /* ── Footer ── */
+  .footer {
+    text-align: center;
+    font-size: 11px;
+    color: var(--text3);
+    padding: 24px 0 0;
+    border-top: 0.5px solid var(--border);
+    font-family: var(--mono);
+  }
+
+  @media (max-width: 800px) {
+    .main { padding: 20px 16px 40px; }
+    .metric-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .chart-row { grid-template-columns: minmax(0, 1fr); }
+    .bottom-row { grid-template-columns: minmax(0, 1fr); }
+    .header { padding: 12px 16px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-left">
+    <span class="agency-badge">Riddler Media</span>
+    <div class="brand-dot" id="brand-dot"></div>
+    <input type="text" class="client-name" id="client-name" value="Client name" spellcheck="false" />
+  </div>
+  <div class="header-right">
+    <div class="color-group">
+      <span class="color-label">Primary</span>
+      <input type="color" class="cp" id="cp1" value="#D85A30" title="Primary brand color" />
+    </div>
+    <div class="color-group">
+      <span class="color-label">Accent</span>
+      <input type="color" class="cp" id="cp2" value="#1D9E75" title="Accent color" />
+    </div>
+  </div>
+</header>
+
+<main class="main">
+
+  <div class="upload-zone" id="upload-zone">
+    <p>Drop your Meta Insights CSV here</p>
+    <div class="hint">Meta Business Suite → Insights → Export data → CSV</div>
+    <button class="upload-btn" onclick="document.getElementById('csv-input').click(); event.stopPropagation();">Choose file</button>
+    <input type="file" id="csv-input" accept=".csv,.tsv" style="display:none" />
+  </div>
+  <div class="status-bar" id="status-bar">using sample data — upload your Meta Insights CSV above to see real numbers</div>
+
+  <div class="period-nav" id="period-nav">
+    <button class="period-btn active" data-range="30d">Last 30 days</button>
+    <button class="period-btn" data-range="90d">Last 90 days</button>
+    <button class="period-btn" data-range="6m">6 months</button>
+    <button class="period-btn" data-range="1y">1 year</button>
+  </div>
+
+  <div class="slabel">overview</div>
+  <div class="metric-grid">
+    <div class="mc">
+      <div class="mc-label">Followers</div>
+      <div class="mc-val" id="m-fol">24,810</div>
+      <div class="mc-sub pos" id="m-fol-d">↑ +1,240 this period</div>
+    </div>
+    <div class="mc">
+      <div class="mc-label">Avg engagement rate</div>
+      <div class="mc-val" id="m-er">4.7%</div>
+      <div class="mc-sub pos" id="m-er-d">↑ +0.6% vs prev</div>
+    </div>
+    <div class="mc">
+      <div class="mc-label">Total reach</div>
+      <div class="mc-val" id="m-reach">182K</div>
+      <div class="mc-sub pos" id="m-reach-d">↑ +22% vs prev</div>
+    </div>
+    <div class="mc">
+      <div class="mc-label">Total impressions</div>
+      <div class="mc-val" id="m-impr">401K</div>
+      <div class="mc-sub neg" id="m-impr-d">↓ −3% vs prev</div>
+    </div>
+  </div>
+
+  <div class="chart-row">
+    <div class="card">
+      <div class="card-title">Follower growth</div>
+      <div class="legend">
+        <span><span class="ldot" id="l-gained" style="background:#D85A30"></span>Gained</span>
+        <span><span class="ldot" style="background:#888780"></span>Lost</span>
+      </div>
+      <div style="position:relative;width:100%;height:210px">
+        <canvas id="growthChart"></canvas>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Reach vs impressions</div>
+      <div class="legend">
+        <span><span class="ldot" id="l-reach" style="background:#D85A30"></span>Reach</span>
+        <span><span class="ldot" id="l-impr" style="background:#1D9E75"></span>Impressions</span>
+      </div>
+      <div style="position:relative;width:100%;height:210px">
+        <canvas id="reachChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <div class="bottom-row">
+    <div class="card">
+      <div class="card-title">Engagement breakdown</div>
+      <div class="er-row">
+        <span class="er-lbl">Likes</span>
+        <div class="er-track"><div class="er-fill" id="ef-likes" style="width:88%"></div></div>
+        <span class="er-val" id="ev-likes">8.8%</span>
+      </div>
+      <div class="er-row">
+        <span class="er-lbl">Saves</span>
+        <div class="er-track"><div class="er-fill" id="ef-saves" style="width:72%"></div></div>
+        <span class="er-val" id="ev-saves">7.2%</span>
+      </div>
+      <div class="er-row">
+        <span class="er-lbl">Shares</span>
+        <div class="er-track"><div class="er-fill" id="ef-shares" style="width:53%"></div></div>
+        <span class="er-val" id="ev-shares">5.3%</span>
+      </div>
+      <div class="er-row">
+        <span class="er-lbl">Comments</span>
+        <div class="er-track"><div class="er-fill" id="ef-comments" style="width:41%"></div></div>
+        <span class="er-val" id="ev-comments">4.1%</span>
+      </div>
+      <div class="er-row">
+        <span class="er-lbl">Profile visits</span>
+        <div class="er-track"><div class="er-fill" id="ef-visits" style="width:34%"></div></div>
+        <span class="er-val" id="ev-visits">3.4%</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Top content by reach</div>
+      <table class="ctable">
+        <thead>
+          <tr>
+            <th style="width:52%">Post</th>
+            <th style="width:26%">Type</th>
+            <th style="width:22%">Reach</th>
+          </tr>
+        </thead>
+        <tbody id="top-content">
+          <tr><td>Festival season looks</td><td><span class="tag tag-reel">Reel</span></td><td>32.4K</td></tr>
+          <tr><td>Behind the scenes</td><td><span class="tag tag-story">Story</span></td><td>18.1K</td></tr>
+          <tr><td>Product reveal drop</td><td><span class="tag tag-reel">Reel</span></td><td>14.8K</td></tr>
+          <tr><td>Client testimonial</td><td><span class="tag tag-post">Post</span></td><td>11.2K</td></tr>
+          <tr><td>Day in the life</td><td><span class="tag tag-reel">Reel</span></td><td>9.6K</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Audience demographics</div>
+      <div class="slabel" style="margin-bottom:8px">age breakdown</div>
+      <ul class="aud-list" id="aud-age">
+        <li><span>18–24</span><div class="aud-bar-wrap"><span style="font-weight:500;font-size:12px;font-family:var(--mono)">28%</span><div class="aud-bar"><div class="aud-fill" style="width:56%"></div></div></div></li>
+        <li><span>25–34</span><div class="aud-bar-wrap"><span style="font-weight:500;font-size:12px;font-family:var(--mono)">41%</span><div class="aud-bar"><div class="aud-fill" style="width:82%"></div></div></div></li>
+        <li><span>35–44</span><div class="aud-bar-wrap"><span style="font-weight:500;font-size:12px;font-family:var(--mono)">18%</span><div class="aud-bar"><div class="aud-fill" style="width:36%"></div></div></div></li>
+        <li><span>45+</span><div class="aud-bar-wrap"><span style="font-weight:500;font-size:12px;font-family:var(--mono)">13%</span><div class="aud-bar"><div class="aud-fill" style="width:26%"></div></div></div></li>
+      </ul>
+      <div class="slabel" style="margin-top:14px;margin-bottom:8px">top cities</div>
+      <ul class="aud-list" id="aud-city">
+        <li><span>Mumbai</span><span style="font-weight:500;font-size:12px;font-family:var(--mono)">34%</span></li>
+        <li><span>Delhi</span><span style="font-weight:500;font-size:12px;font-family:var(--mono)">21%</span></li>
+        <li><span>Bangalore</span><span style="font-weight:500;font-size:12px;font-family:var(--mono)">17%</span></li>
+        <li><span>Pune</span><span style="font-weight:500;font-size:12px;font-family:var(--mono)">11%</span></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="footer">
+    Instagram Growth Dashboard &nbsp;·&nbsp; Riddler Media &nbsp;·&nbsp; <span id="footer-client">Client name</span>
+  </div>
+
+</main>
+
+<script>
+  let primary = '#D85A30';
+  let accent = '#1D9E75';
+  let growthChart, reachChart;
+  let uploadedData = null;
+  let currentRange = '30d';
+
+  const sampleDatasets = {
+    '30d': { labels:['W1','W2','W3','W4'], gained:[380,290,310,260], lost:[80,60,55,75], reach:[41,48,52,41], impr:[89,102,115,95], fol:'24,810', folD:'↑ +1,240 this period', er:'4.7%', erD:'↑ +0.6% vs prev', reach_m:'182K', reachD:'↑ +22% vs prev', impr_m:'401K', imprD:'↓ −3% vs prev' },
+    '90d': { labels:['Jan','Feb','Mar'], gained:[920,1050,1240], lost:[210,185,220], reach:[130,152,182], impr:[285,320,401], fol:'24,810', folD:'↑ +3,210 this period', er:'4.4%', erD:'↑ +0.9% vs prev', reach_m:'464K', reachD:'↑ +31% vs prev', impr_m:'1.0M', imprD:'↑ +8% vs prev' },
+    '6m':  { labels:['Oct','Nov','Dec','Jan','Feb','Mar'], gained:[780,840,900,920,1050,1240], lost:[190,200,220,210,185,220], reach:[110,120,125,130,152,182], impr:[240,260,270,285,320,401], fol:'24,810', folD:'↑ +6,730 this period', er:'4.2%', erD:'↑ +1.1% vs prev', reach_m:'819K', reachD:'↑ +45% vs prev', impr_m:'1.8M', imprD:'↑ +18% vs prev' },
+    '1y':  { labels:['Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec','Jan','Feb','Mar'], gained:[520,600,680,700,740,760,780,840,900,920,1050,1240], lost:[160,170,180,175,190,185,190,200,220,210,185,220], reach:[70,80,90,95,100,105,110,120,125,130,152,182], impr:[155,175,200,210,215,225,240,260,270,285,320,401], fol:'24,810', folD:'↑ +9,730 this period', er:'3.8%', erD:'↑ +1.4% vs prev', reach_m:'1.36M', reachD:'↑ +78% vs prev', impr_m:'2.96M', imprD:'↑ +32% vs prev' }
+  };
+
+  function fmtK(n) {
+    n = Math.round(n);
+    if (n >= 1000000) return (n/1000000).toFixed(1)+'M';
+    if (n >= 1000) return (n/1000).toFixed(1)+'K';
+    return String(n);
+  }
+
+  function buildGrowth(data) {
+    if (growthChart) growthChart.destroy();
+    growthChart = new Chart(document.getElementById('growthChart'), {
+      type: 'bar',
+      data: {
+        labels: data.labels,
+        datasets: [
+          { label:'Gained', data:data.gained, backgroundColor:primary, borderRadius:4, stack:'a' },
+          { label:'Lost', data:data.lost.map(v => -v), backgroundColor:'#888780', borderRadius:4, stack:'a' }
+        ]
+      },
+      options: {
+        responsive:true, maintainAspectRatio:false,
+        plugins:{ legend:{ display:false }, tooltip:{ callbacks:{ label:ctx => ctx.dataset.label+': '+Math.abs(ctx.raw) } } },
+        scales:{
+          x:{ stacked:true, ticks:{ font:{ size:11 }, color:'#888' }, grid:{ display:false } },
+          y:{ stacked:true, ticks:{ font:{ size:11 }, color:'#888' }, grid:{ color:'rgba(130,130,130,0.1)' } }
+        }
+      }
+    });
+  }
+
+  function buildReach(data) {
+    if (reachChart) reachChart.destroy();
+    reachChart = new Chart(document.getElementById('reachChart'), {
+      type: 'line',
+      data: {
+        labels: data.labels,
+        datasets: [
+          { label:'Reach', data:data.reach, borderColor:primary, backgroundColor:primary+'22', fill:true, tension:0.4, pointRadius:3 },
+          { label:'Impressions', data:data.impr, borderColor:accent, backgroundColor:accent+'18', fill:true, tension:0.4, pointRadius:3 }
+        ]
+      },
+      options: {
+        responsive:true, maintainAspectRatio:false,
+        plugins:{ legend:{ display:false } },
+        scales:{
+          x:{ ticks:{ font:{ size:11 }, color:'#888' }, grid:{ display:false } },
+          y:{ ticks:{ font:{ size:11 }, color:'#888', callback:v => v+'K' }, grid:{ color:'rgba(130,130,130,0.1)' } }
+        }
+      }
+    });
+  }
+
+  function renderSample(range) {
+    const d = sampleDatasets[range];
+    document.getElementById('m-fol').textContent = d.fol;
+    document.getElementById('m-fol-d').textContent = d.folD;
+    document.getElementById('m-er').textContent = d.er;
+    document.getElementById('m-er-d').textContent = d.erD;
+    document.getElementById('m-reach').textContent = d.reach_m;
+    document.getElementById('m-reach-d').textContent = d.reachD;
+    document.getElementById('m-impr').textContent = d.impr_m;
+    document.getElementById('m-impr-d').textContent = d.imprD;
+    ['m-fol-d','m-er-d','m-reach-d','m-impr-d'].forEach(id => {
+      const el = document.getElementById(id);
+      el.className = 'mc-sub ' + (el.textContent.startsWith('↑') ? 'pos' : 'neg');
+    });
+    buildGrowth(d);
+    buildReach(d);
+  }
+
+  function renderUploaded(parsed) {
+    document.getElementById('m-fol').textContent = fmtK(parsed.totalGained);
+    document.getElementById('m-fol-d').textContent = '↑ net new this period';
+    document.getElementById('m-fol-d').className = 'mc-sub pos';
+    document.getElementById('m-er').textContent = parsed.avgER + '%';
+    document.getElementById('m-er-d').textContent = 'from uploaded data';
+    document.getElementById('m-er-d').className = 'mc-sub';
+    document.getElementById('m-reach').textContent = fmtK(parsed.totalReach);
+    document.getElementById('m-reach-d').textContent = 'total reach';
+    document.getElementById('m-reach-d').className = 'mc-sub pos';
+    document.getElementById('m-impr').textContent = fmtK(parsed.totalImpr);
+    document.getElementById('m-impr-d').textContent = 'total impressions';
+    document.getElementById('m-impr-d').className = 'mc-sub';
+
+    const maxEng = Math.max(parsed.totalLikes, parsed.totalSaves, parsed.totalShares, parsed.totalComments, 1);
+    const setBar = (key, val) => {
+      const pct = Math.round((val / maxEng) * 100);
+      document.getElementById('ef-'+key).style.width = pct+'%';
+      document.getElementById('ev-'+key).textContent = fmtK(val);
+    };
+    setBar('likes', parsed.totalLikes);
+    setBar('saves', parsed.totalSaves);
+    setBar('shares', parsed.totalShares);
+    setBar('comments', parsed.totalComments);
+    setBar('visits', 0);
+
+    buildGrowth({ labels:parsed.labels, gained:parsed.gained, lost:parsed.lost });
+    buildReach({ labels:parsed.labels, reach:parsed.reach, impr:parsed.impr });
+  }
+
+  function applyColors() {
+    primary = document.getElementById('cp1').value;
+    accent  = document.getElementById('cp2').value;
+    document.documentElement.style.setProperty('--primary', primary);
+    document.documentElement.style.setProperty('--accent', accent);
+    document.getElementById('brand-dot').style.background = primary;
+    document.getElementById('l-gained').style.background = primary;
+    document.getElementById('l-reach').style.background  = primary;
+    document.getElementById('l-impr').style.background   = accent;
+    document.getElementById('ef-likes').style.background = primary;
+    document.getElementById('ef-saves').style.background = accent;
+    document.querySelectorAll('.aud-fill').forEach(el => el.style.background = primary);
+    if (uploadedData) renderUploaded(uploadedData);
+    else renderSample(currentRange);
+  }
+
+  function parseCSV(text) {
+    const result = Papa.parse(text, { header:true, skipEmptyLines:true });
+    const rows = result.data;
+    if (!rows.length) return null;
+
+    const findCol = (...keywords) => {
+      for (const k of keywords) {
+        const match = Object.keys(rows[0]).find(c => c.toLowerCase().includes(k.toLowerCase()));
+        if (match) return match;
+      }
+      return null;
+    };
+
+    const dateCol    = findCol('date','week','period','day','month');
+    const reachCol   = findCol('reach');
+    const imprCol    = findCol('impression');
+    const gainedCol  = findCol('follower gained','new follower','followers gained','gained');
+    const lostCol    = findCol('follower lost','unfollower','followers lost','lost');
+    const likesCol   = findCol('like');
+    const commentsCol= findCol('comment');
+    const savesCol   = findCol('save');
+    const sharesCol  = findCol('share');
+
+    if (!reachCol && !imprCol && !gainedCol) return null;
+
+    const getCol = col => col ? rows.map(r => parseFloat((r[col]||'0').replace(/,/g,''))||0) : rows.map(() => 0);
+    const labels   = rows.map(r => dateCol ? r[dateCol] : '').slice(-12);
+    const reachRaw = getCol(reachCol).slice(-12);
+    const imprRaw  = getCol(imprCol).slice(-12);
+    const gained   = getCol(gainedCol).slice(-12);
+    const lost     = getCol(lostCol).slice(-12);
+
+    const sum = arr => arr.reduce((a,b)=>a+b,0);
+    const totalReach    = sum(reachRaw);
+    const totalImpr     = sum(imprRaw);
+    const totalGained   = sum(gained);
+    const totalLikes    = sum(getCol(likesCol));
+    const totalComments = sum(getCol(commentsCol));
+    const totalSaves    = sum(getCol(savesCol));
+    const totalShares   = sum(getCol(sharesCol));
+    const totalEng      = totalLikes + totalComments + totalSaves + totalShares;
+    const avgER         = totalReach > 0 ? ((totalEng / totalReach)*100).toFixed(1) : '—';
+
+    return {
+      labels,
+      reach: reachRaw.map(v => Math.round(v/1000)),
+      impr:  imprRaw.map(v => Math.round(v/1000)),
+      gained, lost,
+      totalReach, totalImpr, totalGained,
+      totalLikes, totalComments, totalSaves, totalShares,
+      avgER
+    };
+  }
+
+  function handleFile(file) {
+    const reader = new FileReader();
+    reader.onload = ev => {
+      const parsed = parseCSV(ev.target.result);
+      if (parsed) {
+        uploadedData = parsed;
+        renderUploaded(parsed);
+        document.getElementById('status-bar').textContent =
+          'data loaded: ' + file.name + ' · ' + parsed.labels.length + ' periods';
+        document.getElementById('period-nav').style.opacity = '0.4';
+        document.getElementById('period-nav').style.pointerEvents = 'none';
+      } else {
+        document.getElementById('status-bar').textContent =
+          'could not parse file — check it is a Meta Insights CSV export. showing sample data.';
+      }
+    };
+    reader.readAsText(file);
+  }
+
+  document.getElementById('cp1').addEventListener('input', applyColors);
+  document.getElementById('cp2').addEventListener('input', applyColors);
+
+  document.getElementById('client-name').addEventListener('input', function() {
+    document.getElementById('footer-client').textContent = this.value || 'Client name';
+  });
+
+  document.getElementById('period-nav').addEventListener('click', e => {
+    const btn = e.target.closest('.period-btn');
+    if (!btn) return;
+    document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentRange = btn.dataset.range;
+    if (!uploadedData) renderSample(currentRange);
+  });
+
+  const zone = document.getElementById('upload-zone');
+  zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('dragover'); });
+  zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
+  zone.addEventListener('drop', e => {
+    e.preventDefault();
+    zone.classList.remove('dragover');
+    if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
+  });
+  zone.addEventListener('click', () => document.getElementById('csv-input').click());
+  document.getElementById('csv-input').addEventListener('change', e => {
+    if (e.target.files[0]) handleFile(e.target.files[0]);
+  });
+
+  applyColors();
+  renderSample('30d');
+</script>
+</body>
+</html>
