@@ -129,6 +129,19 @@ input[type=color].cp::-webkit-color-swatch{border-radius:3px;border:none}
 /* ── POST TABLE (Posts tab) ── */
 .posts-intro{font-size:12px;color:var(--t2);margin-bottom:14px;padding:10px 14px;background:var(--sur2);border-radius:var(--r);line-height:1.6}
 .posts-intro strong{color:var(--t)}
+.post-upload-zone{display:flex;align-items:center;gap:14px;padding:14px 18px;background:var(--sur);border:1.5px dashed var(--bd2);border-radius:var(--rl);margin-bottom:8px;cursor:pointer;transition:all .15s}
+.post-upload-zone:hover{border-color:var(--p);background:var(--sur2)}
+.post-upload-zone.loaded{border-style:solid;border-color:#1D9E75;background:#f0faf5}
+.puz-ico{font-size:22px;flex-shrink:0}
+.puz-text{flex:1}
+.puz-title{font-size:13px;font-weight:500;color:var(--t);margin-bottom:2px}
+.puz-hint{font-size:11px;color:var(--t3)}
+.puz-btn{font-size:11px;font-weight:500;font-family:var(--font);padding:5px 14px;border-radius:6px;border:0.5px solid var(--p);color:var(--p);background:transparent;cursor:pointer;flex-shrink:0;transition:all .15s}
+.puz-btn:hover{background:var(--p);color:#fff}
+.post-sbar{font-size:11px;color:var(--t3);font-family:var(--mono);padding:5px 10px;background:var(--sur2);border-radius:6px;margin-bottom:12px}
+.post-sbar.ok{color:#1D9E75}.post-sbar.err{color:#D85A30}
+.divider-or{display:flex;align-items:center;gap:10px;margin-bottom:12px;font-size:11px;color:var(--t3)}
+.divider-or::before,.divider-or::after{content:'';flex:1;height:0.5px;background:var(--bd2)}
 .post-table-wrap{overflow-x:auto;margin-bottom:12px}
 table.ptbl{width:100%;border-collapse:collapse;font-size:12px;min-width:700px}
 table.ptbl th{font-size:10px;font-weight:500;color:var(--t3);text-transform:uppercase;letter-spacing:.06em;padding:8px 10px;border-bottom:0.5px solid var(--bd2);text-align:left;white-space:nowrap;background:var(--sur)}
@@ -278,8 +291,22 @@ table.ptbl input[type=text]{width:140px}
 <div class="panel" id="tab-posts">
   <div class="main">
     <div class="posts-intro">
-      <strong>Post log — enter your last 10–20 posts.</strong> Only 6 columns needed: format, reach, likes, saves, shares, date. Score and engagement rate calculate automatically. Use this to find which content types are working.
+      <strong>Upload your Meta content CSV for instant population</strong> — export from Meta Business Suite → Content → export as CSV. Or fill in the table manually below.
     </div>
+
+    <!-- CSV upload zone -->
+    <div class="post-upload-zone" id="post-upload-zone" onclick="document.getElementById('post-csv-input').click()">
+      <div class="puz-ico">📋</div>
+      <div class="puz-text">
+        <div class="puz-title" id="puz-title">Upload Meta content CSV</div>
+        <div class="puz-hint">Meta Business Suite → Content → Posts & reels → Export → CSV · Columns auto-detected: Date, Post type, Views, Reach, Likes, Shares, Comments, Saves</div>
+      </div>
+      <button class="puz-btn" onclick="event.stopPropagation();document.getElementById('post-csv-input').click()">Choose file</button>
+    </div>
+    <input type="file" id="post-csv-input" accept=".csv" style="display:none"/>
+    <div class="post-sbar" id="post-sbar">no CSV uploaded — fill the table below manually, or upload your Meta content export above</div>
+
+    <div class="divider-or">or enter manually</div>
 
     <div class="slbl">post performance</div>
     <div class="post-kpis">
@@ -601,6 +628,123 @@ function buildInterChart(vals,labels){
       scales:{x:{ticks:{font:{size:10},color:'#888',maxTicksLimit:14,maxRotation:45},grid:{display:false}},
               y:{ticks:{font:{size:11},color:'#888'},grid:{color:'rgba(130,130,130,0.1)'}}}}
   });
+}
+
+// ── POST CSV UPLOAD (Meta content export format) ──
+document.getElementById('post-csv-input').addEventListener('change', e => {
+  if(e.target.files[0]) handlePostCSV(e.target.files[0]);
+});
+
+// Drag and drop on upload zone
+const puz = document.getElementById('post-upload-zone');
+puz.addEventListener('dragover', e => { e.preventDefault(); puz.style.borderColor = primary; });
+puz.addEventListener('dragleave', () => { puz.style.borderColor = ''; });
+puz.addEventListener('drop', e => {
+  e.preventDefault(); puz.style.borderColor = '';
+  if(e.dataTransfer.files[0]) handlePostCSV(e.dataTransfer.files[0]);
+});
+
+function handlePostCSV(file) {
+  const sb = document.getElementById('post-sbar');
+  sb.className = 'post-sbar';
+  sb.textContent = 'reading ' + file.name + '…';
+
+  const reader = new FileReader();
+  reader.onload = ev => {
+    const parsed = parsePostCSV(ev.target.result);
+    if(parsed && parsed.length > 0) {
+      // Clear existing rows
+      document.getElementById('post-tbody').innerHTML = '';
+      posts = [];
+      // Load parsed rows
+      parsed.forEach(p => addPostRow(p));
+      renderPostStats();
+      document.getElementById('post-upload-zone').classList.add('loaded');
+      document.getElementById('puz-title').textContent = file.name + ' — ' + parsed.length + ' posts loaded';
+      sb.className = 'post-sbar ok';
+      sb.textContent = parsed.length + ' posts loaded from ' + file.name + ' — table auto-populated below';
+    } else {
+      sb.className = 'post-sbar err';
+      sb.textContent = 'could not parse ' + file.name + ' — try exporting from Meta Business Suite → Content → Posts & reels → Export';
+    }
+  };
+  // Try UTF-16 first (Meta export), fall back to UTF-8
+  reader.readAsText(file, 'UTF-8');
+}
+
+function parsePostCSV(text) {
+  // Strip BOM
+  text = text.replace(/^\uFEFF/, '');
+
+  // Meta's content CSV has multiline descriptions — we need to handle quoted fields properly
+  // Use PapaParse for robust parsing
+  const result = Papa.parse(text, {
+    header: true,
+    skipEmptyLines: 'greedy',
+    quoteChar: '"',
+    escapeChar: '"',
+  });
+
+  if(!result.data || !result.data.length) return null;
+
+  // Normalise column names (lowercase, trim)
+  const rows = result.data;
+  const parsed = [];
+
+  rows.forEach(row => {
+    // Find columns case-insensitively
+    const get = (...keys) => {
+      for(const k of keys) {
+        const found = Object.keys(row).find(c => c.toLowerCase().trim() === k.toLowerCase());
+        if(found && row[found] !== undefined && row[found] !== '') return row[found];
+      }
+      return '';
+    };
+
+    const num = v => parseFloat(String(v).replace(/[^0-9.-]/g,'')) || 0;
+
+    // Date from "Publish time" or "Date"
+    const publishTime = get('Publish time', 'Date', 'date');
+    let dateLabel = '';
+    if(publishTime) {
+      const d = new Date(publishTime);
+      if(!isNaN(d)) {
+        dateLabel = d.toLocaleDateString('en-IN', {day:'numeric', month:'short'});
+      } else {
+        dateLabel = publishTime.split(' ')[0]; // fallback to raw
+      }
+    }
+
+    // Post type → format mapping
+    const rawType = get('Post type', 'post type', 'type') || '';
+    const formatMap = {
+      'ig reel': 'Reel',
+      'ig image': 'Static Post',
+      'ig carousel': 'Carousel',
+      'ig video': 'Video',
+      'ig story': 'Story',
+    };
+    const format = formatMap[rawType.toLowerCase().trim()] || rawType || '';
+
+    // Caption from Description
+    const desc = get('Description', 'description', 'caption') || '';
+    // First non-empty line of description as topic
+    const topic = desc.split('\n').map(l=>l.trim()).find(l=>l.length>2&&!l.startsWith('#')) || desc.slice(0,60) || '';
+
+    const reach    = num(get('Reach', 'reach'));
+    const views    = num(get('Views', 'views'));
+    const likes    = num(get('Likes', 'likes'));
+    const shares   = num(get('Shares', 'shares'));
+    const comments = num(get('Comments', 'comments'));
+    const saves    = num(get('Saves', 'saves'));
+
+    // Only include rows with at least some data
+    if(!reach && !views && !likes) return;
+
+    parsed.push({ date: dateLabel, format, reach: reach||views, likes, comments, saves, shares, topic: topic.slice(0,60) });
+  });
+
+  return parsed.length ? parsed : null;
 }
 
 // ── POST TABLE ──
