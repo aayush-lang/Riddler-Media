@@ -702,50 +702,89 @@ function renderMetrics() {
 
   kpiEl.innerHTML = kpis.map(k => `<div class="kc"><div class="kc-label">${k.l}</div><div class="kc-val">${k.v}</div><div class="kc-sub">${k.sub}</div></div>`).join('');
 
-  // Charts — Meta CSVs use "Date" and "Primary" columns
-  const viewsData = csv.views || [];
-  const reachData = csv.reach || [];
-  const followsData = csv.follows || [];
-  const formatDate = d => { try { return d.includes('T') ? d.slice(5,10) : d.slice(5,10); } catch(e) { return d; } };
+  // ── TIME FILTER ──
+  // Filters rows by date. Meta CSVs have ISO date strings like "2025-12-24T00:00:00"
+  const formatDate = d => { try { return d.slice(5,10); } catch(e) { return d||'?'; } };
+  const filterByTime = rows => {
+    if (!rows || !rows.length) return rows || [];
+    const t = STATE.activeTime;
+    if (t === 'all') return rows;
+    const days = t === '30' ? 30 : 90;
+    // Find the latest date in the dataset and filter back N days from it
+    const dates = rows.map(r => fc(r,'date')).filter(Boolean).map(d => new Date(d.slice(0,10)));
+    const maxDate = new Date(Math.max(...dates));
+    const cutoff = new Date(maxDate); cutoff.setDate(cutoff.getDate() - days);
+    return rows.filter(r => {
+      const d = fc(r,'date'); if (!d) return false;
+      return new Date(d.slice(0,10)) >= cutoff;
+    });
+  };
+
+  // Apply time filter to all datasets
+  const viewsData   = filterByTime(csv.views || []);
+  const reachData   = filterByTime(csv.reach || []);
+  const followsData = filterByTime(csv.follows || []);
+  const intDataRaw  = filterByTime(csv.interactions || []);
+
+  // Recompute KPI totals based on filtered data (only for IG — overwrite er/reach/views/follows)
+  if (pf === 'ig' && !tog) {
+    const fViews   = viewsData.reduce((s,r)=>s+num(fc(r,'primary')),0);
+    const fReach   = reachData.reduce((s,r)=>s+num(fc(r,'primary')),0);
+    const fFollows = followsData.reduce((s,r)=>s+num(fc(r,'primary')),0);
+    const fInter   = intDataRaw.reduce((s,r)=>s+num(fc(r,'primary')),0);
+    const fER      = fReach ? (fInter/fReach*100) : 0;
+    kpiEl.innerHTML = [
+      {l:'New followers',   v:fFollows?fmt(fFollows):'—',        sub:fFollows?'this period':'upload Followers CSV'},
+      {l:'Engagement rate', v:fER?fER.toFixed(2)+'%':'—',        sub:fER?'interactions / reach':'upload Interactions + Reach'},
+      {l:'Total reach',     v:fReach?fmt(fReach):'—',            sub:fReach?'unique accounts':'upload Reach CSV'},
+      {l:'Total views',     v:fViews?fmt(fViews):'—',            sub:fViews?'impressions':'upload Views CSV'},
+    ].map(k=>`<div class="kc"><div class="kc-label">${k.l}</div><div class="kc-val">${k.v}</div><div class="kc-sub">${k.sub}</div></div>`).join('');
+  }
+
+  // ── CHARTS ──
+  const go2 = {responsive:true, maintainAspectRatio:false};
+  const gridOpts = {y:{beginAtZero:true, grid:{color:'rgba(0,0,0,.05)'}}};
 
   if (viewsData.length || reachData.length) {
-    const labels = (viewsData.length ? viewsData : reachData).map(r=>formatDate(fc(r,'date')||'?'));
-    const views = viewsData.map(r=>num(fc(r,'primary','views','impressions')));
-    const reach = reachData.map(r=>num(fc(r,'primary','reach')));
-    mkChart('ch-views-reach', {type:'line', data:{labels, datasets:[
-      {label:'Views', data:views, borderColor:'#D85A30', backgroundColor:'rgba(216,90,48,.1)', tension:.3, fill:true, pointRadius:0},
-      {label:'Reach', data:reach, borderColor:'#1D9E75', backgroundColor:'transparent', tension:.3, borderDash:[3,2], pointRadius:0}
-    ]}, options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{labels:{boxWidth:8,padding:12}}}, scales:{y:{beginAtZero:true, grid:{color:'rgba(0,0,0,.05)'}}}}});
+    const baseData = viewsData.length ? viewsData : reachData;
+    const labels = baseData.map(r=>formatDate(fc(r,'date')));
+    const views = viewsData.length ? viewsData.map(r=>num(fc(r,'primary'))) : [];
+    const reach = reachData.length ? reachData.map(r=>num(fc(r,'primary'))) : [];
+    const datasets = [];
+    if (views.length) datasets.push({label:'Views', data:views, borderColor:'#D85A30', backgroundColor:'rgba(216,90,48,.1)', tension:.3, fill:true, pointRadius:0});
+    if (reach.length) datasets.push({label:'Reach', data:reach, borderColor:'#1D9E75', backgroundColor:'transparent', tension:.3, borderDash:[3,2], pointRadius:0});
+    mkChart('ch-views-reach', {type:'line', data:{labels, datasets}, options:{...go2, plugins:{legend:{labels:{boxWidth:8,padding:12}}}, scales:gridOpts}});
   } else {
-    mkChart('ch-views-reach', {type:'line', data:{labels:['—'], datasets:[]}, options:{responsive:true,maintainAspectRatio:false}});
+    mkChart('ch-views-reach', {type:'line', data:{labels:['No data'], datasets:[]}, options:{...go2}});
   }
 
   if (followsData.length) {
-    const labels = followsData.map(r=>formatDate(fc(r,'date')||'?'));
-    const vals = followsData.map(r=>num(fc(r,'primary','follows','new follower')));
-    mkChart('ch-follows', {type:'bar', data:{labels, datasets:[{label:'New follows', data:vals, backgroundColor:'rgba(216,90,48,.65)', borderRadius:3}]}, options:{responsive:true,maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true, grid:{color:'rgba(0,0,0,.05)'}}}}});
+    const labels = followsData.map(r=>formatDate(fc(r,'date')));
+    const vals   = followsData.map(r=>num(fc(r,'primary')));
+    mkChart('ch-follows', {type:'bar', data:{labels, datasets:[{data:vals, backgroundColor:'rgba(216,90,48,.65)', borderRadius:3}]}, options:{...go2, plugins:{legend:{display:false}}, scales:gridOpts}});
   } else {
-    mkChart('ch-follows', {type:'bar', data:{labels:['No data'], datasets:[{data:[0],backgroundColor:'transparent'}]}, options:{responsive:true,maintainAspectRatio:false}});
+    mkChart('ch-follows', {type:'bar', data:{labels:['No data'], datasets:[{data:[0],backgroundColor:'transparent'}]}, options:{...go2}});
   }
 
-  // ER trend
-  const intData = csv.interactions || [];
-  if (intData.length && reachData.length) {
-    const labels = intData.map(r=>formatDate(fc(r,'date')||'?'));
-    const erVals = intData.map((r,i) => {
-      const interactions = num(fc(r,'primary','interaction','engagement'));
-      const reachVal = reachData[i] ? num(fc(reachData[i],'primary','reach')) : 1;
-      return reachVal ? (interactions/reachVal*100) : 0;
+  // ER trend — pair interaction row with matching reach row by date
+  if (intDataRaw.length) {
+    const reachByDate = {};
+    reachData.forEach(r => { reachByDate[fc(r,'date').slice(0,10)] = num(fc(r,'primary')); });
+    const labels = intDataRaw.map(r=>formatDate(fc(r,'date')));
+    const erVals = intDataRaw.map(r => {
+      const dateKey = fc(r,'date').slice(0,10);
+      const interactions = num(fc(r,'primary'));
+      const reachVal = reachByDate[dateKey] || 1;
+      return (interactions/reachVal*100).toFixed(2);
     });
-    mkChart('ch-er', {type:'line', data:{labels, datasets:[{label:'ER%', data:erVals.map(v=>v.toFixed(2)), borderColor:'#185FA5', backgroundColor:'rgba(24,95,165,.1)', tension:.3, fill:true, pointRadius:0}]}, options:{responsive:true,maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true, ticks:{callback:v=>v+'%'}, grid:{color:'rgba(0,0,0,.05)'}}}}});
+    mkChart('ch-er', {type:'line', data:{labels, datasets:[{data:erVals, borderColor:'#185FA5', backgroundColor:'rgba(24,95,165,.1)', tension:.3, fill:true, pointRadius:0}]}, options:{...go2, plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true, ticks:{callback:v=>v+'%'}, grid:{color:'rgba(0,0,0,.05)'}}}}});
   }
 
-  // Interactions breakdown
-  if (intData.length) {
-    // Meta Interactions CSV only has total (Primary). Show trend line instead.
-    const intLabels = intData.map(r=>formatDate(fc(r,'date')||'?'));
-    const intVals = intData.map(r=>num(fc(r,'primary','interaction')));
-    mkChart('ch-interactions', {type:'bar', data:{labels:intLabels, datasets:[{label:'Interactions', data:intVals, backgroundColor:'rgba(216,90,48,.65)', borderRadius:2}]}, options:{responsive:true,maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true,grid:{color:'rgba(0,0,0,.05)'}}}}});
+  // Interactions bar
+  if (intDataRaw.length) {
+    const labels = intDataRaw.map(r=>formatDate(fc(r,'date')));
+    const vals   = intDataRaw.map(r=>num(fc(r,'primary')));
+    mkChart('ch-interactions', {type:'bar', data:{labels, datasets:[{data:vals, backgroundColor:'rgba(216,90,48,.65)', borderRadius:2}]}, options:{...go2, plugins:{legend:{display:false}}, scales:gridOpts}});
   }
 }
 
