@@ -56,17 +56,17 @@ input[type=color].cp{width:24px;height:24px;border:0.5px solid var(--bd2);border
 .pb-name{font-size:14px;font-weight:500;color:var(--t)}
 .pb-status{font-size:11px;color:var(--t3);margin-left:auto}
 .pb-status.ok{color:var(--grn)}
-.manual-toggle{display:flex;align-items:center;gap:6px;cursor:pointer;margin-left:16px}
+.manual-toggle{display:flex;align-items:center;gap:6px;margin-left:16px}
 .toggle-track{width:30px;height:16px;border-radius:8px;background:var(--sur2);border:0.5px solid var(--bd2);position:relative;transition:background .2s;cursor:pointer;flex-shrink:0}
 .toggle-track.on{background:var(--p)}
-.toggle-knob{width:12px;height:12px;border-radius:50%;background:#fff;position:absolute;top:1.5px;left:2px;transition:left .2s;box-shadow:0 1px 2px rgba(0,0,0,.2)}
+.toggle-knob{width:12px;height:12px;border-radius:50%;background:#fff;position:absolute;top:1.5px;left:2px;transition:left .2s;box-shadow:0 1px 2px rgba(0,0,0,.2);pointer-events:none}
 .toggle-track.on .toggle-knob{left:15px}
-.toggle-lbl{font-size:11px;color:var(--t3)}
+.toggle-lbl{font-size:11px;color:var(--t3);pointer-events:none;cursor:default}
 .upload-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;margin-bottom:12px}
 .upload-slot{border:0.5px dashed var(--bd2);border-radius:var(--r);padding:12px;text-align:center;cursor:pointer;background:var(--bg);position:relative;transition:border-color .2s,background .2s}
 .upload-slot:hover{border-color:var(--p);background:var(--sur)}
 .upload-slot.filled{border-style:solid;border-color:var(--grn);background:var(--sur)}
-.upload-slot input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%}
+.upload-slot input[type=file]{display:none}
 .slot-ic{font-size:18px;margin-bottom:4px;line-height:1}
 .slot-name{font-size:10px;font-weight:500;color:var(--t2);letter-spacing:.03em}
 .slot-hint{font-size:9px;color:var(--t3);margin-top:2px;line-height:1.3}
@@ -260,17 +260,17 @@ select.fmt-select{font-family:var(--fn);font-size:10px;border:0.5px solid var(--
       <div class="pb-icon" style="background:#E1306C">IG</div>
       <span class="pb-name">Instagram</span>
       <span class="pb-status" id="ig-status">0 / 5 uploaded</span>
-      <div class="manual-toggle" onclick="toggleManual('ig')">
-        <div class="toggle-track" id="ig-toggle"><div class="toggle-knob"></div></div>
+      <div class="manual-toggle">
+        <div class="toggle-track" id="ig-toggle" onclick="toggleManual('ig')"><div class="toggle-knob"></div></div>
         <span class="toggle-lbl">Manual entry</span>
       </div>
     </div>
     <div class="upload-grid">
-      <div class="upload-slot" id="slot-ig-views"><input type="file" accept=".csv" onchange="handleUpload(this,'ig','views')"><div class="slot-ic">📊</div><div class="slot-name">Views</div><div class="slot-hint">Meta Business Suite → Content → Export</div></div>
-      <div class="upload-slot" id="slot-ig-reach"><input type="file" accept=".csv" onchange="handleUpload(this,'ig','reach')"><div class="slot-ic">📡</div><div class="slot-name">Reach</div><div class="slot-hint">Meta Business Suite → Reach → Export</div></div>
-      <div class="upload-slot" id="slot-ig-follows"><input type="file" accept=".csv" onchange="handleUpload(this,'ig','follows')"><div class="slot-ic">👥</div><div class="slot-name">Followers</div><div class="slot-hint">Meta Business Suite → Audience → Export</div></div>
-      <div class="upload-slot" id="slot-ig-interactions"><input type="file" accept=".csv" onchange="handleUpload(this,'ig','interactions')"><div class="slot-ic">💬</div><div class="slot-name">Interactions</div><div class="slot-hint">Meta Business Suite → Interactions → Export</div></div>
-      <div class="upload-slot" id="slot-ig-clicks"><input type="file" accept=".csv" onchange="handleUpload(this,'ig','clicks')"><div class="slot-ic">🔗</div><div class="slot-name">Link Clicks</div><div class="slot-hint">Meta Business Suite → Link Clicks → Export</div></div>
+      <div class="upload-slot" id="slot-ig-views" onclick="document.getElementById('fi-ig-views').click()"><input type="file" id="fi-ig-views" accept=".csv" onchange="handleUpload(this,'ig','views')"><div class="slot-ic">📊</div><div class="slot-name">Views</div><div class="slot-hint">Meta Business Suite → Content → Export</div></div>
+      <div class="upload-slot" id="slot-ig-reach" onclick="document.getElementById('fi-ig-reach').click()"><input type="file" id="fi-ig-reach" accept=".csv" onchange="handleUpload(this,'ig','reach')"><div class="slot-ic">📡</div><div class="slot-name">Reach</div><div class="slot-hint">Meta Business Suite → Reach → Export</div></div>
+      <div class="upload-slot" id="slot-ig-follows" onclick="document.getElementById('fi-ig-follows').click()"><input type="file" id="fi-ig-follows" accept=".csv" onchange="handleUpload(this,'ig','follows')"><div class="slot-ic">👥</div><div class="slot-name">Followers</div><div class="slot-hint">Meta Business Suite → Audience → Export</div></div>
+      <div class="upload-slot" id="slot-ig-interactions" onclick="document.getElementById('fi-ig-interactions').click()"><input type="file" id="fi-ig-interactions" accept=".csv" onchange="handleUpload(this,'ig','interactions')"><div class="slot-ic">💬</div><div class="slot-name">Interactions</div><div class="slot-hint">Meta Business Suite → Interactions → Export</div></div>
+      <div class="upload-slot" id="slot-ig-clicks" onclick="document.getElementById('fi-ig-clicks').click()"><input type="file" id="fi-ig-clicks" accept=".csv" onchange="handleUpload(this,'ig','clicks')"><div class="slot-ic">🔗</div><div class="slot-name">Link Clicks</div><div class="slot-hint">Meta Business Suite → Link Clicks → Export</div></div>
     </div>
     <div class="manual-fields" id="ig-manual">
       <div class="mf"><div class="mf-label">Total followers</div><input type="number" placeholder="e.g. 4500" id="ig-m-followers" oninput="refreshAll()"></div>
@@ -288,17 +288,17 @@ select.fmt-select{font-family:var(--fn);font-size:10px;border:0.5px solid var(--
       <div class="pb-icon" style="background:#1877F2">FB</div>
       <span class="pb-name">Facebook</span>
       <span class="pb-status" id="fb-status">0 / 5 uploaded</span>
-      <div class="manual-toggle" onclick="toggleManual('fb')">
-        <div class="toggle-track" id="fb-toggle"><div class="toggle-knob"></div></div>
+      <div class="manual-toggle">
+        <div class="toggle-track" id="fb-toggle" onclick="toggleManual('fb')"><div class="toggle-knob"></div></div>
         <span class="toggle-lbl">Manual entry</span>
       </div>
     </div>
     <div class="upload-grid">
-      <div class="upload-slot" id="slot-fb-reach"><input type="file" accept=".csv" onchange="handleUpload(this,'fb','reach')"><div class="slot-ic">📡</div><div class="slot-name">Reach</div><div class="slot-hint">Meta Business Suite → Reach</div></div>
-      <div class="upload-slot" id="slot-fb-impressions"><input type="file" accept=".csv" onchange="handleUpload(this,'fb','impressions')"><div class="slot-ic">👁</div><div class="slot-name">Impressions</div><div class="slot-hint">Meta Business Suite → Impressions</div></div>
-      <div class="upload-slot" id="slot-fb-follows"><input type="file" accept=".csv" onchange="handleUpload(this,'fb','follows')"><div class="slot-ic">👥</div><div class="slot-name">Page Likes</div><div class="slot-hint">Meta Business Suite → Audience</div></div>
-      <div class="upload-slot" id="slot-fb-engagement"><input type="file" accept=".csv" onchange="handleUpload(this,'fb','engagement')"><div class="slot-ic">💬</div><div class="slot-name">Engagement</div><div class="slot-hint">Meta Business Suite → Engagement</div></div>
-      <div class="upload-slot" id="slot-fb-clicks"><input type="file" accept=".csv" onchange="handleUpload(this,'fb','clicks')"><div class="slot-ic">🔗</div><div class="slot-name">Link Clicks</div><div class="slot-hint">Meta Business Suite → Link Clicks</div></div>
+      <div class="upload-slot" id="slot-fb-reach" onclick="document.getElementById('fi-fb-reach').click()"><input type="file" id="fi-fb-reach" accept=".csv" onchange="handleUpload(this,'fb','reach')"><div class="slot-ic">📡</div><div class="slot-name">Reach</div><div class="slot-hint">Meta Business Suite → Reach</div></div>
+      <div class="upload-slot" id="slot-fb-impressions" onclick="document.getElementById('fi-fb-impressions').click()"><input type="file" id="fi-fb-impressions" accept=".csv" onchange="handleUpload(this,'fb','impressions')"><div class="slot-ic">👁</div><div class="slot-name">Impressions</div><div class="slot-hint">Meta Business Suite → Impressions</div></div>
+      <div class="upload-slot" id="slot-fb-follows" onclick="document.getElementById('fi-fb-follows').click()"><input type="file" id="fi-fb-follows" accept=".csv" onchange="handleUpload(this,'fb','follows')"><div class="slot-ic">👥</div><div class="slot-name">Page Likes</div><div class="slot-hint">Meta Business Suite → Audience</div></div>
+      <div class="upload-slot" id="slot-fb-engagement" onclick="document.getElementById('fi-fb-engagement').click()"><input type="file" id="fi-fb-engagement" accept=".csv" onchange="handleUpload(this,'fb','engagement')"><div class="slot-ic">💬</div><div class="slot-name">Engagement</div><div class="slot-hint">Meta Business Suite → Engagement</div></div>
+      <div class="upload-slot" id="slot-fb-clicks" onclick="document.getElementById('fi-fb-clicks').click()"><input type="file" id="fi-fb-clicks" accept=".csv" onchange="handleUpload(this,'fb','clicks')"><div class="slot-ic">🔗</div><div class="slot-name">Link Clicks</div><div class="slot-hint">Meta Business Suite → Link Clicks</div></div>
     </div>
     <div class="manual-fields" id="fb-manual">
       <div class="mf"><div class="mf-label">Page likes</div><input type="number" placeholder="e.g. 8200" id="fb-m-likes" oninput="refreshAll()"></div>
@@ -315,16 +315,16 @@ select.fmt-select{font-family:var(--fn);font-size:10px;border:0.5px solid var(--
       <div class="pb-icon" style="background:#FF0000">YT</div>
       <span class="pb-name">YouTube</span>
       <span class="pb-status" id="yt-status">0 / 4 uploaded</span>
-      <div class="manual-toggle" onclick="toggleManual('yt')">
-        <div class="toggle-track" id="yt-toggle"><div class="toggle-knob"></div></div>
+      <div class="manual-toggle">
+        <div class="toggle-track" id="yt-toggle" onclick="toggleManual('yt')"><div class="toggle-knob"></div></div>
         <span class="toggle-lbl">Manual entry</span>
       </div>
     </div>
     <div class="upload-grid">
-      <div class="upload-slot" id="slot-yt-channel"><input type="file" accept=".csv" onchange="handleUpload(this,'yt','channel')"><div class="slot-ic">📺</div><div class="slot-name">Channel analytics</div><div class="slot-hint">YouTube Studio → Analytics → Export</div></div>
-      <div class="upload-slot" id="slot-yt-videos"><input type="file" accept=".csv" onchange="handleUpload(this,'yt','videos')"><div class="slot-ic">🎬</div><div class="slot-name">Video performance</div><div class="slot-hint">YouTube Studio → Content → Export</div></div>
-      <div class="upload-slot" id="slot-yt-subs"><input type="file" accept=".csv" onchange="handleUpload(this,'yt','subs')"><div class="slot-ic">🔔</div><div class="slot-name">Subscribers</div><div class="slot-hint">YouTube Studio → Audience → Export</div></div>
-      <div class="upload-slot" id="slot-yt-traffic"><input type="file" accept=".csv" onchange="handleUpload(this,'yt','traffic')"><div class="slot-ic">🚦</div><div class="slot-name">Traffic sources</div><div class="slot-hint">YouTube Studio → Reach → Export</div></div>
+      <div class="upload-slot" id="slot-yt-channel" onclick="document.getElementById('fi-yt-channel').click()"><input type="file" id="fi-yt-channel" accept=".csv" onchange="handleUpload(this,'yt','channel')"><div class="slot-ic">📺</div><div class="slot-name">Channel analytics</div><div class="slot-hint">YouTube Studio → Analytics → Export</div></div>
+      <div class="upload-slot" id="slot-yt-videos" onclick="document.getElementById('fi-yt-videos').click()"><input type="file" id="fi-yt-videos" accept=".csv" onchange="handleUpload(this,'yt','videos')"><div class="slot-ic">🎬</div><div class="slot-name">Video performance</div><div class="slot-hint">YouTube Studio → Content → Export</div></div>
+      <div class="upload-slot" id="slot-yt-subs" onclick="document.getElementById('fi-yt-subs').click()"><input type="file" id="fi-yt-subs" accept=".csv" onchange="handleUpload(this,'yt','subs')"><div class="slot-ic">🔔</div><div class="slot-name">Subscribers</div><div class="slot-hint">YouTube Studio → Audience → Export</div></div>
+      <div class="upload-slot" id="slot-yt-traffic" onclick="document.getElementById('fi-yt-traffic').click()"><input type="file" id="fi-yt-traffic" accept=".csv" onchange="handleUpload(this,'yt','traffic')"><div class="slot-ic">🚦</div><div class="slot-name">Traffic sources</div><div class="slot-hint">YouTube Studio → Reach → Export</div></div>
     </div>
     <div class="manual-fields" id="yt-manual">
       <div class="mf"><div class="mf-label">Subscribers</div><input type="number" placeholder="e.g. 12500" id="yt-m-subs" oninput="refreshAll()"></div>
@@ -342,16 +342,16 @@ select.fmt-select{font-family:var(--fn);font-size:10px;border:0.5px solid var(--
       <div class="pb-icon" style="background:#0A66C2">LI</div>
       <span class="pb-name">LinkedIn</span>
       <span class="pb-status" id="li-status">0 / 4 uploaded</span>
-      <div class="manual-toggle" onclick="toggleManual('li')">
-        <div class="toggle-track" id="li-toggle"><div class="toggle-knob"></div></div>
+      <div class="manual-toggle">
+        <div class="toggle-track" id="li-toggle" onclick="toggleManual('li')"><div class="toggle-knob"></div></div>
         <span class="toggle-lbl">Manual entry</span>
       </div>
     </div>
     <div class="upload-grid">
-      <div class="upload-slot" id="slot-li-visitors"><input type="file" accept=".csv" onchange="handleUpload(this,'li','visitors')"><div class="slot-ic">👤</div><div class="slot-name">Visitor analytics</div><div class="slot-hint">LinkedIn → Analytics → Visitors → Export</div></div>
-      <div class="upload-slot" id="slot-li-followers"><input type="file" accept=".csv" onchange="handleUpload(this,'li','followers')"><div class="slot-ic">👥</div><div class="slot-name">Followers</div><div class="slot-hint">LinkedIn → Analytics → Followers → Export</div></div>
-      <div class="upload-slot" id="slot-li-posts"><input type="file" accept=".csv" onchange="handleUpload(this,'li','posts')"><div class="slot-ic">📝</div><div class="slot-name">Post analytics</div><div class="slot-hint">LinkedIn → Content → Performance → Export</div></div>
-      <div class="upload-slot" id="slot-li-engagement"><input type="file" accept=".csv" onchange="handleUpload(this,'li','engagement')"><div class="slot-ic">💬</div><div class="slot-name">Engagement</div><div class="slot-hint">LinkedIn → Analytics → Content → Export</div></div>
+      <div class="upload-slot" id="slot-li-visitors" onclick="document.getElementById('fi-li-visitors').click()"><input type="file" id="fi-li-visitors" accept=".csv" onchange="handleUpload(this,'li','visitors')"><div class="slot-ic">👤</div><div class="slot-name">Visitor analytics</div><div class="slot-hint">LinkedIn → Analytics → Visitors → Export</div></div>
+      <div class="upload-slot" id="slot-li-followers" onclick="document.getElementById('fi-li-followers').click()"><input type="file" id="fi-li-followers" accept=".csv" onchange="handleUpload(this,'li','followers')"><div class="slot-ic">👥</div><div class="slot-name">Followers</div><div class="slot-hint">LinkedIn → Analytics → Followers → Export</div></div>
+      <div class="upload-slot" id="slot-li-posts" onclick="document.getElementById('fi-li-posts').click()"><input type="file" id="fi-li-posts" accept=".csv" onchange="handleUpload(this,'li','posts')"><div class="slot-ic">📝</div><div class="slot-name">Post analytics</div><div class="slot-hint">LinkedIn → Content → Performance → Export</div></div>
+      <div class="upload-slot" id="slot-li-engagement" onclick="document.getElementById('fi-li-engagement').click()"><input type="file" id="fi-li-engagement" accept=".csv" onchange="handleUpload(this,'li','engagement')"><div class="slot-ic">💬</div><div class="slot-name">Engagement</div><div class="slot-hint">LinkedIn → Analytics → Content → Export</div></div>
     </div>
     <div class="manual-fields" id="li-manual">
       <div class="mf"><div class="mf-label">Total followers</div><input type="number" placeholder="e.g. 2800" id="li-m-followers" oninput="refreshAll()"></div>
@@ -567,7 +567,7 @@ function handleUpload(input, pf, metric) {
     STATE.csvData[pf][metric] = rows;
     STATE.uploadCounts[pf]++;
     const slot = document.getElementById('slot-'+pf+'-'+metric);
-    if (slot) { slot.classList.add('filled'); slot.querySelector('.slot-name').textContent = '✓ '+slot.querySelector('.slot-name').textContent.replace('✓ ',''); }
+    if (slot) { slot.classList.add('filled'); const nm = slot.querySelector('.slot-name'); if(nm) nm.textContent = '✓ '+file.name.replace('.csv','').slice(0,16); }
     const st = document.getElementById(pf+'-status');
     if (st) { st.textContent = STATE.uploadCounts[pf]+' / '+STATE.uploadTotals[pf]+' uploaded'; if(STATE.uploadCounts[pf]>0) st.classList.add('ok'); }
     refreshAll();
