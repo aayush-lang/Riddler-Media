@@ -583,15 +583,29 @@ function handleUpload(input, pf, metric) {
 }
 
 function parseCSV(text) {
-  const lines = text.split(/\r?\n/).filter(l => l.trim() && !l.trim().startsWith('sep='));
+  // Strip BOM
+  text = text.replace(/^[\uFEFF\uFFFE]+/, '');
+  // Detect separator
+  const rawLines = text.split(/\r?\n/).map(l => l.trim()).filter(l => l);
+  // Skip meta-lines: sep=, and single-cell title rows (Meta Business Suite format)
+  let startIdx = 0;
+  for (let i = 0; i < Math.min(rawLines.length, 5); i++) {
+    const l = rawLines[i];
+    if (l.startsWith('sep=')) { startIdx = i + 1; continue; }
+    // A real header row has multiple comma-separated values
+    const parts = splitCSV(l);
+    if (parts.length >= 2) { startIdx = i; break; }
+    startIdx = i + 1;
+  }
+  const lines = rawLines.slice(startIdx);
   if (!lines.length) return [];
-  const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g,'').toLowerCase());
+  const headers = splitCSV(lines[0]).map(h => h.trim().replace(/^"|"$/g,'').toLowerCase().trim());
   return lines.slice(1).map(line => {
     const vals = splitCSV(line);
     const row = {};
     headers.forEach((h,i) => { row[h] = (vals[i]||'').trim().replace(/^"|"$/g,''); });
     return row;
-  }).filter(r => Object.values(r).some(v => v));
+  }).filter(r => Object.values(r).some(v => v.trim()));
 }
 function splitCSV(l) {
   const r=[]; let c=''; let q=false;
@@ -635,15 +649,21 @@ function renderMetrics() {
   const kpiEl = document.getElementById('metrics-kpis');
   let kpis = [];
   if (pf === 'ig') {
-    const views = tog ? man.views : (csv.views ? csv.views.reduce((s,r)=>s+num(fc(r,'impressions','views','video views','view')),0) : 0);
-    const reach = tog ? man.reach : (csv.reach ? csv.reach.reduce((s,r)=>s+num(fc(r,'reach','accounts reached','total reach')),0) : 0);
-    const follows = tog ? man.followers : (csv.follows ? csv.follows.reduce((s,r)=>s+num(fc(r,'new followers','followers gained','follows','follower')),0) : 0);
-    const er = tog ? man.er : (csv.interactions && csv.reach ? computeER(csv.interactions, csv.reach) : 0);
+    // Meta Business Suite CSVs: data column is always "Primary"
+    const sumPrimary = (rows) => rows ? rows.reduce((s,r)=>s+num(fc(r,'primary')),0) : 0;
+    const views   = tog ? man.views   : sumPrimary(csv.views);
+    const reach   = tog ? man.reach   : sumPrimary(csv.reach);
+    const follows = tog ? (man.newfollows||man.follows||0) : sumPrimary(csv.follows);
+    const clicks  = tog ? man.clicks  : sumPrimary(csv.clicks);
+    const interactions = tog ? 0 : sumPrimary(csv.interactions);
+    // ER = total interactions / total reach * 100
+    const totalReach = reach || 1;
+    const er = tog ? man.er : (interactions && reach ? interactions/totalReach*100 : 0);
     kpis = [
-      {l:'New followers', v:fmt(follows||man.newfollows), sub:follows||man.newfollows?'this period':'upload Followers CSV'},
-      {l:'Engagement rate', v:er?(er.toFixed(1)+'%'):'—', sub:er?'across all content':'upload Interactions + Reach'},
-      {l:'Total reach', v:fmt(reach||man.reach), sub:reach||man.reach?'unique accounts':'upload Reach CSV'},
-      {l:'Total views', v:fmt(views||man.views), sub:views||man.views?'impressions + views':'upload Views CSV'},
+      {l:'New followers',    v:follows?fmt(follows):'—',    sub:follows?'this period':'upload Followers CSV'},
+      {l:'Engagement rate',  v:er?er.toFixed(2)+'%':'—',    sub:er?'interactions / reach':'upload Interactions + Reach'},
+      {l:'Total reach',      v:reach?fmt(reach):'—',         sub:reach?'unique accounts':'upload Reach CSV'},
+      {l:'Total views',      v:views?fmt(views):'—',         sub:views?'impressions':'upload Views CSV'},
     ];
   } else if (pf === 'fb') {
     const reach = tog ? man.reach : (csv.reach ? csv.reach.reduce((s,r)=>s+num(fc(r,'reach')),0) : 0);
@@ -682,15 +702,16 @@ function renderMetrics() {
 
   kpiEl.innerHTML = kpis.map(k => `<div class="kc"><div class="kc-label">${k.l}</div><div class="kc-val">${k.v}</div><div class="kc-sub">${k.sub}</div></div>`).join('');
 
-  // Charts
+  // Charts — Meta CSVs use "Date" and "Primary" columns
   const viewsData = csv.views || [];
   const reachData = csv.reach || [];
   const followsData = csv.follows || [];
+  const formatDate = d => { try { return d.includes('T') ? d.slice(5,10) : d.slice(5,10); } catch(e) { return d; } };
 
   if (viewsData.length || reachData.length) {
-    const labels = viewsData.length ? viewsData.map(r=>fc(r,'date','day','period')||'?') : reachData.map(r=>fc(r,'date','day','period')||'?');
-    const views = viewsData.map(r=>num(fc(r,'view','impression','video view')));
-    const reach = reachData.map(r=>num(fc(r,'reach','account reached')));
+    const labels = (viewsData.length ? viewsData : reachData).map(r=>formatDate(fc(r,'date')||'?'));
+    const views = viewsData.map(r=>num(fc(r,'primary','views','impressions')));
+    const reach = reachData.map(r=>num(fc(r,'primary','reach')));
     mkChart('ch-views-reach', {type:'line', data:{labels, datasets:[
       {label:'Views', data:views, borderColor:'#D85A30', backgroundColor:'rgba(216,90,48,.1)', tension:.3, fill:true, pointRadius:0},
       {label:'Reach', data:reach, borderColor:'#1D9E75', backgroundColor:'transparent', tension:.3, borderDash:[3,2], pointRadius:0}
@@ -700,8 +721,8 @@ function renderMetrics() {
   }
 
   if (followsData.length) {
-    const labels = followsData.map(r=>fc(r,'date','day','period')||'?');
-    const vals = followsData.map(r=>num(fc(r,'new follower','follow','subscriber')));
+    const labels = followsData.map(r=>formatDate(fc(r,'date')||'?'));
+    const vals = followsData.map(r=>num(fc(r,'primary','follows','new follower')));
     mkChart('ch-follows', {type:'bar', data:{labels, datasets:[{label:'New follows', data:vals, backgroundColor:'rgba(216,90,48,.65)', borderRadius:3}]}, options:{responsive:true,maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true, grid:{color:'rgba(0,0,0,.05)'}}}}});
   } else {
     mkChart('ch-follows', {type:'bar', data:{labels:['No data'], datasets:[{data:[0],backgroundColor:'transparent'}]}, options:{responsive:true,maintainAspectRatio:false}});
@@ -710,34 +731,27 @@ function renderMetrics() {
   // ER trend
   const intData = csv.interactions || [];
   if (intData.length && reachData.length) {
-    const labels = intData.map(r=>fc(r,'date','day','period')||'?');
+    const labels = intData.map(r=>formatDate(fc(r,'date')||'?'));
     const erVals = intData.map((r,i) => {
-      const interactions = num(fc(r,'interaction','engagement','like'))+num(fc(r,'comment'))+num(fc(r,'share'));
-      const reach = reachData[i] ? num(fc(reachData[i],'reach','account')) : 1;
-      return reach ? (interactions/reach*100) : 0;
+      const interactions = num(fc(r,'primary','interaction','engagement'));
+      const reachVal = reachData[i] ? num(fc(reachData[i],'primary','reach')) : 1;
+      return reachVal ? (interactions/reachVal*100) : 0;
     });
     mkChart('ch-er', {type:'line', data:{labels, datasets:[{label:'ER%', data:erVals.map(v=>v.toFixed(2)), borderColor:'#185FA5', backgroundColor:'rgba(24,95,165,.1)', tension:.3, fill:true, pointRadius:0}]}, options:{responsive:true,maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true, ticks:{callback:v=>v+'%'}, grid:{color:'rgba(0,0,0,.05)'}}}}});
   }
 
   // Interactions breakdown
   if (intData.length) {
-    const likes = intData.reduce((s,r)=>s+num(fc(r,'like')),0);
-    const comments = intData.reduce((s,r)=>s+num(fc(r,'comment')),0);
-    const saves = intData.reduce((s,r)=>s+num(fc(r,'save')),0);
-    const shares = intData.reduce((s,r)=>s+num(fc(r,'share')),0);
-    mkChart('ch-interactions', {type:'doughnut', data:{labels:['Likes','Comments','Saves','Shares'], datasets:[{data:[likes,comments,saves,shares], backgroundColor:['#D85A30','#1D9E75','#185FA5','#BA7517'], borderWidth:2, borderColor:'#fff'}]}, options:{responsive:true,maintainAspectRatio:false,cutout:'60%', plugins:{legend:{position:'bottom',labels:{boxWidth:8,padding:10}}}}});
+    // Meta Interactions CSV only has total (Primary). Show trend line instead.
+    const intLabels = intData.map(r=>formatDate(fc(r,'date')||'?'));
+    const intVals = intData.map(r=>num(fc(r,'primary','interaction')));
+    mkChart('ch-interactions', {type:'bar', data:{labels:intLabels, datasets:[{label:'Interactions', data:intVals, backgroundColor:'rgba(216,90,48,.65)', borderRadius:2}]}, options:{responsive:true,maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true,grid:{color:'rgba(0,0,0,.05)'}}}}});
   }
 }
 
 function computeER(interactions, reach) {
-  const totInt = interactions.reduce((s,r)=>{
-    const likes = num(fc(r,'like'));
-    const comments = num(fc(r,'comment'));
-    const saves = num(fc(r,'save'));
-    const shares = num(fc(r,'share'));
-    return s + likes + comments + saves + shares;
-  }, 0);
-  const totReach = reach.reduce((s,r)=>s+num(fc(r,'reach')),0);
+  const totInt   = interactions.reduce((s,r)=>s+num(fc(r,'primary','interaction','engagement')),0);
+  const totReach = reach.reduce((s,r)=>s+num(fc(r,'primary','reach')),0);
   if (!totInt || !totReach) return 0;
   return (totInt/totReach*100);
 }
@@ -798,17 +812,41 @@ function bulkUploadPosts(input) {
     if (!rows.length || JSON.stringify(rows).includes('\uFFFD')) return tryEnc('UTF-8').then(t2 => parseCSV(t2));
     return rows;
   }).then(rows => {
-    const imported = rows.map(r => ({
-      id: Date.now() + Math.random(),
-      date: fc(r,'date','publish','posted') || '',
-      format: fc(r,'format','type','post type','media type') || 'Static Post',
-      reach: fc(r,'reach','account reached') || '',
-      likes: fc(r,'like','hearts') || '',
-      comments: fc(r,'comment') || '',
-      saves: fc(r,'save','bookmark') || '',
-      shares: fc(r,'share') || '',
-      caption: fc(r,'caption','description','topic','title') || ''
-    }));
+    // Meta post CSV: Post ID, Description, Publish time, Post type, Date, Views, Reach, Likes, Shares, Follows, Comments, Saves
+    const mapFormat = f => {
+      if (!f) return 'Static Post';
+      const fl = f.toLowerCase();
+      if (fl.includes('reel') || fl.includes('ig reel')) return 'Reel';
+      if (fl.includes('carousel') || fl.includes('album')) return 'Carousel';
+      if (fl.includes('video')) return 'Video';
+      if (fl.includes('image') || fl.includes('photo') || fl.includes('static')) return 'Static Post';
+      return f;
+    };
+    // Meta post CSV: Date = "Lifetime", actual date is in "Publish time" (MM/DD/YYYY HH:MM)
+    // Skip empty rows
+    const validRows = rows.filter(r => fc(r,'publish time','date') !== '');
+    const imported = validRows.map(r => {
+      const pub = fc(r,'publish time','date') || '';
+      // Convert MM/DD/YYYY or YYYY-MM-DD to YYYY-MM-DD
+      let dateStr = '';
+      if (pub.includes('/')) {
+        const parts = pub.split(' ')[0].split('/');
+        if (parts.length === 3) dateStr = parts[2]+'-'+parts[0].padStart(2,'0')+'-'+parts[1].padStart(2,'0');
+      } else {
+        dateStr = pub.slice(0,10);
+      }
+      return {
+        id: Date.now() + Math.random(),
+        date: dateStr,
+        format: mapFormat(fc(r,'post type','type','format','media type')),
+        reach: fc(r,'reach') || '',
+        likes: fc(r,'likes','like') || '',
+        comments: fc(r,'comments','comment') || '',
+        saves: fc(r,'saves','save') || '',
+        shares: fc(r,'shares','share') || '',
+        caption: (fc(r,'description','caption','topic','title')||'').replace(/\n/g,' ').slice(0,100)
+      };
+    });
     STATE.posts[pf] = [...imported, ...STATE.posts[pf]];
     const btn = document.getElementById('bulk-upload-btn');
     if (btn) btn.style.borderColor = 'var(--grn)';
