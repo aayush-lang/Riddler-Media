@@ -948,16 +948,17 @@ function bulkUploadPosts(input) {
   });
 }
 
+// ── FIX: filterPosts now correctly resets ALL .pt-filter active states ──
 function filterPosts(f, btn) {
   STATE.postFilter = f;
-  document.querySelectorAll('.pt-filter').forEach(b => { if(['all','Reel','Carousel','Static Post','Video'].includes(b.textContent.trim().replace('Static','Static Post')||b.onclick)) b.classList.remove('active'); });
+  document.querySelectorAll('.pt-filter').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   renderPosts();
 }
 
 function sortPosts(s, btn) {
   STATE.postSort = s;
-  document.querySelectorAll('.pt-filter').forEach(b => { if(['Score','Date','ER%','Reach'].includes(b.textContent)) b.classList.remove('active'); });
+  document.querySelectorAll('.pt-filter').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   renderPosts();
 }
@@ -976,7 +977,10 @@ function renderPosts() {
   const tbody = document.getElementById('posts-tbody');
 
   // Filter + sort
-  let filtered = posts.filter(p => STATE.postFilter === 'all' || (p.format||'').toLowerCase().includes(STATE.postFilter.toLowerCase()));
+  let filtered = posts.filter(p => {
+    if (STATE.postFilter === 'all') return true;
+    return (p.format||'').toLowerCase() === STATE.postFilter.toLowerCase();
+  });
   if (STATE.postSort === 'score') filtered.sort((a,b) => calcScore(b)-calcScore(a));
   else if (STATE.postSort === 'date') filtered.sort((a,b) => new Date(b.date)-new Date(a.date));
   else if (STATE.postSort === 'er') filtered.sort((a,b) => parseFloat(calcER(b))-parseFloat(calcER(a)));
@@ -984,6 +988,13 @@ function renderPosts() {
 
   if (!filtered.length) {
     tbody.innerHTML = `<tr><td colspan="11"><div class="empty-state"><div class="empty-icon">📝</div><div class="empty-title">No posts logged yet</div><div class="empty-msg">Click "+ Add row" to log posts manually, or they'll appear here once you upload platform data</div></div></td></tr>`;
+    document.getElementById('posts-summary').innerHTML = '';
+    document.getElementById('top-posts-list').innerHTML = '';
+    ['ch-format','ch-score-dist','ch-scatter'].forEach(function(id){
+      if (STATE.charts[id]) { STATE.charts[id].destroy(); delete STATE.charts[id]; }
+      var el = document.getElementById(id);
+      if (el) { el.getContext('2d').clearRect(0,0,el.width,el.height); }
+    });
     return;
   }
 
@@ -1046,7 +1057,7 @@ function generatePostNote(p, score, er) {
 function updatePost(id, field, val) {
   const pf = STATE.activePlatform.posts;
   const post = STATE.posts[pf].find(p => p.id === id);
-  if (post) { post[field] = val.trim(); renderPostCharts(STATE.posts[pf]); renderPostsSummary(STATE.posts[pf]); }
+  if (post) { post[field] = val.trim(); renderPosts(); }
 }
 
 function renderPostsSummary(posts) {
