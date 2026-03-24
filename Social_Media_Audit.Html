@@ -4,1249 +4,1425 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <title>Social Media Dashboard — Riddler Media</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500&family=DM+Mono:wght@400&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
   --p:#D85A30;--a:#1D9E75;
-  --bg:#f4f3f0;--sur:#fff;--sur2:#eeede9;
-  --bd:rgba(0,0,0,0.09);--bd2:rgba(0,0,0,0.16);
+  --bg:#f4f3f0;--sur:#ffffff;--sur2:#eeedea;--sur3:#e5e4e0;
+  --bd:rgba(0,0,0,.08);--bd2:rgba(0,0,0,.15);--bd3:rgba(0,0,0,.22);
   --t:#1a1a18;--t2:#5f5e5a;--t3:#9b9a96;
-  --r:10px;--rl:14px;
-  --font:'DM Sans',sans-serif;--mono:'DM Mono',monospace;
+  --r:8px;--rl:12px;
+  --fn:'DM Sans',sans-serif;--fm:'DM Mono',monospace;
+  --grn:#1D9E75;--grna:rgba(29,158,117,.15);
+  --amb:#BA7517;--amba:rgba(186,117,23,.15);
+  --red:#A32D2D;--reda:rgba(163,45,45,.15);
+  --blu:#185FA5;--blua:rgba(24,95,165,.15);
 }
-body{font-family:var(--font);background:var(--bg);color:var(--t);min-height:100vh}
+body{font-family:var(--fn);background:var(--bg);color:var(--t);font-size:15px;min-height:100vh}
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:var(--sur2)}
+::-webkit-scrollbar-thumb{background:var(--sur3);border-radius:2px}
 
-/* header */
-.hdr{background:var(--sur);border-bottom:0.5px solid var(--bd);padding:12px 28px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;position:sticky;top:0;z-index:30}
-.hdr-l{display:flex;align-items:center;gap:10px}
-.agency{font-size:10px;font-weight:500;letter-spacing:.09em;text-transform:uppercase;color:var(--t3);border-right:0.5px solid var(--bd2);padding-right:12px}
-.bdot{width:12px;height:12px;border-radius:50%;background:var(--p);flex-shrink:0}
-input.cname{font-family:var(--font);font-size:15px;font-weight:500;color:var(--t);background:transparent;border:none;outline:none;border-bottom:1.5px solid transparent;padding-bottom:1px;width:180px;transition:border-color .2s}
-input.cname:focus{border-bottom-color:var(--bd2)}
-.hdr-r{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
-.clg{display:flex;align-items:center;gap:6px}
-.cll{font-size:11px;color:var(--t3)}
-input[type=color].cp{width:26px;height:26px;border:0.5px solid var(--bd2);border-radius:5px;padding:2px;cursor:pointer;background:var(--sur)}
-input[type=color].cp::-webkit-color-swatch-wrapper{padding:0}
-input[type=color].cp::-webkit-color-swatch{border-radius:3px;border:none}
+/* TOPBAR */
+.topbar{background:var(--sur);border-bottom:0.5px solid var(--bd2);padding:11px 28px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;position:sticky;top:0;z-index:50}
+.tb-left{display:flex;align-items:center;gap:12px}
+.agency-tag{font-size:11px;font-weight:500;letter-spacing:.09em;text-transform:uppercase;color:var(--t3);padding-right:12px;border-right:0.5px solid var(--bd2)}
+.client-pill{display:flex;align-items:center;gap:7px}
+.cdot{width:10px;height:10px;border-radius:50%;background:var(--p);transition:background .3s}
+input.cname{font-family:var(--fn);font-size:15px;font-weight:500;color:var(--t);background:transparent;border:none;outline:none;border-bottom:1.5px solid transparent;padding-bottom:1px;width:160px;transition:border-color .2s}
+input.cname:focus{border-bottom-color:var(--bd3)}
+.tb-right{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.color-group{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--t3)}
+input[type=color].cp{width:24px;height:24px;border:0.5px solid var(--bd2);border-radius:5px;cursor:pointer;padding:0;background:none}
 
-/* main nav tabs */
-.nav{display:flex;gap:0;padding:0 28px;background:var(--sur);border-bottom:0.5px solid var(--bd)}
-.nav-btn{font-size:12px;font-weight:500;font-family:var(--font);padding:11px 18px;border:none;background:transparent;color:var(--t2);cursor:pointer;border-bottom:2.5px solid transparent;transition:all .15s;margin-bottom:-0.5px}
-.nav-btn.active{color:var(--p);border-bottom-color:var(--p)}
-.nav-btn:hover:not(.active){color:var(--t)}
+/* MAIN TABS */
+.main-tabs{background:var(--sur);border-bottom:0.5px solid var(--bd2);padding:0 28px;display:flex;gap:0;overflow-x:auto}
+.mtab{padding:10px 18px;font-size:13px;font-weight:500;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;transition:all .2s;white-space:nowrap;position:relative;top:0.5px}
+.mtab:hover{color:var(--t)}
+.mtab.active{color:var(--p);border-bottom-color:var(--p)}
+.ai-badge{font-size:10px;color:var(--p)}
 
-/* platform tabs */
-.ptabs{display:flex;gap:6px;padding:18px 28px 0;flex-wrap:wrap}
-.ptab{font-size:12px;font-weight:500;font-family:var(--font);padding:6px 14px;border-radius:20px;border:0.5px solid var(--bd2);background:var(--sur);color:var(--t2);cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:5px}
-.ptab.active{background:var(--t);color:#fff;border-color:var(--t)}
-.pbadge{font-size:10px;padding:1px 5px;border-radius:7px;background:rgba(29,158,117,0.15);color:#1D9E75}
-.ptab.active .pbadge{background:rgba(255,255,255,0.2);color:#fff}
-.pnb{font-size:10px;color:var(--t3)}
-.ptab.active .pnb{color:rgba(255,255,255,0.5)}
+/* MAIN CONTENT */
+.page{display:none;padding:24px 28px;max-width:1400px;margin:0 auto}
+.page.active{display:block}
 
-/* main */
-.main{max-width:1160px;margin:0 auto;padding:20px 28px 48px}
+/* ── UPLOAD TAB ── */
+.upload-intro{font-size:13px;color:var(--t3);margin-bottom:18px;line-height:1.6;max-width:600px}
+.platform-block{background:var(--sur);border:0.5px solid var(--bd2);border-radius:var(--rl);padding:18px;margin-bottom:12px}
+.pb-header{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.pb-icon{width:28px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0}
+.pb-name{font-size:15px;font-weight:500;color:var(--t)}
+.pb-status{font-size:12px;color:var(--t3);margin-left:auto}
+.pb-status.ok{color:var(--grn)}
+.manual-toggle{display:flex;align-items:center;gap:6px;margin-left:16px}
+.toggle-track{width:30px;height:16px;border-radius:8px;background:var(--sur2);border:0.5px solid var(--bd2);position:relative;transition:background .2s;cursor:pointer;flex-shrink:0}
+.toggle-track.on{background:var(--p)}
+.toggle-knob{width:12px;height:12px;border-radius:50%;background:#fff;position:absolute;top:1.5px;left:2px;transition:left .2s;box-shadow:0 1px 2px rgba(0,0,0,.2);pointer-events:none}
+.toggle-track.on .toggle-knob{left:15px}
+.toggle-lbl{font-size:12px;color:var(--t3);pointer-events:none;cursor:default}
+.upload-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;margin-bottom:12px}
+.upload-slot{border:0.5px dashed var(--bd2);border-radius:var(--r);padding:12px;text-align:center;cursor:pointer;background:var(--bg);position:relative;transition:border-color .2s,background .2s}
+.upload-slot:hover{border-color:var(--p);background:var(--sur)}
+.upload-slot.filled{border-style:solid;border-color:var(--grn);background:var(--sur)}
+.upload-slot input[type=file]{display:none}
+.slot-ic{font-size:18px;margin-bottom:4px;line-height:1}
+.slot-name{font-size:11px;font-weight:500;color:var(--t2);letter-spacing:.03em}
+.slot-hint{font-size:10px;color:var(--t3);margin-top:2px;line-height:1.3}
+.upload-slot.filled .slot-name{color:var(--grn)}
+.manual-fields{display:none;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px;padding-top:4px}
+.manual-fields.visible{display:grid}
+.mf{background:var(--bg);border:0.5px solid var(--bd2);border-radius:var(--r);padding:9px 11px}
+.mf-label{font-size:11px;color:var(--t3);margin-bottom:4px}
+.mf input{width:100%;font-family:var(--fm);font-size:13px;color:var(--t);background:transparent;border:none;outline:none;border-bottom:1px solid var(--bd2);padding-bottom:2px}
+.mf input:focus{border-bottom-color:var(--p)}
 
-/* tab panels */
-.panel{display:none}.panel.active{display:block}
+/* ── PLATFORM SWITCHER ── */
+.pfsw{display:flex;gap:6px;margin-bottom:18px;flex-wrap:wrap}
+.pf-btn{display:flex;align-items:center;gap:5px;padding:5px 12px;border-radius:16px;border:0.5px solid var(--bd2);font-size:12px;font-weight:500;color:var(--t3);cursor:pointer;background:var(--sur2);transition:all .15s;white-space:nowrap}
+.pf-btn:hover{color:var(--t)}
+.pf-btn.active{background:var(--sur);border-color:var(--bd3);color:var(--t)}
+.pf-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
 
-/* upload cards */
-.upload-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin-bottom:8px}
-.ucard{background:var(--sur);border:1.5px dashed var(--bd2);border-radius:var(--r);padding:13px 10px;text-align:center;cursor:pointer;transition:all .15s;position:relative}
-.ucard:hover{border-color:var(--p);background:var(--sur2)}
-.ucard.loaded{border-style:solid;border-color:#1D9E75;background:#f0faf5}
-.uico{font-size:18px;margin-bottom:4px}
-.utitle{font-size:11px;font-weight:500;color:var(--t2);margin-bottom:2px}
-.uhint{font-size:10px;color:var(--t3)}
-.uinfo{font-size:10px;color:#1D9E75;margin-top:3px;font-family:var(--mono)}
-.uchk{position:absolute;top:5px;right:5px;width:14px;height:14px;border-radius:50%;background:#1D9E75;display:none;align-items:center;justify-content:center}
-.ucard.loaded .uchk{display:flex}
-.uchk svg{width:8px;height:8px}
-.sbar{font-size:11px;color:var(--t3);font-family:var(--mono);padding:6px 10px;background:var(--sur2);border-radius:6px;margin-bottom:16px;transition:color .2s}
-.sbar.ok{color:#1D9E75}.sbar.err{color:#D85A30}
+/* ── TIME RANGE ── */
+.time-row{display:flex;gap:6px;margin-bottom:18px}
+.tr-btn{padding:4px 11px;border-radius:14px;font-size:12px;font-weight:500;color:var(--t3);cursor:pointer;border:0.5px solid var(--bd2);background:var(--sur2)}
+.tr-btn.active{background:var(--p);color:#fff;border-color:var(--p)}
 
-/* period nav */
-.pnav{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap}
-.pbtn{font-size:12px;font-weight:500;font-family:var(--font);padding:5px 13px;border-radius:6px;border:0.5px solid var(--bd2);background:var(--sur);color:var(--t2);cursor:pointer;transition:all .15s}
-.pbtn.active{background:var(--t);color:#fff;border-color:var(--t)}
+/* ── KPI CARDS ── */
+.kpi-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(145px,1fr));gap:10px;margin-bottom:18px}
+.kc{background:var(--sur2);border-radius:var(--r);padding:13px 14px}
+.kc-label{font-size:11px;color:var(--t3);margin-bottom:4px;font-weight:500}
+.kc-val{font-size:24px;font-weight:500;color:var(--t);line-height:1;margin-bottom:3px}
+.kc-sub{font-size:12px;font-family:var(--fm);color:var(--t3)}
+.kc-sub.up{color:var(--grn)}.kc-sub.dn{color:var(--red)}.kc-sub.nt{color:var(--t3)}
 
-/* section labels */
-.slbl{font-size:10px;font-weight:500;letter-spacing:.09em;text-transform:uppercase;color:var(--t3);margin-bottom:10px}
+/* ── CHARTS ── */
+.cg{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+.cg.wide{grid-template-columns:2fr 1fr}
+@media(max-width:800px){.cg,.cg.wide{grid-template-columns:1fr}}
+.cc{background:var(--sur);border:0.5px solid var(--bd);border-radius:var(--rl);padding:16px}
+.cc-title{font-size:12px;font-weight:500;color:var(--t);margin-bottom:2px}
+.cc-sub{font-size:11px;color:var(--t3);margin-bottom:12px}
+.cw{position:relative;height:180px}
+.cw.t{height:220px}
+.no-data{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:var(--t3);font-size:12px;gap:4px}
+.no-data-icon{font-size:24px;opacity:.3}
 
-/* metric cards */
-.mgrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:16px}
-.mc{background:var(--sur);border:0.5px solid var(--bd);border-radius:var(--r);padding:15px 17px}
-.mc-l{font-size:11px;color:var(--t3);margin-bottom:5px}
-.mc-v{font-size:22px;font-weight:500;color:var(--t);line-height:1.1}
-.mc-s{font-size:11px;margin-top:4px}
-.pos{color:#1D9E75}.neg{color:#D85A30}.neu{color:var(--t3)}
+/* ── POSTS TAB ── */
+.posts-summary{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-bottom:16px}
+.ps-card{background:var(--sur2);border-radius:var(--r);padding:12px 14px}
+.ps-label{font-size:11px;color:var(--t3);margin-bottom:3px}
+.ps-val{font-size:22px;font-weight:500;color:var(--t);line-height:1}
+.ps-sub{font-size:11px;color:var(--t3);margin-top:2px}
+.posts-toolbar{display:flex;align-items:center;gap:6px;margin-bottom:12px;flex-wrap:wrap}
+.pt-filter{padding:4px 10px;border-radius:12px;font-size:12px;color:var(--t3);cursor:pointer;border:0.5px solid var(--bd2);background:var(--sur2)}
+.pt-filter.active{background:var(--sur);border-color:var(--bd3);color:var(--t)}
+.sort-label{font-size:12px;color:var(--t3);margin-left:4px}
+.add-row-btn{margin-left:auto;padding:5px 12px;background:var(--p);color:#fff;border:none;border-radius:var(--r);font-family:var(--fn);font-size:11px;font-weight:500;cursor:pointer}
+.posts-table-wrap{overflow-x:auto;background:var(--sur);border:0.5px solid var(--bd);border-radius:var(--rl);margin-bottom:14px}
+.posts-tbl{width:100%;border-collapse:collapse;font-size:12px;min-width:720px}
+.posts-tbl th{padding:7px 9px;text-align:left;font-size:11px;font-weight:500;color:var(--t3);border-bottom:0.5px solid var(--bd2);white-space:nowrap;background:var(--sur2)}
+.posts-tbl td{padding:8px 9px;border-bottom:0.5px solid var(--bd);color:var(--t);vertical-align:middle}
+.posts-tbl tr:last-child td{border-bottom:none}
+.posts-tbl tr:hover td{background:var(--sur2)}
+.posts-tbl tr.expanded-master td{background:var(--sur2)}
+.exp-row td{background:var(--sur2);padding:12px 16px}
+.exp-row td:hover{background:var(--sur2) !important}
+.format-pill{padding:2px 7px;border-radius:8px;font-size:10px;font-weight:500;white-space:nowrap}
+.fp-reel{background:var(--amba);color:var(--amb)}
+.fp-car{background:var(--blua);color:var(--blu)}
+.fp-static{background:var(--grna);color:var(--grn)}
+.fp-video{background:var(--reda);color:var(--red)}
+.fp-other{background:var(--sur2);color:var(--t2)}
+.score-cell{display:flex;align-items:center;gap:5px}
+.score-track{width:40px;height:3px;background:var(--sur3);border-radius:2px;overflow:hidden}
+.score-fill{height:100%;border-radius:2px}
+.er-high{color:var(--grn);font-weight:500}
+.er-mid{color:var(--amb);font-weight:500}
+.er-low{color:var(--red);font-weight:500}
+.expand-chevron{cursor:pointer;font-size:9px;color:var(--t3);padding:2px 4px;border-radius:3px;border:0.5px solid var(--bd2);background:var(--sur2);transition:transform .2s;display:inline-block}
+.expand-chevron.open{transform:rotate(90deg)}
+/* Editable cell */
+td.editable{cursor:text}
+td.editable:focus{outline:none;background:var(--bg)}
+select.fmt-select{font-family:var(--fn);font-size:10px;border:0.5px solid var(--bd2);border-radius:5px;background:var(--sur);color:var(--t);padding:2px 4px;cursor:pointer}
+/* Expanded panel */
+.exp-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:10px}
+.exp-stat{background:var(--sur);border-radius:var(--r);padding:9px 11px;border:0.5px solid var(--bd)}
+.exp-stat-label{font-size:10px;color:var(--t3);margin-bottom:2px}
+.exp-stat-val{font-size:15px;font-weight:500;color:var(--t)}
+.exp-note{font-size:11px;color:var(--t2);line-height:1.6;padding:9px 12px;background:var(--sur);border-radius:var(--r);border-left:2px solid var(--p)}
+/* Top posts */
+.top-post-item{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:0.5px solid var(--bd)}
+.top-post-item:last-child{border-bottom:none}
+.tp-rank{font-size:11px;font-weight:500;width:20px;color:var(--t3)}
+.tp-rank.gold{color:var(--p)}
+.tp-caption{font-size:11px;color:var(--t);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tp-score{font-size:11px;font-weight:500;color:var(--grn);margin-left:6px}
 
-/* charts */
-.crow{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(0,1fr);gap:12px;margin-bottom:12px}
-.card{background:var(--sur);border:0.5px solid var(--bd);border-radius:var(--rl);padding:17px 19px}
-.ctitle{font-size:13px;font-weight:500;color:var(--t);margin-bottom:11px}
-.legend{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:9px;font-size:11px;color:var(--t2)}
-.legend span{display:flex;align-items:center;gap:4px}
-.ldot{width:9px;height:9px;border-radius:2px;flex-shrink:0}
+/* ── INSIGHTS TAB ── */
+.ins-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+@media(max-width:700px){.ins-grid{grid-template-columns:1fr}}
+.ins-card{background:var(--sur);border:0.5px solid var(--bd);border-radius:var(--rl);padding:16px}
+.ins-title{font-size:12px;font-weight:500;color:var(--t);margin-bottom:12px;display:flex;align-items:center;gap:6px}
+.ins-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.ins-item{display:flex;gap:8px;margin-bottom:9px;align-items:flex-start}
+.ins-bullet{width:5px;height:5px;border-radius:50%;margin-top:5px;flex-shrink:0}
+.ins-text{font-size:13px;color:var(--t2);line-height:1.5}
+.ins-badge{display:inline-block;padding:1px 6px;border-radius:4px;font-size:11px;font-weight:500;margin-left:4px}
+.ib-good{background:var(--grna);color:var(--grn)}
+.ib-warn{background:var(--amba);color:var(--amb)}
+.ib-bad{background:var(--reda);color:var(--red)}
+.reco-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:6px}
+@media(max-width:700px){.reco-grid{grid-template-columns:1fr}}
+.reco-item{padding:10px 12px;background:var(--bg);border-radius:var(--r);border:0.5px solid var(--bd)}
+.reco-label{font-size:11px;color:var(--t3);margin-bottom:3px}
+.reco-text{font-size:12px;color:var(--t);line-height:1.5}
+/* PDF bar */
+.pdf-bar{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;padding:12px 16px;background:var(--sur);border:0.5px solid var(--bd);border-radius:var(--rl);margin-top:14px}
+.pdf-opts{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+.pdf-opt{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--t3);cursor:pointer}
+.pdf-chk{width:14px;height:14px;border-radius:3px;border:0.5px solid var(--bd2);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .2s}
+.pdf-chk.on{background:var(--p);border-color:var(--p)}
+.pdf-chk.on::after{content:'✓';font-size:9px;color:#fff}
+.pdf-dl-btn{display:flex;align-items:center;gap:6px;padding:7px 14px;background:var(--p);color:#fff;border:none;border-radius:var(--r);font-family:var(--fn);font-size:12px;font-weight:500;cursor:pointer;transition:opacity .2s}
+.pdf-dl-btn:hover{opacity:.9}
 
-/* engagement bars */
-.brow{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-bottom:12px}
-.er-row{display:flex;align-items:center;gap:7px;margin-bottom:8px}
-.er-l{width:72px;font-size:11px;color:var(--t2);flex-shrink:0}
-.er-track{flex:1;height:7px;background:var(--sur2);border-radius:4px;overflow:hidden}
-.er-fill{height:100%;border-radius:4px;transition:width .4s}
-.er-val{width:40px;text-align:right;font-size:11px;font-weight:500;color:var(--t);flex-shrink:0;font-family:var(--mono)}
+/* ── AI TAB ── */
+.ai-hero{background:var(--sur);border:0.5px solid var(--bd);border-radius:var(--rl);padding:18px;margin-bottom:14px}
+.ai-chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.ai-chip{padding:5px 10px;border-radius:12px;border:0.5px solid var(--bd2);font-size:12px;color:var(--t2);cursor:pointer;background:var(--bg);transition:all .15s;white-space:nowrap}
+.ai-chip:hover{border-color:var(--p);color:var(--p)}
+.ai-input-row{display:flex;gap:8px}
+.ai-input{flex:1;padding:8px 12px;border-radius:var(--r);border:0.5px solid var(--bd2);font-family:var(--fn);font-size:13px;color:var(--t);background:var(--bg);outline:none;transition:border-color .2s}
+.ai-input:focus{border-color:var(--p)}
+.ai-send-btn{padding:8px 16px;background:var(--p);color:#fff;border:none;border-radius:var(--r);font-family:var(--fn);font-size:12px;font-weight:500;cursor:pointer;white-space:nowrap}
+.ai-loading{display:none;align-items:center;gap:8px;padding:12px;font-size:12px;color:var(--t3)}
+.ai-response{background:var(--sur);border:0.5px solid var(--bd);border-radius:var(--rl);padding:18px;margin-bottom:12px;display:none}
+.ai-resp-header{font-size:11px;font-weight:500;color:var(--t3);letter-spacing:.05em;margin-bottom:12px;display:flex;align-items:center;gap:5px}
+.ai-star{color:var(--p)}
+.ai-finding{display:flex;gap:10px;margin-bottom:12px;align-items:flex-start}
+.ai-num{width:20px;height:20px;border-radius:50%;background:var(--p);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#fff;flex-shrink:0;margin-top:1px}
+.ai-find-text{font-size:13px;color:var(--t);line-height:1.6}
+.ai-find-text strong{font-weight:500}
+.ai-highlight{background:var(--bg);border-radius:var(--r);border-left:2px solid var(--p);padding:10px 12px;margin-top:6px;font-size:13px;color:var(--t);line-height:1.6}
+.ai-actions{display:flex;gap:6px;flex-wrap:wrap;padding-top:12px;margin-top:12px;border-top:0.5px solid var(--bd)}
+.ai-act-btn{padding:5px 10px;border-radius:var(--r);border:0.5px solid var(--bd2);font-size:12px;color:var(--t2);cursor:pointer;background:var(--bg);font-family:var(--fn)}
+.ai-act-btn:hover{border-color:var(--p);color:var(--p)}
+.ai-history{background:var(--sur);border:0.5px solid var(--bd);border-radius:var(--rl);padding:14px}
+.ai-hist-label{font-size:11px;font-weight:500;color:var(--t3);letter-spacing:.05em;margin-bottom:10px}
+.ai-hist-item{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:0.5px solid var(--bd);cursor:pointer}
+.ai-hist-item:last-child{border-bottom:none}
+.ai-hist-item:hover .ai-hist-q{color:var(--p)}
+.ai-hist-q{font-size:12px;color:var(--t2);flex:1}
+.ai-hist-date{font-size:10px;color:var(--t3)}
+.ai-hist-replay{font-size:10px;color:var(--t3)}
 
-/* all platforms */
-.pgrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:12px}
-.pcard{background:var(--sur);border:0.5px solid var(--bd);border-radius:var(--r);padding:14px 16px}
-.pch{display:flex;align-items:center;gap:7px;margin-bottom:11px}
-.pcn{font-size:12px;font-weight:500;color:var(--t)}
-.pcs{font-size:10px;color:var(--t3)}
-.pst{margin-bottom:7px}
-.psl{font-size:10px;color:var(--t3);margin-bottom:2px}
-.psv{font-size:15px;font-weight:500;color:var(--t)}
-.pdiv{height:0.5px;background:var(--bd);margin:8px 0}
-.trend-u{color:#1D9E75;font-size:11px;font-family:var(--mono);margin-top:6px}
-.trend-d{color:#D85A30;font-size:11px;font-family:var(--mono);margin-top:6px}
-.trend-f{color:var(--t3);font-size:11px;font-family:var(--mono);margin-top:6px}
-
-/* insights */
-.ins-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px;margin-bottom:12px}
-.ins-item{display:flex;align-items:flex-start;gap:10px;padding:9px 0;border-bottom:0.5px solid var(--bd)}
-.ins-item:last-child{border-bottom:none}
-.ins-ico{width:28px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
-.ico-w{background:#FFF3E0;color:#E65100}
-.ico-g{background:#E8F5E9;color:#2E7D32}
-.ico-i{background:#E3F2FD;color:#1565C0}
-.ins-h{font-size:12px;font-weight:500;color:var(--t);margin-bottom:2px}
-.ins-d{font-size:11px;color:var(--t2);line-height:1.5}
-
-/* ── POST TABLE (Posts tab) ── */
-.posts-intro{font-size:12px;color:var(--t2);margin-bottom:14px;padding:10px 14px;background:var(--sur2);border-radius:var(--r);line-height:1.6}
-.posts-intro strong{color:var(--t)}
-.post-upload-zone{display:flex;align-items:center;gap:14px;padding:14px 18px;background:var(--sur);border:1.5px dashed var(--bd2);border-radius:var(--rl);margin-bottom:8px;cursor:pointer;transition:all .15s}
-.post-upload-zone:hover{border-color:var(--p);background:var(--sur2)}
-.post-upload-zone.loaded{border-style:solid;border-color:#1D9E75;background:#f0faf5}
-.puz-ico{font-size:22px;flex-shrink:0}
-.puz-text{flex:1}
-.puz-title{font-size:13px;font-weight:500;color:var(--t);margin-bottom:2px}
-.puz-hint{font-size:11px;color:var(--t3)}
-.puz-btn{font-size:11px;font-weight:500;font-family:var(--font);padding:5px 14px;border-radius:6px;border:0.5px solid var(--p);color:var(--p);background:transparent;cursor:pointer;flex-shrink:0;transition:all .15s}
-.puz-btn:hover{background:var(--p);color:#fff}
-.post-sbar{font-size:11px;color:var(--t3);font-family:var(--mono);padding:5px 10px;background:var(--sur2);border-radius:6px;margin-bottom:12px}
-.post-sbar.ok{color:#1D9E75}.post-sbar.err{color:#D85A30}
-.divider-or{display:flex;align-items:center;gap:10px;margin-bottom:12px;font-size:11px;color:var(--t3)}
-.divider-or::before,.divider-or::after{content:'';flex:1;height:0.5px;background:var(--bd2)}
-.post-table-wrap{overflow-x:auto;margin-bottom:12px}
-table.ptbl{width:100%;border-collapse:collapse;font-size:12px;min-width:700px}
-table.ptbl th{font-size:10px;font-weight:500;color:var(--t3);text-transform:uppercase;letter-spacing:.06em;padding:8px 10px;border-bottom:0.5px solid var(--bd2);text-align:left;white-space:nowrap;background:var(--sur)}
-table.ptbl td{padding:7px 10px;border-bottom:0.5px solid var(--bd);vertical-align:middle}
-table.ptbl tr:last-child td{border-bottom:none}
-table.ptbl tr:nth-child(even) td{background:var(--sur2)}
-table.ptbl tr:nth-child(odd) td{background:var(--sur)}
-table.ptbl select,table.ptbl input{font-family:var(--mono);font-size:11px;background:transparent;border:none;outline:none;width:100%;color:var(--t);padding:0}
-table.ptbl input[type=number]{width:70px}
-table.ptbl input[type=text]{width:140px}
-.score-pill{display:inline-block;font-size:10px;font-weight:500;font-family:var(--mono);padding:2px 8px;border-radius:10px}
-.score-hi{background:#E8F5EE;color:#1D9E75}
-.score-md{background:#FFF8E1;color:#E65100}
-.score-lo{background:#FFEBEE;color:#C62828}
-.add-row-btn{font-size:12px;font-family:var(--font);font-weight:500;padding:7px 16px;border-radius:6px;border:0.5px solid var(--bd2);background:var(--sur);color:var(--t2);cursor:pointer;transition:all .15s;margin-bottom:16px}
-.add-row-btn:hover{background:var(--sur2);color:var(--t)}
-
-/* post insights */
-.post-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:16px}
-
-/* AI analysis tab */
-.ai-chip{font-size:11px;font-family:var(--font);padding:5px 12px;border-radius:20px;border:0.5px solid var(--bd2);background:var(--sur2);color:var(--t2);cursor:pointer;transition:all .15s;white-space:nowrap}
-.ai-chip:hover{border-color:var(--p);color:var(--p);background:var(--sur)}
-.ai-msg-user{background:var(--p);color:#fff;border-radius:12px 12px 4px 12px;padding:10px 14px;font-size:13px;line-height:1.5;align-self:flex-end;max-width:70%}
-.ai-msg-ai{background:var(--sur);border:0.5px solid var(--bd);border-radius:4px 12px 12px 12px;padding:14px 16px;font-size:13px;line-height:1.7;color:var(--t);max-width:92%}
-.ai-msg-ai strong{font-weight:500;color:var(--t)}
-.ai-msg-ai ul{margin:8px 0 8px 16px}
-.ai-msg-ai li{margin-bottom:4px;color:var(--t2)}
-.ai-msg-ai h4{font-size:12px;font-weight:500;color:var(--t3);text-transform:uppercase;letter-spacing:.06em;margin:12px 0 6px}
-.ai-loading{display:flex;align-items:center;gap:8px;padding:14px 16px;background:var(--sur);border:0.5px solid var(--bd);border-radius:4px 12px 12px 12px;font-size:12px;color:var(--t3)}
-.ai-dot{width:6px;height:6px;border-radius:50%;background:var(--t3);animation:aipulse 1.2s ease-in-out infinite}
-.ai-dot:nth-child(2){animation-delay:.2s}
-.ai-dot:nth-child(3){animation-delay:.4s}
-@keyframes aipulse{0%,80%,100%{transform:scale(0.6);opacity:.4}40%{transform:scale(1);opacity:1}}
-
-/* footer */
-.footer{text-align:center;font-size:11px;color:var(--t3);padding:20px 0 0;border-top:0.5px solid var(--bd);font-family:var(--mono)}
-
-@media(max-width:800px){
-  .main,.ptabs,.nav{padding-left:14px;padding-right:14px}
-  .mgrid,.post-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
-  .crow,.brow,.ins-row{grid-template-columns:minmax(0,1fr)}
-  .upload-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
-  .pgrid{grid-template-columns:repeat(2,minmax(0,1fr))}
-}
+/* empty state */
+.empty-state{text-align:center;padding:48px 20px;color:var(--t3)}
+.empty-icon{font-size:32px;opacity:.25;margin-bottom:10px}
+.empty-title{font-size:14px;font-weight:500;color:var(--t2);margin-bottom:5px}
+.empty-msg{font-size:12px;max-width:280px;margin:0 auto;line-height:1.6}
 </style>
 </head>
 <body>
-
-<header class="hdr">
-  <div class="hdr-l">
-    <span class="agency">Riddler Media</span>
-    <div class="bdot" id="bdot"></div>
-    <input class="cname" id="cname" value="Client name" spellcheck="false"/>
+<div class="topbar">
+  <div class="tb-left">
+    <span class="agency-tag">Riddler Media</span>
+    <div class="client-pill">
+      <div class="cdot" id="cdot"></div>
+      <input class="cname" id="cname" placeholder="Client name" value="Client name">
+    </div>
   </div>
-  <div class="hdr-r">
-    <div class="clg"><span class="cll">Primary</span><input type="color" class="cp" id="cp1" value="#D85A30"/></div>
-    <div class="clg"><span class="cll">Accent</span><input type="color" class="cp" id="cp2" value="#1D9E75"/></div>
+  <div class="tb-right">
+    <div class="color-group"><span class="cll">Primary</span><input type="color" class="cp" id="cp-primary" value="#D85A30"></div>
+    <div class="color-group"><span class="cll">Accent</span><input type="color" class="cp" id="cp-accent" value="#1D9E75"></div>
+    <button onclick="downloadPDF()" style="display:flex;align-items:center;gap:5px;padding:5px 12px;background:var(--p);color:#fff;border:none;border-radius:var(--r);font-family:var(--fn);font-size:11px;font-weight:500;cursor:pointer">⬇ PDF</button>
   </div>
-</header>
+</div>
 
-<!-- Main nav -->
-<nav class="nav">
-  <button class="nav-btn active" data-tab="metrics">Metrics</button>
-  <button class="nav-btn" data-tab="posts">Posts</button>
-  <button class="nav-btn" data-tab="insights">Insights</button>
-  <button class="nav-btn" data-tab="ai">✦ AI Analysis</button>
-  <button class="nav-btn" data-tab="all">All platforms</button>
-</nav>
+<div class="main-tabs">
+  <div class="mtab active" onclick="switchTab('upload',this)">Data upload</div>
+  <div class="mtab" onclick="switchTab('metrics',this)">Metrics</div>
+  <div class="mtab" onclick="switchTab('posts',this)">Posts</div>
+  <div class="mtab" onclick="switchTab('insights',this)">Insights</div>
+  <div class="mtab" onclick="switchTab('ai',this)">AI analysis <span class="ai-badge">✦</span></div>
+</div>
 
-<!-- ══════════════════════════════════════════ -->
-<!-- TAB 1 — METRICS -->
-<!-- ══════════════════════════════════════════ -->
-<div class="panel active" id="tab-metrics">
-  <div class="ptabs">
-    <button class="ptab active" data-plat="instagram">📸 Instagram <span class="pnb" id="ig-badge">no data</span></button>
-    <button class="ptab" data-plat="facebook">📘 Facebook <span class="pnb" id="fb-badge">no data</span></button>
-    <button class="ptab" data-plat="youtube">▶ YouTube <span class="pnb" id="yt-badge">no data</span></button>
-    <button class="ptab" data-plat="linkedin">💼 LinkedIn <span class="pnb" id="li-badge">no data</span></button>
-  </div>
+<!-- ═══════ UPLOAD PAGE ═══════ -->
+<div class="page active" id="page-upload">
+  <p class="upload-intro">Upload CSVs for each platform separately. Each platform has its own independent fields — data never mixes between platforms. Toggle "Manual entry" if you don't have a CSV export.</p>
 
-  <div class="main">
-    <!-- CSV upload cards -->
+  <!-- INSTAGRAM -->
+  <div class="platform-block">
+    <div class="pb-header">
+      <div class="pb-icon" style="background:#E1306C">IG</div>
+      <span class="pb-name">Instagram</span>
+      <span class="pb-status" id="ig-status">0 / 5 uploaded</span>
+      <div class="manual-toggle">
+        <div class="toggle-track" id="ig-toggle" onclick="toggleManual('ig')"><div class="toggle-knob"></div></div>
+        <span class="toggle-lbl">Manual entry</span>
+      </div>
+    </div>
     <div class="upload-grid">
-      <div class="ucard" id="uc-views" onclick="triggerUpload('views')">
-        <div class="uchk"><svg viewBox="0 0 8 8" fill="none"><path d="M1 4l2 2 4-4" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg></div>
-        <div class="uico">👁</div><div class="utitle">Views</div><div class="uhint">Views CSV</div><div class="uinfo" id="ui-views"></div>
-      </div>
-      <div class="ucard" id="uc-reach" onclick="triggerUpload('reach')">
-        <div class="uchk"><svg viewBox="0 0 8 8" fill="none"><path d="M1 4l2 2 4-4" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg></div>
-        <div class="uico">📡</div><div class="utitle">Reach</div><div class="uhint">Reach CSV</div><div class="uinfo" id="ui-reach"></div>
-      </div>
-      <div class="ucard" id="uc-follows" onclick="triggerUpload('follows')">
-        <div class="uchk"><svg viewBox="0 0 8 8" fill="none"><path d="M1 4l2 2 4-4" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg></div>
-        <div class="uico">👥</div><div class="utitle">Follows</div><div class="uhint">Follows CSV</div><div class="uinfo" id="ui-follows"></div>
-      </div>
-      <div class="ucard" id="uc-interactions" onclick="triggerUpload('interactions')">
-        <div class="uchk"><svg viewBox="0 0 8 8" fill="none"><path d="M1 4l2 2 4-4" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg></div>
-        <div class="uico">💬</div><div class="utitle">Interactions</div><div class="uhint">Interactions CSV</div><div class="uinfo" id="ui-interactions"></div>
-      </div>
-      <div class="ucard" id="uc-clicks" onclick="triggerUpload('clicks')">
-        <div class="uchk"><svg viewBox="0 0 8 8" fill="none"><path d="M1 4l2 2 4-4" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg></div>
-        <div class="uico">🔗</div><div class="utitle">Link Clicks</div><div class="uhint">Link Clicks CSV</div><div class="uinfo" id="ui-clicks"></div>
+      <div class="upload-slot" id="slot-ig-views" onclick="document.getElementById('fi-ig-views').click()"><input type="file" id="fi-ig-views" accept=".csv" onchange="handleUpload(this,'ig','views')"><div class="slot-ic">📊</div><div class="slot-name">Views</div><div class="slot-hint">Meta Business Suite → Content → Export</div></div>
+      <div class="upload-slot" id="slot-ig-reach" onclick="document.getElementById('fi-ig-reach').click()"><input type="file" id="fi-ig-reach" accept=".csv" onchange="handleUpload(this,'ig','reach')"><div class="slot-ic">📡</div><div class="slot-name">Reach</div><div class="slot-hint">Meta Business Suite → Reach → Export</div></div>
+      <div class="upload-slot" id="slot-ig-follows" onclick="document.getElementById('fi-ig-follows').click()"><input type="file" id="fi-ig-follows" accept=".csv" onchange="handleUpload(this,'ig','follows')"><div class="slot-ic">👥</div><div class="slot-name">Followers</div><div class="slot-hint">Meta Business Suite → Audience → Export</div></div>
+      <div class="upload-slot" id="slot-ig-interactions" onclick="document.getElementById('fi-ig-interactions').click()"><input type="file" id="fi-ig-interactions" accept=".csv" onchange="handleUpload(this,'ig','interactions')"><div class="slot-ic">💬</div><div class="slot-name">Interactions</div><div class="slot-hint">Meta Business Suite → Interactions → Export</div></div>
+      <div class="upload-slot" id="slot-ig-clicks" onclick="document.getElementById('fi-ig-clicks').click()"><input type="file" id="fi-ig-clicks" accept=".csv" onchange="handleUpload(this,'ig','clicks')"><div class="slot-ic">🔗</div><div class="slot-name">Link Clicks</div><div class="slot-hint">Meta Business Suite → Link Clicks → Export</div></div>
+    </div>
+    <div class="manual-fields" id="ig-manual">
+      <div class="mf"><div class="mf-label">Total followers</div><input type="number" placeholder="e.g. 4500" id="ig-m-followers" oninput="refreshAll()"></div>
+      <div class="mf"><div class="mf-label">New follows (period)</div><input type="number" placeholder="e.g. 120" id="ig-m-newfollows" oninput="refreshAll()"></div>
+      <div class="mf"><div class="mf-label">Total reach</div><input type="number" placeholder="e.g. 84000" id="ig-m-reach" oninput="refreshAll()"></div>
+      <div class="mf"><div class="mf-label">Total views</div><input type="number" placeholder="e.g. 210000" id="ig-m-views" oninput="refreshAll()"></div>
+      <div class="mf"><div class="mf-label">Avg engagement %</div><input type="number" placeholder="e.g. 6.4" step="0.1" id="ig-m-er" oninput="refreshAll()"></div>
+      <div class="mf"><div class="mf-label">Total interactions</div><input type="number" placeholder="e.g. 3200" id="ig-m-interactions" oninput="refreshAll()"></div>
+    </div>
+  </div>
+
+  <!-- FACEBOOK -->
+  <div class="platform-block">
+    <div class="pb-header">
+      <div class="pb-icon" style="background:#1877F2">FB</div>
+      <span class="pb-name">Facebook</span>
+      <span class="pb-status" id="fb-status">0 / 5 uploaded</span>
+      <div class="manual-toggle">
+        <div class="toggle-track" id="fb-toggle" onclick="toggleManual('fb')"><div class="toggle-knob"></div></div>
+        <span class="toggle-lbl">Manual entry</span>
       </div>
     </div>
-    <input type="file" id="file-input" accept=".csv" style="display:none"/>
-    <div class="sbar" id="sbar">upload Meta Insights CSVs above — each metric exports separately from Meta Business Suite</div>
-
-    <div class="pnav" id="pnav">
-      <button class="pbtn active" data-range="30">Last 30 days</button>
-      <button class="pbtn" data-range="90">Last 90 days</button>
-      <button class="pbtn" data-range="9999">All data</button>
+    <div class="upload-grid">
+      <div class="upload-slot" id="slot-fb-reach" onclick="document.getElementById('fi-fb-reach').click()"><input type="file" id="fi-fb-reach" accept=".csv" onchange="handleUpload(this,'fb','reach')"><div class="slot-ic">📡</div><div class="slot-name">Reach</div><div class="slot-hint">Meta Business Suite → Reach</div></div>
+      <div class="upload-slot" id="slot-fb-impressions" onclick="document.getElementById('fi-fb-impressions').click()"><input type="file" id="fi-fb-impressions" accept=".csv" onchange="handleUpload(this,'fb','impressions')"><div class="slot-ic">👁</div><div class="slot-name">Impressions</div><div class="slot-hint">Meta Business Suite → Impressions</div></div>
+      <div class="upload-slot" id="slot-fb-follows" onclick="document.getElementById('fi-fb-follows').click()"><input type="file" id="fi-fb-follows" accept=".csv" onchange="handleUpload(this,'fb','follows')"><div class="slot-ic">👥</div><div class="slot-name">Page Likes</div><div class="slot-hint">Meta Business Suite → Audience</div></div>
+      <div class="upload-slot" id="slot-fb-engagement" onclick="document.getElementById('fi-fb-engagement').click()"><input type="file" id="fi-fb-engagement" accept=".csv" onchange="handleUpload(this,'fb','engagement')"><div class="slot-ic">💬</div><div class="slot-name">Engagement</div><div class="slot-hint">Meta Business Suite → Engagement</div></div>
+      <div class="upload-slot" id="slot-fb-clicks" onclick="document.getElementById('fi-fb-clicks').click()"><input type="file" id="fi-fb-clicks" accept=".csv" onchange="handleUpload(this,'fb','clicks')"><div class="slot-ic">🔗</div><div class="slot-name">Link Clicks</div><div class="slot-hint">Meta Business Suite → Link Clicks</div></div>
     </div>
-
-    <div class="slbl">overview</div>
-    <div class="mgrid">
-      <div class="mc"><div class="mc-l">Follows (period)</div><div class="mc-v" id="v-fol">—</div><div class="mc-s neu" id="v-fol-d">upload Follows CSV</div></div>
-      <div class="mc"><div class="mc-l">Engagement rate</div><div class="mc-v" id="v-er">—</div><div class="mc-s neu" id="v-er-d">interactions ÷ reach</div></div>
-      <div class="mc"><div class="mc-l">Total reach</div><div class="mc-v" id="v-reach">—</div><div class="mc-s neu" id="v-reach-d">upload Reach CSV</div></div>
-      <div class="mc"><div class="mc-l">Total views</div><div class="mc-v" id="v-impr">—</div><div class="mc-s neu" id="v-impr-d">upload Views CSV</div></div>
+    <div class="manual-fields" id="fb-manual">
+      <div class="mf"><div class="mf-label">Page likes</div><input type="number" placeholder="e.g. 8200" id="fb-m-likes" oninput="refreshAll()"></div>
+      <div class="mf"><div class="mf-label">New likes (period)</div><input type="number" placeholder="e.g. 45" id="fb-m-newlikes" oninput="refreshAll()"></div>
+      <div class="mf"><div class="mf-label">Total reach</div><input type="number" placeholder="e.g. 42000" id="fb-m-reach" oninput="refreshAll()"></div>
+      <div class="mf"><div class="mf-label">Total impressions</div><input type="number" placeholder="e.g. 95000" id="fb-m-impressions" oninput="refreshAll()"></div>
+      <div class="mf"><div class="mf-label">Engagement rate %</div><input type="number" placeholder="e.g. 3.2" step="0.1" id="fb-m-er" oninput="refreshAll()"></div>
     </div>
+  </div>
 
-    <div class="crow">
-      <div class="card">
-        <div class="ctitle">Views & reach over time</div>
-        <div class="legend">
-          <span><span class="ldot" id="l-v"></span>Views</span>
-          <span><span class="ldot" id="l-r"></span>Reach</span>
-        </div>
-        <div style="position:relative;width:100%;height:210px"><canvas id="viewsChart"></canvas></div>
-      </div>
-      <div class="card">
-        <div class="ctitle">Follows over time</div>
-        <div class="legend"><span><span class="ldot" id="l-f"></span>New follows</span></div>
-        <div style="position:relative;width:100%;height:210px"><canvas id="followsChart"></canvas></div>
+  <!-- YOUTUBE -->
+  <div class="platform-block">
+    <div class="pb-header">
+      <div class="pb-icon" style="background:#FF0000">YT</div>
+      <span class="pb-name">YouTube</span>
+      <span class="pb-status" id="yt-status">0 / 4 uploaded</span>
+      <div class="manual-toggle">
+        <div class="toggle-track" id="yt-toggle" onclick="toggleManual('yt')"><div class="toggle-knob"></div></div>
+        <span class="toggle-lbl">Manual entry</span>
       </div>
     </div>
+    <div class="upload-grid">
+      <div class="upload-slot" id="slot-yt-channel" onclick="document.getElementById('fi-yt-channel').click()"><input type="file" id="fi-yt-channel" accept=".csv" onchange="handleUpload(this,'yt','channel')"><div class="slot-ic">📺</div><div class="slot-name">Channel analytics</div><div class="slot-hint">YouTube Studio → Analytics → Export</div></div>
+      <div class="upload-slot" id="slot-yt-videos" onclick="document.getElementById('fi-yt-videos').click()"><input type="file" id="fi-yt-videos" accept=".csv" onchange="handleUpload(this,'yt','videos')"><div class="slot-ic">🎬</div><div class="slot-name">Video performance</div><div class="slot-hint">YouTube Studio → Content → Export</div></div>
+      <div class="upload-slot" id="slot-yt-subs" onclick="document.getElementById('fi-yt-subs').click()"><input type="file" id="fi-yt-subs" accept=".csv" onchange="handleUpload(this,'yt','subs')"><div class="slot-ic">🔔</div><div class="slot-name">Subscribers</div><div class="slot-hint">YouTube Studio → Audience → Export</div></div>
+      <div class="upload-slot" id="slot-yt-traffic" onclick="document.getElementById('fi-yt-traffic').click()"><input type="file" id="fi-yt-traffic" accept=".csv" onchange="handleUpload(this,'yt','traffic')"><div class="slot-ic">🚦</div><div class="slot-name">Traffic sources</div><div class="slot-hint">YouTube Studio → Reach → Export</div></div>
+    </div>
+    <div class="manual-fields" id="yt-manual">
+      <div class="mf"><div class="mf-label">Subscribers</div><input type="number" placeholder="e.g. 12500" id="yt-m-subs" oninput="refreshAll()"></div>
+      <div class="mf"><div class="mf-label">New subs (period)</div><input type="number" placeholder="e.g. 340" id="yt-m-newsubs" oninput="refreshAll()"></div>
+      <div class="mf"><div class="mf-label">Total views</div><input type="number" placeholder="e.g. 58000" id="yt-m-views" oninput="refreshAll()"></div>
+      <div class="mf"><div class="mf-label">Watch time (hrs)</div><input type="number" placeholder="e.g. 1200" id="yt-m-watchtime" oninput="refreshAll()"></div>
+      <div class="mf"><div class="mf-label">Avg view duration (s)</div><input type="number" placeholder="e.g. 74" id="yt-m-avd" oninput="refreshAll()"></div>
+      <div class="mf"><div class="mf-label">Impressions CTR %</div><input type="number" placeholder="e.g. 4.2" step="0.1" id="yt-m-ctr" oninput="refreshAll()"></div>
+    </div>
+  </div>
 
-    <div class="brow">
-      <div class="card">
-        <div class="ctitle">Engagement breakdown</div>
-        <div class="er-row"><span class="er-l">Interactions</span><div class="er-track"><div class="er-fill" id="ef-inter" style="width:0%"></div></div><span class="er-val" id="ev-inter">—</span></div>
-        <div class="er-row"><span class="er-l">Link clicks</span><div class="er-track"><div class="er-fill" id="ef-clicks" style="width:0%"></div></div><span class="er-val" id="ev-clicks">—</span></div>
-        <div style="margin-top:14px;padding-top:12px;border-top:0.5px solid var(--bd)">
-          <div class="slbl" style="margin-bottom:6px">engagement rate</div>
-          <div style="font-size:28px;font-weight:500" id="er-big">—</div>
-          <div style="font-size:11px;color:var(--t3);margin-top:2px">interactions ÷ reach × 100</div>
-        </div>
-      </div>
-      <div class="card" style="grid-column:span 2">
-        <div class="ctitle">Interactions over time</div>
-        <div style="position:relative;width:100%;height:160px"><canvas id="interChart"></canvas></div>
+  <!-- LINKEDIN -->
+  <div class="platform-block">
+    <div class="pb-header">
+      <div class="pb-icon" style="background:#0A66C2">LI</div>
+      <span class="pb-name">LinkedIn</span>
+      <span class="pb-status" id="li-status">0 / 4 uploaded</span>
+      <div class="manual-toggle">
+        <div class="toggle-track" id="li-toggle" onclick="toggleManual('li')"><div class="toggle-knob"></div></div>
+        <span class="toggle-lbl">Manual entry</span>
       </div>
     </div>
-
-    <div class="footer">Metrics Dashboard · Riddler Media · <span id="footer-client">Client name</span></div>
+    <div class="upload-grid">
+      <div class="upload-slot" id="slot-li-visitors" onclick="document.getElementById('fi-li-visitors').click()"><input type="file" id="fi-li-visitors" accept=".csv" onchange="handleUpload(this,'li','visitors')"><div class="slot-ic">👤</div><div class="slot-name">Visitor analytics</div><div class="slot-hint">LinkedIn → Analytics → Visitors → Export</div></div>
+      <div class="upload-slot" id="slot-li-followers" onclick="document.getElementById('fi-li-followers').click()"><input type="file" id="fi-li-followers" accept=".csv" onchange="handleUpload(this,'li','followers')"><div class="slot-ic">👥</div><div class="slot-name">Followers</div><div class="slot-hint">LinkedIn → Analytics → Followers → Export</div></div>
+      <div class="upload-slot" id="slot-li-posts" onclick="document.getElementById('fi-li-posts').click()"><input type="file" id="fi-li-posts" accept=".csv" onchange="handleUpload(this,'li','posts')"><div class="slot-ic">📝</div><div class="slot-name">Post analytics</div><div class="slot-hint">LinkedIn → Content → Performance → Export</div></div>
+      <div class="upload-slot" id="slot-li-engagement" onclick="document.getElementById('fi-li-engagement').click()"><input type="file" id="fi-li-engagement" accept=".csv" onchange="handleUpload(this,'li','engagement')"><div class="slot-ic">💬</div><div class="slot-name">Engagement</div><div class="slot-hint">LinkedIn → Analytics → Content → Export</div></div>
+    </div>
+    <div class="manual-fields" id="li-manual">
+      <div class="mf"><div class="mf-label">Total followers</div><input type="number" placeholder="e.g. 2800" id="li-m-followers" oninput="refreshAll()"></div>
+      <div class="mf"><div class="mf-label">New followers (period)</div><input type="number" placeholder="e.g. 85" id="li-m-newfollowers" oninput="refreshAll()"></div>
+      <div class="mf"><div class="mf-label">Impressions</div><input type="number" placeholder="e.g. 18000" id="li-m-impressions" oninput="refreshAll()"></div>
+      <div class="mf"><div class="mf-label">Engagement rate %</div><input type="number" placeholder="e.g. 2.8" step="0.1" id="li-m-er" oninput="refreshAll()"></div>
+      <div class="mf"><div class="mf-label">Clicks</div><input type="number" placeholder="e.g. 420" id="li-m-clicks" oninput="refreshAll()"></div>
+    </div>
   </div>
 </div>
 
-<!-- ══════════════════════════════════════════ -->
-<!-- TAB 2 — POSTS (minimal entry table) -->
-<!-- ══════════════════════════════════════════ -->
-<div class="panel" id="tab-posts">
-  <div class="main">
-    <div class="posts-intro">
-      <strong>Upload your Meta content CSV for instant population</strong> — export from Meta Business Suite → Content → export as CSV. Or fill in the table manually below.
-    </div>
-
-    <!-- CSV upload zone -->
-    <div class="post-upload-zone" id="post-upload-zone" onclick="document.getElementById('post-csv-input').click()">
-      <div class="puz-ico">📋</div>
-      <div class="puz-text">
-        <div class="puz-title" id="puz-title">Upload Meta content CSV</div>
-        <div class="puz-hint">Meta Business Suite → Content → Posts & reels → Export → CSV · Columns auto-detected: Date, Post type, Views, Reach, Likes, Shares, Comments, Saves</div>
-      </div>
-      <button class="puz-btn" onclick="event.stopPropagation();document.getElementById('post-csv-input').click()">Choose file</button>
-    </div>
-    <input type="file" id="post-csv-input" accept=".csv" style="display:none"/>
-    <div class="post-sbar" id="post-sbar">no CSV uploaded — fill the table below manually, or upload your Meta content export above</div>
-
-    <div class="divider-or">or enter manually</div>
-
-    <div class="slbl">post performance</div>
-    <div class="post-kpis">
-      <div class="mc"><div class="mc-l">Posts logged</div><div class="mc-v" id="p-count">0</div><div class="mc-s neu">rows filled</div></div>
-      <div class="mc"><div class="mc-l">Avg engagement rate</div><div class="mc-v" id="p-er">—</div><div class="mc-s neu">across all posts</div></div>
-      <div class="mc"><div class="mc-l">Best format</div><div class="mc-v" id="p-best" style="font-size:15px">—</div><div class="mc-s neu">highest avg ER</div></div>
-      <div class="mc"><div class="mc-l">Avg saves / post</div><div class="mc-v" id="p-saves">—</div><div class="mc-s neu">algorithm signal</div></div>
-    </div>
-
-    <div class="post-table-wrap">
-      <table class="ptbl" id="post-table">
-        <thead>
-          <tr>
-            <th style="width:80px">Date</th>
-            <th style="width:110px">Format</th>
-            <th style="width:80px">Reach</th>
-            <th style="width:70px">Likes</th>
-            <th style="width:70px">Comments</th>
-            <th style="width:70px">Saves</th>
-            <th style="width:70px">Shares</th>
-            <th style="width:90px">Caption topic</th>
-            <th style="width:80px">ER %</th>
-            <th style="width:80px">Score</th>
-          </tr>
-        </thead>
-        <tbody id="post-tbody"></tbody>
-      </table>
-    </div>
-    <button class="add-row-btn" onclick="addPostRow()">+ Add row</button>
-
-    <div class="crow" style="margin-top:8px">
-      <div class="card">
-        <div class="ctitle">Format performance — avg engagement rate</div>
-        <div style="position:relative;width:100%;height:200px"><canvas id="fmtChart"></canvas></div>
-      </div>
-      <div class="card">
-        <div class="ctitle">Top posts by score</div>
-        <div id="top-posts-list" style="font-size:12px;color:var(--t3)">add posts above to see rankings</div>
-      </div>
-    </div>
-    <div class="footer">Post Log · Riddler Media · <span class="footer-client-ref">Client name</span></div>
+<!-- ═══════ METRICS PAGE ═══════ -->
+<div class="page" id="page-metrics">
+  <div class="pfsw" id="metrics-pfsw">
+    <div class="pf-btn active" onclick="switchPlatform('metrics','ig',this)" data-pf="ig"><div class="pf-dot" style="background:#E1306C"></div> Instagram</div>
+    <div class="pf-btn" onclick="switchPlatform('metrics','fb',this)" data-pf="fb"><div class="pf-dot" style="background:#1877F2"></div> Facebook</div>
+    <div class="pf-btn" onclick="switchPlatform('metrics','yt',this)" data-pf="yt"><div class="pf-dot" style="background:#FF0000"></div> YouTube</div>
+    <div class="pf-btn" onclick="switchPlatform('metrics','li',this)" data-pf="li"><div class="pf-dot" style="background:#0A66C2"></div> LinkedIn</div>
+  </div>
+  <div class="time-row">
+    <div class="tr-btn active" onclick="switchTime('30',this)">Last 30 days</div>
+    <div class="tr-btn" onclick="switchTime('90',this)">Last 90 days</div>
+    <div class="tr-btn" onclick="switchTime('all',this)">All data</div>
+  </div>
+  <div class="kpi-row" id="metrics-kpis"></div>
+  <div class="cg wide">
+    <div class="cc"><div class="cc-title">Views &amp; reach over time</div><div class="cc-sub">Daily — from uploaded CSV</div><div class="cw"><canvas id="ch-views-reach"></canvas></div></div>
+    <div class="cc"><div class="cc-title">Follows over time</div><div class="cc-sub">New followers daily</div><div class="cw"><canvas id="ch-follows"></canvas></div></div>
+  </div>
+  <div class="cg">
+    <div class="cc"><div class="cc-title">Engagement rate trend</div><div class="cc-sub">Daily ER%</div><div class="cw t"><canvas id="ch-er"></canvas></div></div>
+    <div class="cc"><div class="cc-title">Interactions breakdown</div><div class="cc-sub">Likes, comments, saves, shares</div><div class="cw t"><canvas id="ch-interactions"></canvas></div></div>
   </div>
 </div>
 
-<!-- ══════════════════════════════════════════ -->
-<!-- TAB 3 — INSIGHTS -->
-<!-- ══════════════════════════════════════════ -->
-<div class="panel" id="tab-insights">
-  <div class="main">
-    <div class="slbl">trend analysis</div>
-    <div class="ins-row">
-      <div class="card">
-        <div class="ctitle">What's trending</div>
-        <div id="trend-list"><div style="font-size:12px;color:var(--t3)">upload metric CSVs on the Metrics tab to see trends</div></div>
-      </div>
-      <div class="card">
-        <div class="ctitle">What to work on</div>
-        <div id="reco-list"><div style="font-size:12px;color:var(--t3)">upload data or add posts to unlock recommendations</div></div>
-      </div>
+<!-- ═══════ POSTS PAGE ═══════ -->
+<div class="page" id="page-posts">
+  <div class="pfsw" id="posts-pfsw">
+    <div class="pf-btn active" onclick="switchPlatform('posts','ig',this)"><div class="pf-dot" style="background:#E1306C"></div> Instagram</div>
+    <div class="pf-btn" onclick="switchPlatform('posts','fb',this)"><div class="pf-dot" style="background:#1877F2"></div> Facebook</div>
+    <div class="pf-btn" onclick="switchPlatform('posts','yt',this)"><div class="pf-dot" style="background:#FF0000"></div> YouTube</div>
+    <div class="pf-btn" onclick="switchPlatform('posts','li',this)"><div class="pf-dot" style="background:#0A66C2"></div> LinkedIn</div>
+  </div>
+  <div class="posts-summary" id="posts-summary"></div>
+  <div class="posts-toolbar">
+    <div class="pt-filter active" onclick="filterPosts('all',this)">All</div>
+    <div class="pt-filter" onclick="filterPosts('Reel',this)">Reel</div>
+    <div class="pt-filter" onclick="filterPosts('Carousel',this)">Carousel</div>
+    <div class="pt-filter" onclick="filterPosts('Static Post',this)">Static</div>
+    <div class="pt-filter" onclick="filterPosts('Video',this)">Video</div>
+    <span class="sort-label">Sort:</span>
+    <div class="pt-filter active" onclick="sortPosts('score',this)">Score</div>
+    <div class="pt-filter" onclick="sortPosts('date',this)">Date</div>
+    <div class="pt-filter" onclick="sortPosts('er',this)">ER%</div>
+    <div class="pt-filter" onclick="sortPosts('reach',this)">Reach</div>
+    <div style="margin-left:auto;display:flex;align-items:center;gap:8px">
+      <label id="bulk-upload-btn" style="display:flex;align-items:center;gap:5px;padding:5px 11px;border:0.5px solid var(--bd2);border-radius:var(--r);font-size:11px;color:var(--t2);cursor:pointer;background:var(--sur2)">
+        <input type="file" accept=".csv" id="bulk-post-input" style="display:none" onchange="bulkUploadPosts(this)">
+        ↑ Import CSV
+      </label>
+      <button class="add-row-btn" onclick="addPostRow()">+ Add row</button>
     </div>
-
-    <div class="slbl" style="margin-top:4px">benchmarks — your numbers vs industry</div>
-    <div class="card" style="margin-bottom:12px">
-      <table style="width:100%;font-size:12px;border-collapse:collapse">
-        <thead>
-          <tr>
-            <th style="text-align:left;padding:0 0 10px;color:var(--t3);font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:.06em;border-bottom:0.5px solid var(--bd)">Metric</th>
-            <th style="text-align:center;padding:0 0 10px;color:var(--t3);font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:.06em;border-bottom:0.5px solid var(--bd)">Your avg</th>
-            <th style="text-align:center;padding:0 0 10px;color:#C62828;font-size:10px;font-weight:500;border-bottom:0.5px solid var(--bd)">Poor</th>
-            <th style="text-align:center;padding:0 0 10px;color:#E65100;font-size:10px;font-weight:500;border-bottom:0.5px solid var(--bd)">Average</th>
-            <th style="text-align:center;padding:0 0 10px;color:#1D9E75;font-size:10px;font-weight:500;border-bottom:0.5px solid var(--bd)">Good</th>
-            <th style="text-align:center;padding:0 0 10px;color:#1D9E75;font-size:10px;font-weight:500;border-bottom:0.5px solid var(--bd)">Excellent</th>
-            <th style="text-align:center;padding:0 0 10px;color:var(--t3);font-size:10px;font-weight:500;border-bottom:0.5px solid var(--bd)">Status</th>
-          </tr>
-        </thead>
-        <tbody id="bench-tbody"></tbody>
-      </table>
-    </div>
-    <div class="footer">Insights · Riddler Media · <span class="footer-client-ref">Client name</span></div>
+  </div>
+  <div class="posts-table-wrap">
+    <table class="posts-tbl" id="posts-tbl">
+      <thead><tr>
+        <th style="width:24px"></th>
+        <th>Date</th><th>Format</th><th>Reach</th><th>Likes</th>
+        <th>Comments</th><th>Saves</th><th>Shares</th>
+        <th>Caption topic</th><th>ER%</th><th>Score</th>
+      </tr></thead>
+      <tbody id="posts-tbody"></tbody>
+    </table>
+  </div>
+  <div class="cg wide">
+    <div class="cc"><div class="cc-title">Format performance — avg ER%</div><div class="cc-sub">Across all logged posts</div><div class="cw"><canvas id="ch-format"></canvas></div></div>
+    <div class="cc"><div class="cc-title">Top posts by score</div><div class="cc-sub">Highest performing content</div><div id="top-posts-list" style="padding-top:4px"></div></div>
+  </div>
+  <div class="cg">
+    <div class="cc"><div class="cc-title">Score distribution</div><div class="cc-sub">How posts cluster by performance</div><div class="cw"><canvas id="ch-score-dist"></canvas></div></div>
+    <div class="cc"><div class="cc-title">Reach vs engagement rate</div><div class="cc-sub">Scatter — each dot is a post</div><div class="cw"><canvas id="ch-scatter"></canvas></div></div>
   </div>
 </div>
 
-<!-- ══════════════════════════════════════════ -->
-<!-- TAB — AI ANALYSIS -->
-<!-- ══════════════════════════════════════════ -->
-<div class="panel" id="tab-ai">
-  <div class="main">
-
-    <div style="background:var(--sur);border:0.5px solid var(--bd);border-radius:var(--rl);padding:20px;margin-bottom:14px">
-      <div style="display:flex;align-items:flex-start;gap:14px">
-        <div style="width:36px;height:36px;border-radius:10px;background:var(--sur2);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">✦</div>
-        <div style="flex:1">
-          <div style="font-size:14px;font-weight:500;color:var(--t);margin-bottom:4px">AI Content Analyst</div>
-          <div style="font-size:12px;color:var(--t2);line-height:1.6;margin-bottom:14px">Upload your Meta content CSV on the Posts tab first, then ask anything. The AI reads your actual post data — captions, formats, timings, engagement — and gives you specific answers, not generic advice.</div>
-          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px" id="ai-suggestions">
-            <button class="ai-chip" onclick="askAI(this.textContent)">Which reels worked best and why?</button>
-            <button class="ai-chip" onclick="askAI(this.textContent)">What posting times get best engagement?</button>
-            <button class="ai-chip" onclick="askAI(this.textContent)">How can I improve content quality?</button>
-            <button class="ai-chip" onclick="askAI(this.textContent)">What do top performing posts have in common?</button>
-            <button class="ai-chip" onclick="askAI(this.textContent)">Which content format should I focus on?</button>
-            <button class="ai-chip" onclick="askAI(this.textContent)">What caption style drives more engagement?</button>
-          </div>
-          <div style="display:flex;gap:8px">
-            <input type="text" id="ai-input" placeholder="Ask anything about your content performance..." 
-              style="flex:1;font-family:var(--font);font-size:13px;padding:9px 14px;border:0.5px solid var(--bd2);border-radius:8px;outline:none;background:var(--bg);color:var(--t)"
-              onkeydown="if(event.key==='Enter')askAI(document.getElementById('ai-input').value)"/>
-            <button onclick="askAI(document.getElementById('ai-input').value)"
-              style="font-family:var(--font);font-size:13px;font-weight:500;padding:9px 20px;border-radius:8px;border:none;background:var(--p);color:#fff;cursor:pointer;transition:opacity .15s;flex-shrink:0"
-              onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">Analyse ↗</button>
-          </div>
-        </div>
-      </div>
+<!-- ═══════ INSIGHTS PAGE ═══════ -->
+<div class="page" id="page-insights">
+  <div class="pfsw" id="insights-pfsw">
+    <div class="pf-btn active" onclick="switchPlatform('insights','ig',this)"><div class="pf-dot" style="background:#E1306C"></div> Instagram</div>
+    <div class="pf-btn" onclick="switchPlatform('insights','fb',this)"><div class="pf-dot" style="background:#1877F2"></div> Facebook</div>
+    <div class="pf-btn" onclick="switchPlatform('insights','yt',this)"><div class="pf-dot" style="background:#FF0000"></div> YouTube</div>
+    <div class="pf-btn" onclick="switchPlatform('insights','li',this)"><div class="pf-dot" style="background:#0A66C2"></div> LinkedIn</div>
+  </div>
+  <div class="ins-grid">
+    <div class="ins-card"><div class="ins-title"><div class="ins-dot" style="background:var(--grn)"></div> What's working</div><div id="ins-working"></div></div>
+    <div class="ins-card"><div class="ins-title"><div class="ins-dot" style="background:var(--red)"></div> What needs attention</div><div id="ins-attention"></div></div>
+  </div>
+  <div class="ins-card" style="margin-bottom:14px">
+    <div class="ins-title">Recommendations for next month</div>
+    <div class="reco-grid" id="ins-recos"></div>
+  </div>
+  <div class="pdf-bar">
+    <div class="pdf-opts">
+      <span style="font-size:12px;font-weight:500;color:var(--t)">Export report</span>
+      <div class="pdf-opt" onclick="togglePdfOpt(this)"><div class="pdf-chk on"></div><span>Charts</span></div>
+      <div class="pdf-opt" onclick="togglePdfOpt(this)"><div class="pdf-chk on"></div><span>Insights</span></div>
+      <div class="pdf-opt" onclick="togglePdfOpt(this)"><div class="pdf-chk"></div><span>Post table</span></div>
+      <div class="pdf-opt" onclick="togglePdfOpt(this)"><div class="pdf-chk on"></div><span>Branding</span></div>
     </div>
-
-    <!-- No data warning -->
-    <div id="ai-no-data" style="display:none;padding:14px;background:#FFF8E1;border-radius:var(--r);font-size:12px;color:#E65100;margin-bottom:14px">
-      ⚠ No post data found — go to the Posts tab and upload your Meta content CSV first, then come back here to analyse it.
-    </div>
-
-    <!-- AI conversation -->
-    <div id="ai-thread" style="display:flex;flex-direction:column;gap:12px"></div>
-
-    <div class="footer" style="margin-top:20px">AI Analysis · Riddler Media · <span class="footer-client-ref">Client name</span></div>
+    <button class="pdf-dl-btn" onclick="downloadPDF()">⬇ Download PDF</button>
   </div>
 </div>
 
-<!-- ══════════════════════════════════════════ -->
-<!-- TAB 4 — ALL PLATFORMS -->
-<!-- ══════════════════════════════════════════ -->
-<div class="panel" id="tab-all">
-  <div class="main">
-    <div class="slbl">all platforms — side by side</div>
-    <div class="pgrid" id="pgrid"></div>
-    <div class="card" style="margin-bottom:12px">
-      <div class="ctitle">Reach comparison across platforms</div>
-      <div style="position:relative;width:100%;height:200px"><canvas id="allChart"></canvas></div>
+<!-- ═══════ AI PAGE ═══════ -->
+<div class="page" id="page-ai">
+  <div class="ai-hero">
+    <div style="font-size:12px;color:var(--t3);margin-bottom:10px">Ask anything about this client's data — the AI reads all uploaded CSVs and post logs</div>
+    <div class="ai-chips">
+      <div class="ai-chip" onclick="askChip(this)">Why is reach dropping?</div>
+      <div class="ai-chip" onclick="askChip(this)">What should we post next month?</div>
+      <div class="ai-chip" onclick="askChip(this)">Which format should we double down on?</div>
+      <div class="ai-chip" onclick="askChip(this)">Write a client report summary</div>
+      <div class="ai-chip" onclick="askChip(this)">Compare this month vs last month</div>
+      <div class="ai-chip" onclick="askChip(this)">Why are reels underperforming vs carousels?</div>
     </div>
-    <div class="ins-row">
-      <div class="card"><div class="ctitle">Trend analysis</div><div id="all-trend-list"><div style="font-size:12px;color:var(--t3)">add data on each platform tab to see trends</div></div></div>
-      <div class="card"><div class="ctitle">What to work on</div><div id="all-reco-list"><div style="font-size:12px;color:var(--t3)">add data to unlock recommendations</div></div></div>
+    <div class="ai-input-row">
+      <input class="ai-input" id="ai-input" placeholder="e.g. Which caption topics get the highest engagement?" onkeydown="if(event.key==='Enter')sendAI()">
+      <button class="ai-send-btn" onclick="sendAI()">Ask ✦</button>
     </div>
-    <div class="footer">All Platforms · Riddler Media · <span class="footer-client-ref">Client name</span></div>
+  </div>
+  <div class="ai-loading" id="ai-loading"><span style="color:var(--p)">✦</span> Analysing your data…</div>
+  <div id="ai-responses"></div>
+  <div class="ai-history" id="ai-history" style="display:none">
+    <div class="ai-hist-label">Previous questions</div>
+    <div id="ai-history-list"></div>
   </div>
 </div>
 
 <script>
-// ── State ──
-let primary='#D85A30', accent='#1D9E75';
-let currentPlat='instagram', currentRange=30;
-let viewsChart, followsChart, interChart, allChart, fmtChart;
-
-const store={
-  instagram:{views:null,reach:null,follows:null,interactions:null,clicks:null},
-  facebook:{views:null,reach:null,follows:null,interactions:null,clicks:null},
-  youtube:{views:null,reach:null,follows:null,interactions:null,clicks:null},
-  linkedin:{views:null,reach:null,follows:null,interactions:null,clicks:null}
+// ════════════════════════════════════════
+// STATE
+// ════════════════════════════════════════
+const STATE = {
+  activePlatform: { metrics:'ig', posts:'ig', insights:'ig' },
+  activeTime: '30',
+  postFilter: 'all',
+  postSort: 'score',
+  csvData: { ig:{}, fb:{}, yt:{}, li:{} },
+  posts: { ig:[], fb:[], yt:[], li:[] },
+  manualData: { ig:{}, fb:{}, yt:{}, li:{} },
+  uploadCounts: { ig:0, fb:0, yt:0, li:0 },
+  uploadTotals: { ig:5, fb:5, yt:4, li:4 },
+  manualToggles: { ig:false, fb:false, yt:false, li:false },
+  aiHistory: [],
+  charts: {}
 };
 
-let posts=[]; // post log rows
+const PF_COLORS = { ig:'#E1306C', fb:'#1877F2', yt:'#FF0000', li:'#0A66C2' };
+const PF_NAMES = { ig:'Instagram', fb:'Facebook', yt:'YouTube', li:'LinkedIn' };
 
-// ── Helpers ──
-function fmtK(n){
-  n=Math.round(n);
-  if(n>=1000000)return(n/1e6).toFixed(1)+'M';
-  if(n>=1000)return(n/1000).toFixed(1)+'K';
-  return String(n);
-}
-function sum(a){return a.reduce((x,y)=>x+y,0)}
-function avg(a){return a.length?sum(a)/a.length:0}
-
-// ── Colors ──
-function applyColors(){
-  primary=document.getElementById('cp1').value;
-  accent=document.getElementById('cp2').value;
-  document.documentElement.style.setProperty('--p',primary);
-  document.documentElement.style.setProperty('--a',accent);
-  document.getElementById('bdot').style.background=primary;
-  document.getElementById('l-v').style.background=primary;
-  document.getElementById('l-r').style.background=accent;
-  document.getElementById('l-f').style.background=primary;
-  document.getElementById('ef-inter').style.background=primary;
-  document.getElementById('ef-clicks').style.background=accent;
-  renderMetrics();
-  renderPostStats();
-}
-
-// ── Nav tabs ──
-document.querySelectorAll('.nav-btn').forEach(btn=>{
-  btn.addEventListener('click',()=>{
-    document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
-    document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
-    btn.classList.add('active');
-    document.getElementById('tab-'+btn.dataset.tab).classList.add('active');
-    if(btn.dataset.tab==='all') renderAllPlatforms();
-    if(btn.dataset.tab==='insights') renderInsights();
-  });
+// ════════════════════════════════════════
+// COLOUR THEMING
+// ════════════════════════════════════════
+document.getElementById('cp-primary').addEventListener('input', e => {
+  document.documentElement.style.setProperty('--p', e.target.value);
+  document.getElementById('cdot').style.background = e.target.value;
+});
+document.getElementById('cp-accent').addEventListener('input', e => {
+  document.documentElement.style.setProperty('--a', e.target.value);
 });
 
-// ── Platform tabs ──
-document.querySelectorAll('.ptab').forEach(btn=>{
-  btn.addEventListener('click',()=>{
-    document.querySelectorAll('.ptab').forEach(b=>b.classList.remove('active'));
-    btn.classList.add('active');
-    currentPlat=btn.dataset.plat;
-    renderMetrics();
-  });
-});
-
-// ── Period nav ──
-document.getElementById('pnav').addEventListener('click',e=>{
-  const btn=e.target.closest('.pbtn');
-  if(!btn)return;
-  document.querySelectorAll('.pbtn').forEach(b=>b.classList.remove('active'));
+// ════════════════════════════════════════
+// TAB SWITCHING
+// ════════════════════════════════════════
+function switchTab(id, btn) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.mtab').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
   btn.classList.add('active');
-  currentRange=parseInt(btn.dataset.range);
-  renderMetrics();
-});
-
-// ── CSV Upload ──
-let pendingMetric=null;
-function triggerUpload(m){pendingMetric=m;document.getElementById('file-input').value='';document.getElementById('file-input').click();}
-document.getElementById('file-input').addEventListener('change',e=>{if(e.target.files[0])handleFile(e.target.files[0],pendingMetric);});
-
-function handleFile(file,metric){
-  const sb=document.getElementById('sbar');
-  sb.className='sbar';sb.textContent='reading '+file.name+'…';
-  const reader=new FileReader();
-  reader.onload=ev=>{
-    const parsed=parseMetaCSV(ev.target.result,metric);
-    if(parsed&&parsed.values.length>0){
-      store[currentPlat][metric]=parsed;
-      const card=document.getElementById('uc-'+metric);
-      card.classList.add('loaded');
-      document.getElementById('ui-'+metric).textContent=parsed.values.length+' days · '+fmtK(parsed.total);
-      updateBadge(currentPlat,'live');
-      sb.className='sbar ok';
-      sb.textContent=metric+' loaded ✓ — '+parsed.metricName+' · '+parsed.values.length+' data points · total: '+fmtK(parsed.total);
-      renderMetrics();
-    } else {
-      sb.className='sbar err';
-      sb.textContent='could not parse '+file.name+' — make sure it is a Meta Insights export CSV';
-    }
-  };
-  reader.readAsText(file,'UTF-16');
+  setTimeout(() => { renderMetrics(); renderPosts(); renderInsights(); }, 60);
 }
 
-function parseMetaCSV(text,metric){
-  let clean=text.replace(/^\uFEFF/,'');
-  const lines=clean.split(/\r?\n/).map(l=>l.trim()).filter(l=>l.length>0);
-  if(lines.length<3)return null;
-  let headerIdx=lines.findIndex(l=>l.replace(/"/g,'').toLowerCase().startsWith('date'));
-  if(headerIdx===-1)return null;
-  const metricLine=lines.slice(0,headerIdx).filter(l=>!l.startsWith('sep')).pop()||'';
-  const metricName=metricLine.replace(/"/g,'').trim();
-  const dataLines=lines.slice(headerIdx+1);
-  const labels=[],values=[];
-  dataLines.forEach(line=>{
-    if(!line)return;
-    const parts=line.split(',').map(p=>p.replace(/"/g,'').trim());
-    if(parts.length<2)return;
-    const dateStr=parts[0];
-    const val=parseFloat(parts[1].replace(/[^0-9.-]/g,''))||0;
-    if(!dateStr.match(/^\d{4}/))return;
-    const d=new Date(dateStr);
-    labels.push((d.getMonth()+1)+'/'+d.getDate());
-    values.push(val);
-  });
-  if(!values.length)return null;
-  return{labels,values,total:sum(values),metricName};
+function switchPlatform(tab, pf, btn) {
+  STATE.activePlatform[tab] = pf;
+  btn.closest('.pfsw').querySelectorAll('.pf-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  setTimeout(() => { renderMetrics(); renderPosts(); renderInsights(); }, 60);
 }
 
-function updateBadge(plat,text){
-  const map={instagram:'ig',facebook:'fb',youtube:'yt',linkedin:'li'};
-  const el=document.getElementById(map[plat]+'-badge');
-  if(!el)return;
-  el.textContent=text;
-  el.className=text==='live'?'pbadge':'pnb';
+function switchTime(t, btn) {
+  STATE.activeTime = t;
+  document.querySelectorAll('.tr-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  setTimeout(renderMetrics, 60);
 }
 
-// ── Slice data by range ──
-function sliced(ds){
-  if(!ds)return{labels:[],values:[]};
-  const n=Math.min(currentRange,ds.values.length);
-  return{labels:ds.labels.slice(-n),values:ds.values.slice(-n)};
+// ════════════════════════════════════════
+// MANUAL TOGGLE
+// ════════════════════════════════════════
+function toggleManual(pf) {
+  STATE.manualToggles[pf] = !STATE.manualToggles[pf];
+  const t = document.getElementById(pf+'-toggle');
+  const f = document.getElementById(pf+'-manual');
+  if (STATE.manualToggles[pf]) { t.classList.add('on'); f.classList.add('visible'); }
+  else { t.classList.remove('on'); f.classList.remove('visible'); }
 }
 
-// ── Render metrics tab ──
-function renderMetrics(){
-  const s=store[currentPlat];
-  const v=sliced(s.views),r=sliced(s.reach),f=sliced(s.follows),
-        inter=sliced(s.interactions),cl=sliced(s.clicks);
-
-  const tV=sum(v.values),tR=sum(r.values),tF=sum(f.values),
-        tI=sum(inter.values),tC=sum(cl.values);
-
-  // Follows card
-  setCard('v-fol',tF>0?fmtK(tF):'—',
-    tF>0?'↑ new follows this period':'upload Follows CSV',
-    tF>0?'pos':'neu');
-  // ER
-  const er=tR>0&&tI>0?((tI/tR)*100).toFixed(1):null;
-  setCard('v-er',er?er+'%':'—',
-    er?'interactions ÷ reach':'upload Interactions + Reach',
-    er?(parseFloat(er)>5?'pos':parseFloat(er)>2?'':'neg'):'neu');
-  document.getElementById('er-big').textContent=er?er+'%':'—';
-  document.getElementById('er-big').style.color=er?(parseFloat(er)>5?accent:parseFloat(er)>2?'var(--t)':'#D85A30'):'var(--t3)';
-  // Reach
-  setCard('v-reach',tR>0?fmtK(tR):'—',tR>0?'total this period':'upload Reach CSV','neu');
-  // Views
-  setCard('v-impr',tV>0?fmtK(tV):'—',tV>0?'total this period':'upload Views CSV','neu');
-
-  // Engagement bars
-  const maxEng=Math.max(tI,tC,1);
-  setBar('inter',tI,maxEng);setBar('clicks',tC,maxEng);
-  document.getElementById('ev-inter').textContent=tI>0?fmtK(tI):'—';
-  document.getElementById('ev-clicks').textContent=tC>0?fmtK(tC):'—';
-
-  // Charts
-  buildViewsChart(v.values,r.values,v.labels.length?v.labels:r.labels);
-  buildFollowsChart(f.values,f.labels);
-  buildInterChart(inter.values,inter.labels);
-}
-
-function setCard(id,val,sub,cls){
-  document.getElementById(id).textContent=val;
-  const sd=document.getElementById(id+'-d');
-  if(sd){sd.textContent=sub;sd.className='mc-s '+(cls||'neu');}
-}
-function setBar(key,val,max){
-  document.getElementById('ef-'+key).style.width=Math.round((val/max)*100)+'%';
-  document.getElementById('ef-'+key).style.background=key==='inter'?primary:accent;
-}
-
-function buildViewsChart(vv,rv,labels){
-  if(viewsChart)viewsChart.destroy();
-  const ds=[];
-  if(vv.length)ds.push({label:'Views',data:vv,borderColor:primary,backgroundColor:primary+'18',fill:true,tension:0.4,pointRadius:1,borderWidth:2});
-  if(rv.length)ds.push({label:'Reach',data:rv,borderColor:accent,backgroundColor:accent+'15',fill:true,tension:0.4,pointRadius:1,borderWidth:2});
-  if(!ds.length)return;
-  viewsChart=new Chart(document.getElementById('viewsChart'),{
-    type:'line',data:{labels,datasets:ds},
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
-      scales:{x:{ticks:{font:{size:10},color:'#888',maxTicksLimit:10,maxRotation:45},grid:{display:false}},
-              y:{ticks:{font:{size:11},color:'#888',callback:v=>fmtK(v)},grid:{color:'rgba(130,130,130,0.1)'}}}}
-  });
-}
-function buildFollowsChart(vals,labels){
-  if(followsChart)followsChart.destroy();
-  if(!vals.length)return;
-  followsChart=new Chart(document.getElementById('followsChart'),{
-    type:'bar',data:{labels,datasets:[{label:'Follows',data:vals,backgroundColor:primary,borderRadius:3}]},
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
-      scales:{x:{ticks:{font:{size:10},color:'#888',maxTicksLimit:10,maxRotation:45},grid:{display:false}},
-              y:{ticks:{font:{size:11},color:'#888'},grid:{color:'rgba(130,130,130,0.1)'}}}}
-  });
-}
-function buildInterChart(vals,labels){
-  if(interChart)interChart.destroy();
-  if(!vals.length)return;
-  interChart=new Chart(document.getElementById('interChart'),{
-    type:'bar',data:{labels,datasets:[{label:'Interactions',data:vals,backgroundColor:primary+'cc',borderRadius:3}]},
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
-      scales:{x:{ticks:{font:{size:10},color:'#888',maxTicksLimit:14,maxRotation:45},grid:{display:false}},
-              y:{ticks:{font:{size:11},color:'#888'},grid:{color:'rgba(130,130,130,0.1)'}}}}
+// ════════════════════════════════════════
+// CSV UPLOAD
+// ════════════════════════════════════════
+function handleUpload(input, pf, metric) {
+  const file = input.files[0]; if (!file) return;
+  const tryEnc = enc => new Promise(res => { const r = new FileReader(); r.onload = e => res(e.target.result); r.readAsText(file, enc); });
+  tryEnc('UTF-16').then(t => {
+    let rows = parseCSV(t);
+    if (!rows.length || JSON.stringify(rows).includes('\uFFFD')) return tryEnc('UTF-8').then(t2 => parseCSV(t2));
+    return rows;
+  }).then(rows => {
+    if (!STATE.csvData[pf]) STATE.csvData[pf] = {};
+    STATE.csvData[pf][metric] = rows;
+    if (rows.length) console.log('['+pf+'/'+metric+'] columns:', Object.keys(rows[0]).join(', '), '| first row:', JSON.stringify(rows[0]));
+    STATE.uploadCounts[pf]++;
+    const slot = document.getElementById('slot-'+pf+'-'+metric);
+    if (slot) { slot.classList.add('filled'); const nm = slot.querySelector('.slot-name'); if(nm) nm.textContent = '✓ '+file.name.replace('.csv','').slice(0,16); }
+    const st = document.getElementById(pf+'-status');
+    if (st) { st.textContent = STATE.uploadCounts[pf]+' / '+STATE.uploadTotals[pf]+' uploaded'; if(STATE.uploadCounts[pf]>0) st.classList.add('ok'); }
+    refreshAll();
   });
 }
 
-// ── POST CSV UPLOAD (Meta content export format) ──
-document.getElementById('post-csv-input').addEventListener('change', e => {
-  if(e.target.files[0]) handlePostCSV(e.target.files[0]);
-});
-
-// Drag and drop on upload zone
-const puz = document.getElementById('post-upload-zone');
-puz.addEventListener('dragover', e => { e.preventDefault(); puz.style.borderColor = primary; });
-puz.addEventListener('dragleave', () => { puz.style.borderColor = ''; });
-puz.addEventListener('drop', e => {
-  e.preventDefault(); puz.style.borderColor = '';
-  if(e.dataTransfer.files[0]) handlePostCSV(e.dataTransfer.files[0]);
-});
-
-function handlePostCSV(file) {
-  const sb = document.getElementById('post-sbar');
-  sb.className = 'post-sbar';
-  sb.textContent = 'reading ' + file.name + '…';
-
-  const reader = new FileReader();
-  reader.onload = ev => {
-    const parsed = parsePostCSV(ev.target.result);
-    if(parsed && parsed.length > 0) {
-      // Clear existing rows
-      document.getElementById('post-tbody').innerHTML = '';
-      posts = [];
-      // Load parsed rows
-      parsed.forEach(p => addPostRow(p));
-      renderPostStats();
-      document.getElementById('post-upload-zone').classList.add('loaded');
-      document.getElementById('puz-title').textContent = file.name + ' — ' + parsed.length + ' posts loaded';
-      sb.className = 'post-sbar ok';
-      sb.textContent = parsed.length + ' posts loaded from ' + file.name + ' — table auto-populated below';
-    } else {
-      sb.className = 'post-sbar err';
-      sb.textContent = 'could not parse ' + file.name + ' — try exporting from Meta Business Suite → Content → Posts & reels → Export';
-    }
-  };
-  // Try UTF-16 first (Meta export), fall back to UTF-8
-  reader.readAsText(file, 'UTF-8');
-}
-
-function parsePostCSV(text) {
+function parseCSV(text) {
   // Strip BOM
-  text = text.replace(/^\uFEFF/, '');
+  text = text.replace(/^[\uFEFF\uFFFE]+/, '');
+  // Detect separator
+  const rawLines = text.split(/\r?\n/).map(l => l.trim()).filter(l => l);
+  // Skip meta-lines: sep=, and single-cell title rows (Meta Business Suite format)
+  let startIdx = 0;
+  for (let i = 0; i < Math.min(rawLines.length, 5); i++) {
+    const l = rawLines[i];
+    if (l.startsWith('sep=')) { startIdx = i + 1; continue; }
+    // A real header row has multiple comma-separated values
+    const parts = splitCSV(l);
+    if (parts.length >= 2) { startIdx = i; break; }
+    startIdx = i + 1;
+  }
+  const lines = rawLines.slice(startIdx);
+  if (!lines.length) return [];
+  const headers = splitCSV(lines[0]).map(h => h.trim().replace(/^"|"$/g,'').toLowerCase().trim());
+  return lines.slice(1).map(line => {
+    const vals = splitCSV(line);
+    const row = {};
+    headers.forEach((h,i) => { row[h] = (vals[i]||'').trim().replace(/^"|"$/g,''); });
+    return row;
+  }).filter(r => Object.values(r).some(v => v.trim()));
+}
+function splitCSV(l) {
+  const r=[]; let c=''; let q=false;
+  for(let i=0;i<l.length;i++){
+    if(l[i]==='"'){ if(q&&l[i+1]==='"'){c+='"';i++;continue;} q=!q;continue; }
+    if(l[i]===','&&!q){r.push(c);c='';continue;}
+    c+=l[i];
+  }
+  r.push(c); return r;
+}
 
-  // Meta's content CSV has multiline descriptions — we need to handle quoted fields properly
-  // Use PapaParse for robust parsing
-  const result = Papa.parse(text, {
-    header: true,
-    skipEmptyLines: 'greedy',
-    quoteChar: '"',
-    escapeChar: '"',
-  });
-
-  if(!result.data || !result.data.length) return null;
-
-  // Normalise column names (lowercase, trim)
-  const rows = result.data;
-  const parsed = [];
-
-  rows.forEach(row => {
-    // Find columns case-insensitively
-    const get = (...keys) => {
-      for(const k of keys) {
-        const found = Object.keys(row).find(c => c.toLowerCase().trim() === k.toLowerCase());
-        if(found && row[found] !== undefined && row[found] !== '') return row[found];
-      }
-      return '';
-    };
-
-    const num = v => parseFloat(String(v).replace(/[^0-9.-]/g,'')) || 0;
-
-    // Date from "Publish time" or "Date"
-    const publishTime = get('Publish time', 'Date', 'date');
-    let dateLabel = '';
-    if(publishTime) {
-      const d = new Date(publishTime);
-      if(!isNaN(d)) {
-        dateLabel = d.toLocaleDateString('en-IN', {day:'numeric', month:'short'});
-      } else {
-        dateLabel = publishTime.split(' ')[0]; // fallback to raw
-      }
+function parseCSVMultiline(text) {
+  text = text.replace(/[\uFEFF\uFFFE]/g, '');
+  const allLines = text.split('\n').map(function(l){ return l.replace(/\r$/, ''); });
+  var rawLines = allLines.filter(function(l){ return l.trim(); });
+  var startIdx = 0;
+  for (var i=0; i<Math.min(rawLines.length,5); i++) {
+    if (rawLines[i].trim().startsWith('sep=')) { startIdx=i+1; continue; }
+    if (splitCSV(rawLines[i]).length >= 2) { startIdx=i; break; }
+    startIdx=i+1;
+  }
+  var lines = rawLines.slice(startIdx);
+  if (!lines.length) return [];
+  var headers = splitCSV(lines[0]).map(function(h){ return h.trim().replace(/^"|"$/g,'').toLowerCase().trim(); });
+  var dataLines = [];
+  var buf = '';
+  var openQ = 0;
+  for (var i=1; i<lines.length; i++) {
+    buf += (buf ? '\n' : '') + lines[i];
+    for (var j=0; j<lines[i].length; j++) {
+      if (lines[i][j]==='"' && lines[i][j+1]==='"') { j++; continue; }
+      if (lines[i][j]==='"') openQ++;
     }
-
-    // Post type → format mapping
-    const rawType = get('Post type', 'post type', 'type') || '';
-    const formatMap = {
-      'ig reel': 'Reel',
-      'ig image': 'Static Post',
-      'ig carousel': 'Carousel',
-      'ig video': 'Video',
-      'ig story': 'Story',
-    };
-    const format = formatMap[rawType.toLowerCase().trim()] || rawType || '';
-
-    // Caption from Description
-    const desc = get('Description', 'description', 'caption') || '';
-    // First non-empty line of description as topic
-    const topic = desc.split('\n').map(l=>l.trim()).find(l=>l.length>2&&!l.startsWith('#')) || desc.slice(0,60) || '';
-
-    const reach    = num(get('Reach', 'reach'));
-    const views    = num(get('Views', 'views'));
-    const likes    = num(get('Likes', 'likes'));
-    const shares   = num(get('Shares', 'shares'));
-    const comments = num(get('Comments', 'comments'));
-    const saves    = num(get('Saves', 'saves'));
-
-    // Only include rows with at least some data
-    if(!reach && !views && !likes) return;
-
-    parsed.push({ date: dateLabel, format, reach: reach||views, likes, comments, saves, shares, topic: topic.slice(0,60) });
-  });
-
-  return parsed.length ? parsed : null;
-}
-
-// ── POST TABLE ──
-function addPostRow(data){
-  const tbody=document.getElementById('post-tbody');
-  const idx=tbody.rows.length;
-  const d=data||{};
-  const tr=document.createElement('tr');
-  tr.dataset.idx=idx;
-  tr.innerHTML=`
-    <td><input type="text" placeholder="e.g. 15 Mar" value="${d.date||''}" oninput="updatePost(${idx},'date',this.value)"/></td>
-    <td><select onchange="updatePost(${idx},'format',this.value)">
-      <option value="">—</option>
-      ${['Reel','Carousel','Static Post','Story','Video','Text Post'].map(f=>`<option value="${f}" ${d.format===f?'selected':''}>${f}</option>`).join('')}
-    </select></td>
-    <td><input type="number" placeholder="0" value="${d.reach||''}" oninput="updatePost(${idx},'reach',+this.value)"/></td>
-    <td><input type="number" placeholder="0" value="${d.likes||''}" oninput="updatePost(${idx},'likes',+this.value)"/></td>
-    <td><input type="number" placeholder="0" value="${d.comments||''}" oninput="updatePost(${idx},'comments',+this.value)"/></td>
-    <td><input type="number" placeholder="0" value="${d.saves||''}" oninput="updatePost(${idx},'saves',+this.value)"/></td>
-    <td><input type="number" placeholder="0" value="${d.shares||''}" oninput="updatePost(${idx},'shares',+this.value)"/></td>
-    <td><input type="text" placeholder="Caption topic" value="${d.topic||''}" oninput="updatePost(${idx},'topic',this.value)"/></td>
-    <td id="er-cell-${idx}" style="font-family:var(--mono);font-size:11px;font-weight:500;color:var(--t3)">—</td>
-    <td id="sc-cell-${idx}">—</td>`;
-  tbody.appendChild(tr);
-  posts[idx]=Object.assign({date:'',format:'',reach:0,likes:0,comments:0,saves:0,shares:0,topic:''},d);
-  updatePostRow(idx);
-}
-
-function updatePost(idx,field,val){
-  posts[idx][field]=val;
-  updatePostRow(idx);
-  renderPostStats();
-}
-
-function updatePostRow(idx){
-  const p=posts[idx];
-  const eng=(p.likes||0)+(p.comments||0)+(p.saves||0)+(p.shares||0);
-  const er=p.reach>0?((eng/p.reach)*100).toFixed(1):null;
-  const saveR=p.reach>0?((p.saves||0)/p.reach)*100:0;
-  const shareR=p.reach>0?((p.shares||0)/p.reach)*100:0;
-  const score=er?Math.min(10,parseFloat(er)*0.4+saveR*0.35+shareR*0.25).toFixed(1):null;
-
-  const erCell=document.getElementById('er-cell-'+idx);
-  const scCell=document.getElementById('sc-cell-'+idx);
-  if(erCell){
-    erCell.textContent=er?er+'%':'—';
-    erCell.style.color=er?(parseFloat(er)>5?accent:parseFloat(er)>2?'var(--t3)':'#D85A30'):'var(--t3)';
+    if (openQ%2===0) { dataLines.push(buf); buf=''; openQ=0; }
   }
-  if(scCell&&score){
-    const sc=parseFloat(score);
-    const cls=sc>=7?'score-hi':sc>=4?'score-md':'score-lo';
-    scCell.innerHTML=`<span class="score-pill ${cls}">${score}</span>`;
-  } else if(scCell){scCell.textContent='—';}
-  posts[idx]._er=er?parseFloat(er):null;
-  posts[idx]._score=score?parseFloat(score):null;
+  if (buf) dataLines.push(buf);
+  return dataLines.map(function(line) {
+    var vals = splitCSV(line);
+    var row = {};
+    headers.forEach(function(h,i){ row[h] = (vals[i]||'').trim().replace(/^"|"$/g,''); });
+    return row;
+  }).filter(function(r){ return Object.values(r).some(function(v){ return v.trim(); }); });
 }
 
-function renderPostStats(){
-  const valid=posts.filter(p=>p.reach>0);
-  document.getElementById('p-count').textContent=valid.length;
 
-  if(!valid.length){
-    ['p-er','p-best','p-saves'].forEach(id=>document.getElementById(id).textContent='—');
-    return;
+
+function num(v) { if (!v || v==='-') return 0; return parseFloat(v.replace(/[,%\s₹]/g,''))||0; }
+function fmt(v) { if (!v&&v!==0) return '—'; if(Math.abs(v)>=1e7) return (v/1e7).toFixed(1)+'Cr'; if(Math.abs(v)>=1e5) return (v/1e5).toFixed(1)+'L'; if(Math.abs(v)>=1e3) return (v/1e3).toFixed(1)+'K'; return v.toLocaleString('en-IN'); }
+function fc(row,...keys) { for(const k of keys){ let m=Object.keys(row).find(r=>r===k); if(!m) m=Object.keys(row).find(r=>r.includes(k)); if(m) return row[m]; } return ''; }
+function sn(s,m) { m=m||20; return s&&s.length>m?s.slice(0,m)+'…':s||'—'; }
+
+function getManual(pf) {
+  const d = {};
+  document.querySelectorAll('[id^="'+pf+'-m-"]').forEach(el => {
+    const key = el.id.replace(pf+'-m-','');
+    d[key] = num(el.value);
+  });
+  return d;
+}
+
+// ════════════════════════════════════════
+// METRICS
+// ════════════════════════════════════════
+Chart.defaults.font.family = "'DM Mono', monospace";
+Chart.defaults.font.size = 11;
+Chart.defaults.color = '#9b9a96';
+Chart.defaults.borderColor = 'rgba(0,0,0,.07)';
+
+function mkChart(id, cfg) {
+  const el = document.getElementById(id); if (!el) return;
+  if (STATE.charts[id]) STATE.charts[id].destroy();
+  try { STATE.charts[id] = new Chart(el, cfg); } catch(e) {}
+}
+
+function renderMetrics() {
+  const pf = STATE.activePlatform.metrics;
+  const csv = STATE.csvData[pf] || {};
+  const man = getManual(pf);
+  const tog = STATE.manualToggles[pf];
+
+  // KPI cards
+  const kpiEl = document.getElementById('metrics-kpis');
+  let kpis = [];
+  if (pf === 'ig') {
+    // Meta Business Suite CSVs: data column is always "Primary"
+    const sumPrimary = (rows) => rows ? rows.reduce((s,r)=>s+num(fc(r,'primary')),0) : 0;
+    const views   = tog ? man.views   : sumPrimary(csv.views);
+    const reach   = tog ? man.reach   : sumPrimary(csv.reach);
+    const follows = tog ? (man.newfollows||man.follows||0) : sumPrimary(csv.follows);
+    const clicks  = tog ? man.clicks  : sumPrimary(csv.clicks);
+    const interactions = tog ? 0 : sumPrimary(csv.interactions);
+    // ER = total interactions / total reach * 100
+    const totalReach = reach || 1;
+    const er = tog ? man.er : (interactions && reach ? interactions/totalReach*100 : 0);
+    kpis = [
+      {l:'New followers',    v:follows?fmt(follows):'—',    sub:follows?'this period':'upload Followers CSV'},
+      {l:'Engagement rate',  v:er?er.toFixed(2)+'%':'—',    sub:er?'interactions / reach':'upload Interactions + Reach'},
+      {l:'Total reach',      v:reach?fmt(reach):'—',         sub:reach?'unique accounts':'upload Reach CSV'},
+      {l:'Total views',      v:views?fmt(views):'—',         sub:views?'impressions':'upload Views CSV'},
+    ];
+  } else if (pf === 'fb') {
+    const reach = tog ? man.reach : (csv.reach ? csv.reach.reduce((s,r)=>s+num(fc(r,'reach')),0) : 0);
+    const impr = tog ? man.impressions : (csv.impressions ? csv.impressions.reduce((s,r)=>s+num(fc(r,'impression')),0) : 0);
+    const likes = tog ? man.likes : (csv.follows ? csv.follows.reduce((s,r)=>s+num(fc(r,'new like','page like','follow')),0) : 0);
+    const er = tog ? man.er : 0;
+    kpis = [
+      {l:'Page likes', v:fmt(likes||man.newlikes), sub:likes||man.newlikes?'new this period':'upload Page Likes CSV'},
+      {l:'Engagement rate', v:er?(er.toFixed(1)+'%'):'—', sub:'upload Engagement CSV'},
+      {l:'Total reach', v:fmt(reach||man.reach), sub:reach||man.reach?'unique accounts':'upload Reach CSV'},
+      {l:'Impressions', v:fmt(impr||man.impressions), sub:impr||man.impressions?'total impressions':'upload Impressions CSV'},
+    ];
+  } else if (pf === 'yt') {
+    const views = tog ? man.views : (csv.channel ? csv.channel.reduce((s,r)=>s+num(fc(r,'view')),0) : 0);
+    const subs = tog ? man.newsubs : (csv.subs ? csv.subs.reduce((s,r)=>s+num(fc(r,'subscriber')),0) : 0);
+    const wt = tog ? man.watchtime : (csv.channel ? csv.channel.reduce((s,r)=>s+num(fc(r,'watch time','estimated minute')),0)/60 : 0);
+    const ctr = tog ? man.ctr : (csv.channel ? csv.channel.reduce((s,r)=>s+num(fc(r,'ctr','click-through')),0)/Math.max(csv.channel.length,1) : 0);
+    kpis = [
+      {l:'New subscribers', v:fmt(subs||man.subs), sub:subs||man.subs?'this period':'upload Subscribers CSV'},
+      {l:'Total views', v:fmt(views||man.views), sub:views||man.views?'this period':'upload Channel Analytics'},
+      {l:'Watch time (hrs)', v:wt?Math.round(wt).toLocaleString():'—', sub:wt?'hours watched':'upload Channel Analytics'},
+      {l:'Impressions CTR', v:ctr?(ctr.toFixed(1)+'%'):'—', sub:ctr?'thumbnail CTR':'upload Channel Analytics'},
+    ];
+  } else if (pf === 'li') {
+    const followers = tog ? man.followers : (csv.followers ? csv.followers.reduce((s,r)=>s+num(fc(r,'new follower','gained')),0) : 0);
+    const impr = tog ? man.impressions : (csv.posts ? csv.posts.reduce((s,r)=>s+num(fc(r,'impression')),0) : 0);
+    const er = tog ? man.er : 0;
+    const clicks = tog ? man.clicks : (csv.posts ? csv.posts.reduce((s,r)=>s+num(fc(r,'click')),0) : 0);
+    kpis = [
+      {l:'New followers', v:fmt(followers||man.newfollowers), sub:followers||man.newfollowers?'this period':'upload Followers CSV'},
+      {l:'Engagement rate', v:er?(er.toFixed(1)+'%'):'—', sub:'upload Engagement CSV'},
+      {l:'Impressions', v:fmt(impr||man.impressions), sub:impr||man.impressions?'total':'upload Post Analytics'},
+      {l:'Clicks', v:fmt(clicks||man.clicks), sub:clicks||man.clicks?'total clicks':'upload Post Analytics'},
+    ];
   }
 
-  const ers=valid.filter(p=>p._er!==null).map(p=>p._er);
-  document.getElementById('p-er').textContent=ers.length?(avg(ers).toFixed(1)+'%'):'—';
-  document.getElementById('p-saves').textContent=fmtK(avg(valid.map(p=>p.saves||0)));
+  kpiEl.innerHTML = kpis.map(k => `<div class="kc"><div class="kc-label">${k.l}</div><div class="kc-val">${k.v}</div><div class="kc-sub">${k.sub}</div></div>`).join('');
 
-  // Best format by avg ER
-  const fmtGroups={};
-  valid.forEach(p=>{
-    if(!p.format||p._er===null)return;
-    if(!fmtGroups[p.format])fmtGroups[p.format]=[];
-    fmtGroups[p.format].push(p._er);
-  });
-  let bestFmt='—',bestER=-1;
-  Object.entries(fmtGroups).forEach(([fmt,ers])=>{
-    const a=avg(ers);
-    if(a>bestER){bestER=a;bestFmt=fmt;}
-  });
-  document.getElementById('p-best').textContent=bestFmt;
-
-  // Format chart
-  buildFmtChart(fmtGroups);
-
-  // Top posts list
-  const sorted=[...valid].filter(p=>p._score!==null).sort((a,b)=>b._score-a._score).slice(0,5);
-  const tpl=document.getElementById('top-posts-list');
-  if(sorted.length){
-    tpl.innerHTML=sorted.map((p,i)=>`
-      <div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:0.5px solid var(--bd);${i===sorted.length-1?'border-bottom:none':''}">
-        <span style="font-size:11px;font-weight:500;color:var(--p);width:20px">#${i+1}</span>
-        <span style="flex:1;font-size:11px;color:var(--t)">${p.topic||p.format||'Post '+(posts.indexOf(p)+1)}</span>
-        <span style="font-size:11px;font-family:var(--mono);color:var(--t2)">${p.format||''}</span>
-        <span class="score-pill ${p._score>=7?'score-hi':p._score>=4?'score-md':'score-lo'}" style="font-size:10px">${p._score.toFixed(1)}</span>
-      </div>`).join('');
-  } else {
-    tpl.innerHTML='<div style="font-size:12px;color:var(--t3)">add posts with reach data above</div>';
-  }
-}
-
-function buildFmtChart(groups){
-  if(fmtChart)fmtChart.destroy();
-  const labels=Object.keys(groups);
-  const data=labels.map(l=>parseFloat(avg(groups[l]).toFixed(1)));
-  if(!labels.length)return;
-  fmtChart=new Chart(document.getElementById('fmtChart'),{
-    type:'bar',
-    data:{labels,datasets:[{data,backgroundColor:labels.map((_,i)=>i===data.indexOf(Math.max(...data))?primary:primary+'77'),borderRadius:6}]},
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>ctx.raw+'% avg ER'}}},
-      scales:{x:{ticks:{font:{size:11},color:'#888'},grid:{display:false}},
-              y:{ticks:{font:{size:11},color:'#888',callback:v=>v+'%'},grid:{color:'rgba(130,130,130,0.1)'}}}}
-  });
-}
-
-// ── INSIGHTS ──
-function computeTrend(values){
-  if(!values||values.length<6)return null;
-  const mid=Math.floor(values.length/2);
-  const a1=avg(values.slice(0,mid)),a2=avg(values.slice(mid));
-  if(a1===0)return null;
-  const pct=Math.round(((a2-a1)/a1)*100);
-  return{pct,dir:pct>5?'up':pct<-5?'down':'flat'};
-}
-
-function renderInsights(){
-  const s=store[currentPlat];
-  const trends=[];
-  const recos=[];
-
-  // Trend items
-  [['views',s.views,'Views'],['reach',s.reach,'Reach'],['follows',s.follows,'Follows'],['interactions',s.interactions,'Interactions']].forEach(([key,ds,label])=>{
-    if(!ds)return;
-    const t=computeTrend(ds.values);
-    if(!t)return;
-    const arrow=t.dir==='up'?'↑':t.dir==='down'?'↓':'→';
-    const sign=t.pct>0?'+':'';
-    trends.push({
-      ico:t.dir==='up'?'📈':t.dir==='down'?'📉':'➡',
-      cls:t.dir==='up'?'ico-g':t.dir==='down'?'ico-w':'ico-i',
-      head:`${label} ${t.dir==='up'?'growing':t.dir==='down'?'declining':'stable'} (${sign}${t.pct}%)`,
-      desc:t.dir==='down'?`${label} dropped ${Math.abs(t.pct)}% comparing recent period vs earlier. Check posting frequency and content quality.`
-          :t.dir==='up'?`Good momentum — ${label} up ${t.pct}% in recent period. Identify what changed and double down.`
-          :`${label} is holding steady. Test new content formats to push growth.`
+  // ── TIME FILTER ──
+  // Filters rows by date. Meta CSVs have ISO date strings like "2025-12-24T00:00:00"
+  const formatDate = d => { try { return d.slice(5,10); } catch(e) { return d||'?'; } };
+  const filterByTime = rows => {
+    if (!rows || !rows.length) return rows || [];
+    const t = STATE.activeTime;
+    if (t === 'all') return rows;
+    const days = t === '30' ? 30 : 90;
+    // Find the latest date in the dataset and filter back N days from it
+    const dates = rows.map(r => fc(r,'date')).filter(Boolean).map(d => new Date(d.slice(0,10)));
+    const maxDate = new Date(Math.max(...dates));
+    const cutoff = new Date(maxDate); cutoff.setDate(cutoff.getDate() - days);
+    return rows.filter(r => {
+      const d = fc(r,'date'); if (!d) return false;
+      return new Date(d.slice(0,10)) >= cutoff;
     });
-  });
-
-  // Recommendations from CSV data
-  const tR=store[currentPlat].reach?sum(store[currentPlat].reach.values):0;
-  const tI=store[currentPlat].interactions?sum(store[currentPlat].interactions.values):0;
-  const tF=store[currentPlat].follows?sum(store[currentPlat].follows.values):0;
-  const tC=store[currentPlat].clicks?sum(store[currentPlat].clicks.values):0;
-  const er=tR>0&&tI>0?((tI/tR)*100):0;
-
-  if(er>0&&er<2) recos.push({ico:'💬',cls:'ico-w',head:'Engagement rate under 2% — needs attention',desc:'Try interactive Reels with a strong question in the caption. Saves and shares matter more than likes.'});
-  else if(er>=5) recos.push({ico:'✅',cls:'ico-g',head:`Strong engagement rate (${er.toFixed(1)}%) — keep going`,desc:'Identify the 2–3 content types driving this and make them your core format for the next month.'});
-  else if(er>0) recos.push({ico:'📊',cls:'ico-i',head:`Engagement rate at ${er.toFixed(1)}% — room to grow`,desc:'Target 5%+. Audit your lowest-ER posts — weak hooks and no CTAs are the most common causes.'});
-
-  if(tF>0&&tR>0&&(tF/tR)*100<0.5) recos.push({ico:'👥',cls:'ico-w',head:'Low follow conversion — views not converting',desc:`${fmtK(tF)} follows from ${fmtK(tR)} reach = ${((tF/tR)*100).toFixed(2)}%. Add follow CTAs in captions and first 3 seconds of Reels. Pin a "why follow me" post.`});
-
-  if(tC>0&&tR>0&&(tC/tR)*100<1) recos.push({ico:'🔗',cls:'ico-w',head:'Link clicks under 1% of reach',desc:'Mention the link in bio explicitly in captions and Stories. Use a single focused landing page rather than a link tree.'});
-
-  // Recommendations from post data
-  const valid=posts.filter(p=>p.reach>0&&p._er!==null);
-  if(valid.length>3){
-    const fmtGroups={};
-    valid.forEach(p=>{if(!p.format)return;if(!fmtGroups[p.format])fmtGroups[p.format]=[];fmtGroups[p.format].push(p._er);});
-    let bestFmt='',bestER=-1,worstFmt='',worstER=999;
-    Object.entries(fmtGroups).forEach(([fmt,ers])=>{
-      const a=avg(ers);
-      if(a>bestER){bestER=a;bestFmt=fmt;}
-      if(a<worstER){worstER=a;worstFmt=fmt;}
-    });
-    if(bestFmt) recos.push({ico:'⭐',cls:'ico-g',head:`${bestFmt} is your best format (${bestER.toFixed(1)}% avg ER)`,desc:`Build your content calendar so ${bestFmt} makes up 60%+ of your posts. It resonates most with your audience right now.`});
-    if(worstFmt&&worstFmt!==bestFmt) recos.push({ico:'⚠',cls:'ico-w',head:`${worstFmt} is underperforming (${worstER.toFixed(1)}% avg ER)`,desc:`Pause ${worstFmt} for 3 weeks. Either rethink the angle entirely or redirect that effort to ${bestFmt||'your best format'}.`});
-
-    const avgSaveR=avg(valid.map(p=>p.reach>0?(p.saves||0)/p.reach*100:0));
-    if(avgSaveR<1) recos.push({ico:'🔖',cls:'ico-w',head:`Save rate at ${avgSaveR.toFixed(2)}% — below target`,desc:'Save rate under 1% means content is not "bookmark worthy". Post lists, how-tos, tips people want to revisit. Add "save this for later" in captions.'});
-  }
-
-  if(!trends.length&&!recos.length){
-    document.getElementById('trend-list').innerHTML='<div style="font-size:12px;color:var(--t3)">upload CSV data on the Metrics tab to see trends</div>';
-    document.getElementById('reco-list').innerHTML='<div style="font-size:12px;color:var(--t3)">upload data or add posts on the Posts tab to unlock recommendations</div>';
-  } else {
-    const buildHTML=items=>items.map(i=>`<div class="ins-item"><div class="ins-ico ${i.cls}">${i.ico}</div><div><div class="ins-h">${i.head}</div><div class="ins-d">${i.desc}</div></div></div>`).join('');
-    document.getElementById('trend-list').innerHTML=trends.length?buildHTML(trends):'<div style="font-size:12px;color:var(--t3)">upload CSV data with enough history for trend detection</div>';
-    document.getElementById('reco-list').innerHTML=recos.length?buildHTML(recos):'<div style="font-size:12px;color:var(--t3)">upload more data to generate recommendations</div>';
-  }
-
-  // Benchmarks
-  renderBenchmarks(er,tR,tI);
-}
-
-function renderBenchmarks(er,tR,tI){
-  const valid=posts.filter(p=>p.reach>0);
-  const avgSaveR=valid.length?avg(valid.map(p=>(p.saves||0)/p.reach*100)):null;
-  const avgShareR=valid.length?avg(valid.map(p=>(p.shares||0)/p.reach*100)):null;
-  const clickR=tR>0&&store[currentPlat].clicks?sum(store[currentPlat].clicks.values)/tR*100:null;
-
-  const rows=[
-    {label:'Engagement rate',your:er>0?er.toFixed(1)+'%':null,poor:'<1%',avg:'1–3%',good:'3–6%',exc:'>6%',
-     status:er>0?(er>6?'🟢 Excellent':er>3?'🟢 Good':er>1?'🟡 Average':'🔴 Poor'):null},
-    {label:'Save rate (saves ÷ reach)',your:avgSaveR!==null?avgSaveR.toFixed(2)+'%':null,poor:'<0.3%',avg:'0.3–1%',good:'1–2%',exc:'>2%',
-     status:avgSaveR!==null?(avgSaveR>2?'🟢 Excellent':avgSaveR>1?'🟢 Good':avgSaveR>0.3?'🟡 Average':'🔴 Poor'):null},
-    {label:'Share rate (shares ÷ reach)',your:avgShareR!==null?avgShareR.toFixed(2)+'%':null,poor:'<0.1%',avg:'0.1–0.5%',good:'0.5–1%',exc:'>1%',
-     status:avgShareR!==null?(avgShareR>1?'🟢 Excellent':avgShareR>0.5?'🟢 Good':avgShareR>0.1?'🟡 Average':'🔴 Poor'):null},
-    {label:'Link click-through rate',your:clickR!==null?clickR.toFixed(2)+'%':null,poor:'<0.5%',avg:'0.5–1%',good:'1–3%',exc:'>3%',
-     status:clickR!==null?(clickR>3?'🟢 Excellent':clickR>1?'🟢 Good':clickR>0.5?'🟡 Average':'🔴 Poor'):null},
-    {label:'Reel avg views',your:valid.filter(p=>p.format==='Reel').length?fmtK(avg(valid.filter(p=>p.format==='Reel').map(p=>p.reach))):null,poor:'<500',avg:'500–2K',good:'2K–10K',exc:'>10K',status:null},
-    {label:'Avg comments/post',your:valid.length?avg(valid.map(p=>p.comments||0)).toFixed(1):null,poor:'<2',avg:'2–5',good:'5–15',exc:'>15',status:null},
-  ];
-
-  const statusColor={
-    '🟢 Excellent':'#1D9E75','🟢 Good':'#1D9E75',
-    '🟡 Average':'#E65100','🔴 Poor':'#C62828'
   };
 
-  const tbody=document.getElementById('bench-tbody');
-  tbody.innerHTML=rows.map((r,i)=>`
-    <tr style="background:${i%2===0?'var(--sur)':'var(--sur2)'}">
-      <td style="padding:8px 0 8px;font-size:12px;font-weight:500;color:var(--t)">${r.label}</td>
-      <td style="padding:8px;text-align:center;font-size:12px;font-weight:500;font-family:var(--mono);color:var(--t)">${r.your||'—'}</td>
-      <td style="padding:8px;text-align:center;font-size:11px;color:#C62828;background:#FFEBEE;border-radius:4px">${r.poor}</td>
-      <td style="padding:8px;text-align:center;font-size:11px;color:#E65100;background:#FFF8E1;border-radius:4px">${r.avg}</td>
-      <td style="padding:8px;text-align:center;font-size:11px;color:#1D9E75;background:#E8F5EE;border-radius:4px">${r.good}</td>
-      <td style="padding:8px;text-align:center;font-size:11px;color:#1D9E75;background:#E8F5EE;border-radius:4px">${r.exc}</td>
-      <td style="padding:8px;text-align:center;font-size:11px;font-weight:500;color:${r.status?statusColor[r.status]:'var(--t3)'}">${r.status||'—'}</td>
-    </tr>`).join('');
-}
+  // Apply time filter to all datasets
+  const viewsData   = filterByTime(csv.views || []);
+  const reachData   = filterByTime(csv.reach || []);
+  const followsData = filterByTime(csv.follows || []);
+  const intDataRaw  = filterByTime(csv.interactions || []);
 
-// ── ALL PLATFORMS ──
-function renderAllPlatforms(){
-  const platforms=[
-    {id:'instagram',name:'Instagram',icon:'📸'},
-    {id:'facebook',name:'Facebook',icon:'📘'},
-    {id:'youtube',name:'YouTube',icon:'▶'},
-    {id:'linkedin',name:'LinkedIn',icon:'💼'}
-  ];
-
-  const grid=document.getElementById('pgrid');
-  grid.innerHTML='';
-  const allLabels=[],allReach=[];
-  const trendHTML=[];
-  const recoHTML=[];
-
-  platforms.forEach(p=>{
-    const s=store[p.id];
-    const tR=s.reach?sum(s.reach.values):0;
-    const tV=s.views?sum(s.views.values):0;
-    const tF=s.follows?sum(s.follows.values):0;
-    const tI=s.interactions?sum(s.interactions.values):0;
-    const er=tR>0&&tI>0?((tI/tR)*100).toFixed(1):null;
-    const hasData=tR||tV||tF||tI;
-    allLabels.push(p.name);
-    allReach.push(tR);
-
-    // Trends per platform
-    const vt=computeTrend(s.views?s.views.values:null);
-    const rt=computeTrend(s.reach?s.reach.values:null);
-    let trendStr='';
-    if(vt){const s2=vt.pct>0?'+':'';trendStr+=`<span class="trend-${vt.dir==='up'?'u':vt.dir==='down'?'d':'f'}">${vt.dir==='up'?'↑':vt.dir==='down'?'↓':'→'} Views ${s2}${vt.pct}%</span><br>`;}
-    if(rt){const s2=rt.pct>0?'+':'';trendStr+=`<span class="trend-${rt.dir==='up'?'u':rt.dir==='down'?'d':'f'}">${rt.dir==='up'?'↑':rt.dir==='down'?'↓':'→'} Reach ${s2}${rt.pct}%</span>`;}
-    if(!trendStr&&hasData) trendStr='<span class="trend-f">→ single period data</span>';
-    if(!trendStr) trendStr='<span style="color:var(--t3);font-size:10px">no data</span>';
-
-    grid.innerHTML+=`<div class="pcard">
-      <div class="pch"><span style="font-size:16px">${p.icon}</span><div><div class="pcn">${p.name}</div><div class="pcs">${hasData?'data loaded':'no data'}</div></div></div>
-      <div class="pst"><div class="psl">Reach</div><div class="psv">${tR>0?fmtK(tR):'—'}</div></div>
-      <div class="pdiv"></div>
-      <div class="pst"><div class="psl">Views</div><div class="psv">${tV>0?fmtK(tV):'—'}</div></div>
-      <div class="pdiv"></div>
-      <div class="pst"><div class="psl">New follows</div><div class="psv">${tF>0?fmtK(tF):'—'}</div></div>
-      <div class="pdiv"></div>
-      <div class="pst"><div class="psl">Engagement rate</div><div class="psv" style="font-size:13px">${er?er+'%':'—'}</div></div>
-      <div>${trendStr}</div>
-    </div>`;
-
-    if(hasData){
-      if(rt&&rt.dir==='down'&&Math.abs(rt.pct)>20)
-        recoHTML.push({ico:'📡',cls:'ico-w',head:`${p.icon} ${p.name} — reach dropped ${Math.abs(rt.pct)}%`,desc:'Check posting frequency, content quality, and whether recent posts got low saves/shares in the first hour.'});
-      if(er&&parseFloat(er)<2)
-        recoHTML.push({ico:'💬',cls:'ico-w',head:`${p.icon} ${p.name} — low engagement (${er}%)`,desc:'Interactive content — polls, questions, saves-worthy posts — typically recovers engagement faster than posting more.'});
-      if(er&&parseFloat(er)>=5)
-        recoHTML.push({ico:'✅',cls:'ico-g',head:`${p.icon} ${p.name} — strong engagement (${er}%)`,desc:'This platform is working. Consider increasing posting frequency here before investing in underperforming platforms.'});
-    }
-
-    if(vt) trendHTML.push({ico:vt.dir==='up'?'📈':vt.dir==='down'?'📉':'➡',cls:vt.dir==='up'?'ico-g':vt.dir==='down'?'ico-w':'ico-i',
-      head:`${p.icon} ${p.name} views ${vt.dir==='up'?'growing':vt.dir==='down'?'declining':'stable'} (${vt.pct>0?'+':''}${vt.pct}%)`,
-      desc:vt.dir==='down'?'Content may not be reaching new accounts. Try Reels with trending audio.':`Positive momentum. Keep the current content style going.`});
-  });
-
-  // Best platform
-  const withReach=platforms.filter(p=>store[p.id].reach&&sum(store[p.id].reach.values)>0);
-  if(withReach.length>1){
-    const best=withReach.reduce((a,b)=>sum(store[a.id].reach.values)>sum(store[b.id].reach.values)?a:b);
-    recoHTML.push({ico:'🏆',cls:'ico-g',head:`${best.icon} ${best.name} is your strongest channel`,desc:`Focus effort here first. Highest reach means the algorithm is distributing your content well on this platform.`});
+  // Recompute KPI totals based on filtered data (only for IG — overwrite er/reach/views/follows)
+  if (pf === 'ig' && !tog) {
+    const fViews   = viewsData.reduce((s,r)=>s+num(fc(r,'primary')),0);
+    const fReach   = reachData.reduce((s,r)=>s+num(fc(r,'primary')),0);
+    const fFollows = followsData.reduce((s,r)=>s+num(fc(r,'primary')),0);
+    const fInter   = intDataRaw.reduce((s,r)=>s+num(fc(r,'primary')),0);
+    const fER      = fReach ? (fInter/fReach*100) : 0;
+    kpiEl.innerHTML = [
+      {l:'New followers',   v:fFollows?fmt(fFollows):'—',        sub:fFollows?'this period':'upload Followers CSV'},
+      {l:'Engagement rate', v:fER?fER.toFixed(2)+'%':'—',        sub:fER?'interactions / reach':'upload Interactions + Reach'},
+      {l:'Total reach',     v:fReach?fmt(fReach):'—',            sub:fReach?'unique accounts':'upload Reach CSV'},
+      {l:'Total views',     v:fViews?fmt(fViews):'—',            sub:fViews?'impressions':'upload Views CSV'},
+    ].map(k=>`<div class="kc"><div class="kc-label">${k.l}</div><div class="kc-val">${k.v}</div><div class="kc-sub">${k.sub}</div></div>`).join('');
   }
 
-  if(allChart)allChart.destroy();
-  allChart=new Chart(document.getElementById('allChart'),{
-    type:'bar',
-    data:{labels:allLabels,datasets:[{label:'Reach',data:allReach,backgroundColor:[primary,primary+'bb',primary+'77',primary+'44'],borderRadius:6}]},
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>fmtK(ctx.raw)+' reach'}}},
-      scales:{x:{ticks:{font:{size:12},color:'#888'},grid:{display:false}},y:{ticks:{font:{size:11},color:'#888',callback:v=>fmtK(v)},grid:{color:'rgba(130,130,130,0.1)'}}}}
+  // ── CHARTS ──
+  const go2 = {responsive:true, maintainAspectRatio:false};
+  const gridOpts = {y:{beginAtZero:true, grid:{color:'rgba(0,0,0,.05)'}}};
+
+  if (viewsData.length || reachData.length) {
+    const baseData = viewsData.length ? viewsData : reachData;
+    const labels = baseData.map(r=>formatDate(fc(r,'date')));
+    const views = viewsData.length ? viewsData.map(r=>num(fc(r,'primary'))) : [];
+    const reach = reachData.length ? reachData.map(r=>num(fc(r,'primary'))) : [];
+    const datasets = [];
+    if (views.length) datasets.push({label:'Views', data:views, borderColor:'#D85A30', backgroundColor:'rgba(216,90,48,.1)', tension:.3, fill:true, pointRadius:0});
+    if (reach.length) datasets.push({label:'Reach', data:reach, borderColor:'#1D9E75', backgroundColor:'transparent', tension:.3, borderDash:[3,2], pointRadius:0});
+    mkChart('ch-views-reach', {type:'line', data:{labels, datasets}, options:{...go2, plugins:{legend:{labels:{boxWidth:8,padding:12}}}, scales:gridOpts}});
+  } else {
+    mkChart('ch-views-reach', {type:'line', data:{labels:['No data'], datasets:[]}, options:{...go2}});
+  }
+
+  if (followsData.length) {
+    const labels = followsData.map(r=>formatDate(fc(r,'date')));
+    const vals   = followsData.map(r=>num(fc(r,'primary')));
+    mkChart('ch-follows', {type:'bar', data:{labels, datasets:[{data:vals, backgroundColor:'rgba(216,90,48,.65)', borderRadius:3}]}, options:{...go2, plugins:{legend:{display:false}}, scales:gridOpts}});
+  } else {
+    mkChart('ch-follows', {type:'bar', data:{labels:['No data'], datasets:[{data:[0],backgroundColor:'transparent'}]}, options:{...go2}});
+  }
+
+  // ER trend — pair interaction row with matching reach row by date
+  if (intDataRaw.length) {
+    const reachByDate = {};
+    reachData.forEach(r => { reachByDate[fc(r,'date').slice(0,10)] = num(fc(r,'primary')); });
+    const labels = intDataRaw.map(r=>formatDate(fc(r,'date')));
+    const erVals = intDataRaw.map(r => {
+      const dateKey = fc(r,'date').slice(0,10);
+      const interactions = num(fc(r,'primary'));
+      const reachVal = reachByDate[dateKey] || 1;
+      return (interactions/reachVal*100).toFixed(2);
+    });
+    mkChart('ch-er', {type:'line', data:{labels, datasets:[{data:erVals, borderColor:'#185FA5', backgroundColor:'rgba(24,95,165,.1)', tension:.3, fill:true, pointRadius:0}]}, options:{...go2, plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true, ticks:{callback:v=>v+'%'}, grid:{color:'rgba(0,0,0,.05)'}}}}});
+  }
+
+  // Interactions bar
+  if (intDataRaw.length) {
+    const labels = intDataRaw.map(r=>formatDate(fc(r,'date')));
+    const vals   = intDataRaw.map(r=>num(fc(r,'primary')));
+    mkChart('ch-interactions', {type:'bar', data:{labels, datasets:[{data:vals, backgroundColor:'rgba(216,90,48,.65)', borderRadius:2}]}, options:{...go2, plugins:{legend:{display:false}}, scales:gridOpts}});
+  }
+}
+
+function computeER(interactions, reach) {
+  const totInt   = interactions.reduce((s,r)=>s+num(fc(r,'primary','interaction','engagement')),0);
+  const totReach = reach.reduce((s,r)=>s+num(fc(r,'primary','reach')),0);
+  if (!totInt || !totReach) return 0;
+  return (totInt/totReach*100);
+}
+
+// ════════════════════════════════════════
+// POSTS
+// ════════════════════════════════════════
+function calcScore(post) {
+  const likes = num(post.likes), comments = num(post.comments), saves = num(post.saves), shares = num(post.shares), reach = num(post.reach)||1;
+  if (!likes && !comments && !saves && !shares) return 0;
+  // Weighted ER: saves and comments worth more (algorithm signals)
+  const weighted = (likes*1 + comments*3 + saves*4 + shares*2);
+  const wER = weighted/reach*100;
+  // Scale: 0-2% wER → 0-4, 2-8% → 4-7, 8-20% → 7-9, 20%+ → 9-10
+  let score;
+  if (wER <= 0) score = 0;
+  else if (wER < 2) score = wER/2*4;
+  else if (wER < 8) score = 4 + (wER-2)/6*3;
+  else if (wER < 20) score = 7 + (wER-8)/12*2;
+  else score = 9 + Math.min((wER-20)/30, 1);
+  return parseFloat(Math.min(score,10).toFixed(1));
+}
+
+function calcER(post) {
+  const likes = num(post.likes), comments = num(post.comments), saves = num(post.saves), shares = num(post.shares), reach = num(post.reach)||1;
+  if (!likes && !comments && !saves && !shares) return '0.0';
+  return ((likes+comments+saves+shares)/reach*100).toFixed(1);
+}
+
+function erClass(er) {
+  const v = parseFloat(er);
+  if (v >= 15) return 'er-high';
+  if (v >= 5) return 'er-mid';
+  return 'er-low';
+}
+
+function scoreColor(s) {
+  if (s >= 7) return '#1D9E75';
+  if (s >= 4) return '#BA7517';
+  return '#A32D2D';
+}
+
+function formatClass(f) {
+  if (!f) return 'fp-other';
+  const fl = f.toLowerCase();
+  if (fl.includes('reel') || fl.includes('short')) return 'fp-reel';
+  if (fl.includes('carousel') || fl.includes('album')) return 'fp-car';
+  if (fl.includes('static') || fl.includes('image') || fl.includes('photo')) return 'fp-static';
+  if (fl.includes('video')) return 'fp-video';
+  return 'fp-other';
+}
+
+function addPostRow() {
+  const pf = STATE.activePlatform.posts;
+  STATE.posts[pf].unshift({ id:Date.now(), date:'', format:'Static Post', reach:'', likes:'', comments:'', saves:'', shares:'', caption:'', _new:true });
+  renderPosts();
+}
+
+function bulkUploadPosts(input) {
+  const file = input.files[0]; if (!file) return;
+  const pf = STATE.activePlatform.posts;
+  const tryEnc = enc => new Promise(res => { const r = new FileReader(); r.onload = e => res(e.target.result); r.readAsText(file, enc); });
+  tryEnc('UTF-16').then(t => {
+    let rows = parseCSVMultiline(t);
+    if (!rows.length || JSON.stringify(rows).includes('\uFFFD')) return tryEnc('UTF-8').then(t2 => parseCSVMultiline(t2));
+    return rows;
+  }).then(rows => {
+    // Meta post CSV: Post ID, Description, Publish time, Post type, Date, Views, Reach, Likes, Shares, Follows, Comments, Saves
+    const mapFormat = f => {
+      if (!f) return 'Static Post';
+      const fl = f.toLowerCase();
+      if (fl.includes('reel') || fl.includes('ig reel')) return 'Reel';
+      if (fl.includes('carousel') || fl.includes('album')) return 'Carousel';
+      if (fl.includes('video')) return 'Video';
+      if (fl.includes('image') || fl.includes('photo') || fl.includes('static')) return 'Static Post';
+      return f;
+    };
+    // Meta post CSV: Date = "Lifetime", actual date is in "Publish time" (MM/DD/YYYY HH:MM)
+    // Skip empty rows
+    const validRows = rows.filter(r => {
+      const pub = fc(r,'publish time') || fc(r,'date');
+      return pub && pub.trim() !== '';
+    });
+    console.log('[bulk] total rows:', rows.length, 'valid:', validRows.length, 'sample col:', rows[0] ? Object.keys(rows[0]).slice(0,5).join(',') : 'none');
+    const imported = validRows.map(r => {
+      // "Publish time" col: "02/13/2026 04:44" → "2026-02-13"
+      const pub = fc(r,'publish time') || fc(r,'date') || '';
+      let dateStr = '';
+      if (pub.includes('/')) {
+        const parts = pub.split(' ')[0].split('/');
+        if (parts.length === 3) dateStr = parts[2]+'-'+parts[0].padStart(2,'0')+'-'+parts[1].padStart(2,'0');
+      } else if (pub.includes('-')) {
+        dateStr = pub.slice(0,10);
+      } else {
+        dateStr = pub.slice(0,10);
+      }
+      return {
+        id: Date.now() + Math.random(),
+        date: dateStr,
+        format: mapFormat(fc(r,'post type','type','format','media type')),
+        reach:    fc(r,'reach') || '0',
+        likes:    fc(r,'likes','like') || '0',
+        comments: fc(r,'comments','comment') || '0',
+        saves:    fc(r,'saves','save') || '0',
+        shares:   fc(r,'shares','share') || '0',
+        caption:  (fc(r,'description','caption','topic','title')||'').replace(/[\r\n]+/g,' ').trim().slice(0,100)
+      };
+    });
+    STATE.posts[pf] = [...imported, ...STATE.posts[pf]];
+    const btn = document.getElementById('bulk-upload-btn');
+    if (btn) btn.style.borderColor = 'var(--grn)';
+    input.value = '';
+    renderPosts();
   });
-
-  const build=items=>items.map(i=>`<div class="ins-item"><div class="ins-ico ${i.cls}">${i.ico}</div><div><div class="ins-h">${i.head}</div><div class="ins-d">${i.desc}</div></div></div>`).join('');
-  document.getElementById('all-trend-list').innerHTML=trendHTML.length?build(trendHTML):'<div style="font-size:12px;color:var(--t3)">upload CSV data to see platform trends</div>';
-  document.getElementById('all-reco-list').innerHTML=recoHTML.length?build(recoHTML):'<div style="font-size:12px;color:var(--t3)">upload data on each platform tab to unlock recommendations</div>';
 }
 
-// ── AI ANALYSIS ──
-function buildPostContext() {
-  const valid = posts.filter(p => p.reach > 0);
-  if(!valid.length) return null;
-
-  // Sort by score descending
-  const sorted = [...valid].filter(p=>p._score!=null).sort((a,b)=>b._score-a._score);
-
-  const postLines = valid.map((p,i) => {
-    const eng = (p.likes||0)+(p.comments||0)+(p.saves||0)+(p.shares||0);
-    const er = p.reach>0?((eng/p.reach)*100).toFixed(1):'0';
-    const saveR = p.reach>0?((p.saves||0)/p.reach*100).toFixed(2):'0';
-    return `Post ${i+1}: Date="${p.date}" Format="${p.format}" Reach=${p.reach} Views=${p.views||p.reach} Likes=${p.likes||0} Comments=${p.comments||0} Saves=${p.saves||0} Shares=${p.shares||0} ER=${er}% SaveRate=${saveR}% Score=${p._score||0} Caption="${(p.topic||'').replace(/"/g,"'").slice(0,120)}"`;
-  }).join('\n');
-
-  const fmtGroups = {};
-  valid.forEach(p=>{ if(!p.format)return; if(!fmtGroups[p.format])fmtGroups[p.format]=[]; fmtGroups[p.format].push(p._er||0); });
-  const fmtSummary = Object.entries(fmtGroups).map(([f,ers])=>`${f}: avg ER ${avg(ers).toFixed(1)}%, ${ers.length} posts`).join(' | ');
-
-  const avgER = avg(valid.filter(p=>p._er!=null).map(p=>p._er)).toFixed(1);
-  const avgSaves = avg(valid.map(p=>p.saves||0)).toFixed(1);
-
-  return `You are a social media strategist analyzing Instagram content performance data for a client managed by Riddler Media agency.
-
-ACCOUNT OVERVIEW:
-- Total posts analyzed: ${valid.length}
-- Average engagement rate: ${avgER}%
-- Average saves per post: ${avgSaves}
-- Format breakdown: ${fmtSummary}
-
-FULL POST DATA (sorted by date):
-${postLines}
-
-TOP 3 POSTS BY SCORE:
-${sorted.slice(0,3).map((p,i)=>`#${i+1}: Format=${p.format} ER=${p._er?.toFixed(1)||0}% Score=${p._score} Caption="${(p.topic||'').slice(0,100)}"`).join('\n')}
-
-BOTTOM 3 POSTS BY SCORE:
-${sorted.slice(-3).reverse().map((p,i)=>`#${i+1}: Format=${p.format} ER=${p._er?.toFixed(1)||0}% Score=${p._score} Caption="${(p.topic||'').slice(0,100)}"`).join('\n')}
-
-Analyze this data to answer the user's question. Be specific — reference actual post data, actual numbers, actual caption patterns. Do not give generic social media advice. Focus on what THIS account's data shows. Format your response with clear sections using markdown-style headers (##) and bullet points where helpful. Keep it concise and actionable.`;
+// ── FIX: filterPosts now correctly resets ALL .pt-filter active states ──
+function filterPosts(f, btn) {
+  STATE.postFilter = f;
+  document.querySelectorAll('.pt-filter').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderPosts();
 }
 
-async function askAI(question) {
-  question = question.trim();
-  if(!question) return;
+function sortPosts(s, btn) {
+  STATE.postSort = s;
+  document.querySelectorAll('.pt-filter').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderPosts();
+}
 
-  document.getElementById('ai-input').value = '';
+function toggleExpand(id, btn) {
+  const expRow = document.getElementById('exp-'+id);
+  if (!expRow) return;
+  const isOpen = expRow.style.display !== 'none';
+  expRow.style.display = isOpen ? 'none' : 'table-row';
+  btn.classList.toggle('open', !isOpen);
+}
 
-  const valid = posts.filter(p => p.reach > 0);
-  if(!valid.length) {
-    document.getElementById('ai-no-data').style.display = 'block';
+function renderPosts() {
+  const pf = STATE.activePlatform.posts;
+  const posts = STATE.posts[pf];
+  const tbody = document.getElementById('posts-tbody');
+
+  // Filter + sort
+  let filtered = posts.filter(p => {
+    if (STATE.postFilter === 'all') return true;
+    return (p.format||'').toLowerCase() === STATE.postFilter.toLowerCase();
+  });
+  if (STATE.postSort === 'score') filtered.sort((a,b) => calcScore(b)-calcScore(a));
+  else if (STATE.postSort === 'date') filtered.sort((a,b) => new Date(b.date)-new Date(a.date));
+  else if (STATE.postSort === 'er') filtered.sort((a,b) => parseFloat(calcER(b))-parseFloat(calcER(a)));
+  else if (STATE.postSort === 'reach') filtered.sort((a,b) => num(b.reach)-num(a.reach));
+
+  if (!filtered.length) {
+    tbody.innerHTML = `<tr><td colspan="11"><div class="empty-state"><div class="empty-icon">📝</div><div class="empty-title">No posts logged yet</div><div class="empty-msg">Click "+ Add row" to log posts manually, or they'll appear here once you upload platform data</div></div></td></tr>`;
+    document.getElementById('posts-summary').innerHTML = '';
+    document.getElementById('top-posts-list').innerHTML = '';
+    ['ch-format','ch-score-dist','ch-scatter'].forEach(function(id){
+      if (STATE.charts[id]) { STATE.charts[id].destroy(); delete STATE.charts[id]; }
+      var el = document.getElementById(id);
+      if (el) { el.getContext('2d').clearRect(0,0,el.width,el.height); }
+    });
     return;
   }
-  document.getElementById('ai-no-data').style.display = 'none';
 
-  const thread = document.getElementById('ai-thread');
+  tbody.innerHTML = filtered.map(p => {
+    const score = calcScore(p);
+    const er = calcER(p);
+    const sc = scoreColor(score);
+    const note = generatePostNote(p, score, er);
+    return `
+    <tr class="post-row">
+      <td><span class="expand-chevron" id="chev-${p.id}" onclick="toggleExpand(${p.id},this)">▶</span></td>
+      <td contenteditable="true" class="editable" onblur="updatePost(${p.id},'date',this.textContent)">${p.date||''}</td>
+      <td>
+        <select class="fmt-select" onchange="updatePost(${p.id},'format',this.value)">
+          ${['Reel','Carousel','Static Post','Video','Story','Other'].map(f=>`<option ${p.format===f?'selected':''} value="${f}">${f}</option>`).join('')}
+        </select>
+      </td>
+      <td contenteditable="true" class="editable" onblur="updatePost(${p.id},'reach',this.textContent)">${p.reach||''}</td>
+      <td contenteditable="true" class="editable" onblur="updatePost(${p.id},'likes',this.textContent)">${p.likes||''}</td>
+      <td contenteditable="true" class="editable" onblur="updatePost(${p.id},'comments',this.textContent)">${p.comments||''}</td>
+      <td contenteditable="true" class="editable" onblur="updatePost(${p.id},'saves',this.textContent)">${p.saves||''}</td>
+      <td contenteditable="true" class="editable" onblur="updatePost(${p.id},'shares',this.textContent)">${p.shares||''}</td>
+      <td contenteditable="true" class="editable" style="max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" onblur="updatePost(${p.id},'caption',this.textContent)">${p.caption||''}</td>
+      <td><span class="${erClass(er)}">${er}%</span></td>
+      <td>
+        <div class="score-cell">
+          <div class="score-track"><div class="score-fill" style="width:${score*10}%;background:${sc}"></div></div>
+          <span style="font-size:11px;font-weight:500;color:${sc}">${score}</span>
+        </div>
+      </td>
+    </tr>
+    <tr id="exp-${p.id}" style="display:none" class="exp-row">
+      <td colspan="11">
+        <div class="exp-grid">
+          <div class="exp-stat"><div class="exp-stat-label">Reach</div><div class="exp-stat-val">${fmt(num(p.reach))}</div></div>
+          <div class="exp-stat"><div class="exp-stat-label">Likes</div><div class="exp-stat-val">${fmt(num(p.likes))}</div></div>
+          <div class="exp-stat"><div class="exp-stat-label">Comments</div><div class="exp-stat-val">${fmt(num(p.comments))}</div></div>
+          <div class="exp-stat"><div class="exp-stat-label">Saves</div><div class="exp-stat-val">${fmt(num(p.saves))}</div></div>
+          <div class="exp-stat"><div class="exp-stat-label">Shares</div><div class="exp-stat-val">${fmt(num(p.shares))}</div></div>
+        </div>
+        <div class="exp-note">${note}</div>
+      </td>
+    </tr>`;
+  }).join('');
 
-  // User bubble
-  const userBubble = document.createElement('div');
-  userBubble.className = 'ai-msg-user';
-  userBubble.textContent = question;
-  thread.appendChild(userBubble);
+  // Summary strip
+  renderPostsSummary(filtered);
+  renderPostCharts(filtered);
+}
 
-  // Loading indicator
-  const loadingEl = document.createElement('div');
-  loadingEl.className = 'ai-loading';
-  loadingEl.innerHTML = '<div class="ai-dot"></div><div class="ai-dot"></div><div class="ai-dot"></div><span style="margin-left:4px">Analysing your content data…</span>';
-  thread.appendChild(loadingEl);
-  thread.scrollTop = thread.scrollHeight;
+function generatePostNote(p, score, er) {
+  const saves = num(p.saves), reach = num(p.reach), format = p.format||'';
+  if (score >= 9) return `Top performing post this period. ${er}% ER${saves>0?' with '+saves+' saves — strong save signal for the algorithm.':' — consider adding a save CTA to amplify reach.'}`;
+  if (saves === 0 && reach > 50) return `Good reach (${fmt(reach)}) but zero saves. Add a "save this" CTA to this style of post to trigger algorithmic push.`;
+  if (parseFloat(er) < 3) return `Low engagement rate (${er}%) on ${format}. Review the hook, audio (for Reels), and caption length.`;
+  if (parseFloat(er) >= 20) return `High ER (${er}%) — this content resonated strongly. Replicate the format, caption style, and topic.`;
+  return `${format} — ER ${er}%, score ${score}/10. ${score>=5?'Performing at or above average.':'Below average — review what the top posts did differently.'}`;
+}
 
-  const systemPrompt = buildPostContext();
+function updatePost(id, field, val) {
+  const pf = STATE.activePlatform.posts;
+  const post = STATE.posts[pf].find(p => p.id === id);
+  if (post) { post[field] = val.trim(); renderPosts(); }
+}
+
+function renderPostsSummary(posts) {
+  const el = document.getElementById('posts-summary');
+  if (!posts.length) { el.innerHTML=''; return; }
+  const avgER = posts.reduce((s,p)=>s+parseFloat(calcER(p)),0)/posts.length;
+  const scores = posts.map(p=>calcScore(p));
+  const bestScore = Math.max(...scores);
+  const bestPost = posts[scores.indexOf(bestScore)];
+  const formatCounts = {};
+  posts.forEach(p => { const f=p.format||'Other'; formatCounts[f]=(formatCounts[f]||0)+1; });
+  const byFormatER = {};
+  posts.forEach(p => { const f=p.format||'Other'; if(!byFormatER[f]) byFormatER[f]=[]; byFormatER[f].push(parseFloat(calcER(p))); });
+  const bestFormat = Object.entries(byFormatER).sort((a,b)=> (b[1].reduce((s,v)=>s+v,0)/b[1].length)-(a[1].reduce((s,v)=>s+v,0)/a[1].length))[0];
+  const avgSaves = posts.reduce((s,p)=>s+num(p.saves),0)/posts.length;
+  el.innerHTML = `
+    <div class="ps-card"><div class="ps-label">Posts logged</div><div class="ps-val">${posts.length}</div><div class="ps-sub">this period</div></div>
+    <div class="ps-card"><div class="ps-label">Avg engagement rate</div><div class="ps-val">${avgER.toFixed(1)}%</div><div class="ps-sub">across all posts</div></div>
+    <div class="ps-card"><div class="ps-label">Best format</div><div class="ps-val" style="font-size:14px">${bestFormat?bestFormat[0]:'—'}</div><div class="ps-sub">highest avg ER</div></div>
+    <div class="ps-card"><div class="ps-label">Avg saves / post</div><div class="ps-val">${avgSaves.toFixed(1)}</div><div class="ps-sub">algorithm signal</div></div>
+  `;
+}
+
+function renderPostCharts(posts) {
+  if (!posts.length) return;
+  // Format avg ER
+  const byFormat = {};
+  posts.forEach(p => { const f=p.format||'Other'; if(!byFormat[f]) byFormat[f]=[]; byFormat[f].push(parseFloat(calcER(p))); });
+  const fmtLabels = Object.keys(byFormat);
+  const fmtVals = fmtLabels.map(f => byFormat[f].reduce((s,v)=>s+v,0)/byFormat[f].length);
+  mkChart('ch-format', {type:'bar', data:{labels:fmtLabels, datasets:[{data:fmtVals.map(v=>v.toFixed(1)), backgroundColor:'rgba(216,90,48,.7)', borderRadius:4}]}, options:{responsive:true,maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true,ticks:{callback:v=>v+'%'}, grid:{color:'rgba(0,0,0,.05)'}}}}});
+
+  // Top posts
+  const top = [...posts].sort((a,b)=>calcScore(b)-calcScore(a)).slice(0,5);
+  const topEl = document.getElementById('top-posts-list');
+  topEl.innerHTML = top.map((p,i) => {
+    const score = calcScore(p);
+    const sc = scoreColor(score);
+    return `<div class="top-post-item">
+      <span class="tp-rank ${i===0?'gold':''}">\#${i+1}</span>
+      <span class="tp-caption">${p.caption||p.date||'Post'}</span>
+      <span class="format-pill ${formatClass(p.format)}">${p.format||'—'}</span>
+      <span class="tp-score" style="color:${sc}">${score}</span>
+    </div>`;
+  }).join('');
+
+  // Score distribution
+  const bins = [0,0,0,0,0]; // 0-2, 2-4, 4-6, 6-8, 8-10
+  posts.forEach(p => { const s=calcScore(p); const b=Math.min(Math.floor(s/2),4); bins[b]++; });
+  mkChart('ch-score-dist', {type:'bar', data:{labels:['0–2','2–4','4–6','6–8','8–10'], datasets:[{data:bins, backgroundColor:['#A32D2D','#BA7517','#BA7517','#1D9E75','#1D9E75'].map(c=>c+'cc'), borderRadius:4}]}, options:{responsive:true,maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true, ticks:{stepSize:1}, grid:{color:'rgba(0,0,0,.05)'}}}}});
+
+  // Scatter reach vs ER
+  const scatterData = posts.filter(p=>num(p.reach)>0).map(p=>({x:num(p.reach), y:parseFloat(calcER(p)), label:p.caption||p.date}));
+  mkChart('ch-scatter', {type:'scatter', data:{datasets:[{data:scatterData, backgroundColor:'rgba(216,90,48,.6)', pointRadius:5}]}, options:{responsive:true,maintainAspectRatio:false, plugins:{legend:{display:false}, tooltip:{callbacks:{label:d=>`Reach: ${fmt(d.raw.x)}, ER: ${d.raw.y}%`}}}, scales:{x:{title:{display:true,text:'Reach',color:'#9b9a96',font:{size:9}}, grid:{color:'rgba(0,0,0,.05)'}}, y:{title:{display:true,text:'ER%',color:'#9b9a96',font:{size:9}}, beginAtZero:true, ticks:{callback:v=>v+'%'}, grid:{color:'rgba(0,0,0,.05)'}}}}});
+}
+
+// ════════════════════════════════════════
+// INSIGHTS
+// ════════════════════════════════════════
+function renderInsights() {
+  const pf = STATE.activePlatform.insights;
+  const posts = STATE.posts[pf];
+  const csv = STATE.csvData[pf] || {};
+
+  const working = [], attention = [], recos = [];
+
+  if (posts.length) {
+    const erVals = posts.map(p => parseFloat(calcER(p)));
+    const avgER = erVals.reduce((s,v)=>s+v,0)/posts.length;
+    const scores = posts.map(p => calcScore(p));
+    const avgScore = scores.reduce((s,v)=>s+v,0)/posts.length;
+
+    // ── REACH DISTRIBUTION ──
+    const reaches = posts.map(p => num(p.reach)).filter(r=>r>0);
+    const avgReach = reaches.reduce((s,v)=>s+v,0)/Math.max(reaches.length,1);
+    const maxReach = reaches.length ? Math.max(...reaches) : 0;
+    const medianReach = reaches.length ? [...reaches].sort((a,b)=>a-b)[Math.floor(reaches.length/2)] : 0;
+    if (maxReach > medianReach * 5 && reaches.length > 3)
+      attention.push(`<strong>Reach is heavily skewed</strong> — one post got ${fmt(maxReach)} reach while the median is ${fmt(medianReach)}. Most content is not breaking out of your existing audience. <span class="ins-badge ib-warn">Inconsistent</span>`);
+
+    // ── FORMAT ANALYSIS ──
+    const byFormat = {};
+    posts.forEach(p => {
+      const f = p.format||'Other';
+      if(!byFormat[f]) byFormat[f] = {ers:[], saves:[], reach:[], count:0};
+      byFormat[f].ers.push(parseFloat(calcER(p)));
+      byFormat[f].saves.push(num(p.saves));
+      byFormat[f].reach.push(num(p.reach));
+      byFormat[f].count++;
+    });
+    const fmtStats = Object.entries(byFormat).map(([f,d])=>({
+      f, count:d.count,
+      avgER: d.ers.reduce((s,v)=>s+v,0)/d.ers.length,
+      avgSaves: d.saves.reduce((s,v)=>s+v,0)/d.saves.length,
+      avgReach: d.reach.reduce((s,v)=>s+v,0)/d.reach.length
+    })).sort((a,b)=>b.avgER-a.avgER);
+
+    if (fmtStats.length >= 2) {
+      const best = fmtStats[0], worst = fmtStats[fmtStats.length-1];
+      if (best.avgER > worst.avgER * 1.5)
+        working.push(`<strong>${best.f}s average ${best.avgER.toFixed(0)}% ER</strong> — ${(best.avgER/worst.avgER).toFixed(1)}× higher than ${worst.f}s (${worst.avgER.toFixed(0)}%). Shift content mix toward ${best.f}s.`);
+      // Flag if a high-reach format has poor ER
+      const highReachLowER = fmtStats.find(f => f.avgReach > avgReach*1.5 && f.avgER < avgER*0.6);
+      if (highReachLowER)
+        attention.push(`<strong>${highReachLowER.f}s get the most reach (avg ${fmt(Math.round(highReachLowER.avgReach))}) but only ${highReachLowER.avgER.toFixed(1)}% ER</strong> — high visibility but low engagement. Improve the hook, caption and CTA. <span class="ins-badge ib-bad">Optimise</span>`);
+    }
+
+
+
+    // ── SAVES ANALYSIS ──
+    const totalSaves = posts.reduce((s,p)=>s+num(p.saves),0);
+    const avgSaves = totalSaves/posts.length;
+    const postsWithZeroSaves = posts.filter(p=>num(p.saves)===0).length;
+    const savePct = Math.round(postsWithZeroSaves/posts.length*100);
+    if (savePct >= 60)
+      attention.push(`<strong>${savePct}% of posts have zero saves</strong> — saves are Instagram's strongest algorithm signal for recommendations. Add a "save this" CTA on every post. <span class="ins-badge ib-bad">Action needed</span>`);
+    else if (avgSaves >= 1.5)
+      working.push(`Average ${avgSaves.toFixed(1)} saves/post — above-average algorithm signal. Saves are helping push content to new audiences.`);
+
+    // ── COMMENTS ANALYSIS ──
+    const totalComments = posts.reduce((s,p)=>s+num(p.comments),0);
+    const postsWithZeroComments = posts.filter(p=>num(p.comments)===0).length;
+    const commentPct = Math.round(postsWithZeroComments/posts.length*100);
+    if (commentPct >= 70)
+      attention.push(`<strong>${commentPct}% of posts have zero comments</strong> — comments signal conversation value to the algorithm. End captions with a direct question to prompt replies. <span class="ins-badge ib-warn">Low engagement depth</span>`);
+
+    // ── SHARES ANALYSIS ──
+    const totalShares = posts.reduce((s,p)=>s+num(p.shares),0);
+    const avgShares = totalShares/posts.length;
+    if (avgShares < 0.3 && posts.length >= 5)
+      attention.push(`<strong>Average ${avgShares.toFixed(1)} shares/post</strong> — very low shareability. Posts that tap into relatable emotions or strong opinions get shared. Review content angles. <span class="ins-badge ib-warn">Monitor</span>`);
+
+    // ── HIGH PERFORMERS ──
+    const highER = posts.filter(p=>parseFloat(calcER(p))>=20);
+    if (highER.length >= 2)
+      working.push(`<strong>${highER.length} posts achieved 20%+ ER.</strong> Common thread: ${highER.map(p=>p.format).join(', ')}. Study their caption style and topic — replicate the pattern.`);
+    else if (highER.length === 1)
+      working.push(`1 post achieved 20%+ ER (${highER[0].format}, ${calcER(highER[0])}% ER). Use it as a template — replicate the format, caption length, and topic.`);
+
+    // ── LOW PERFORMERS ──
+    const lowScore = posts.filter(p=>calcScore(p)<2.5);
+    if (lowScore.length >= 3)
+      attention.push(`<strong>${lowScore.length} posts scored below 2.5/10</strong> — review their hooks, format choice, and posting time. Pause underperforming content types. <span class="ins-badge ib-bad">Review needed</span>`);
+
+    // ── POSTING FREQUENCY ──
+    const dates = posts.map(p=>p.date).filter(Boolean).sort();
+    if (dates.length >= 2) {
+      const span = (new Date(dates[dates.length-1]) - new Date(dates[0])) / (1000*60*60*24);
+      const postsPerWeek = span > 0 ? (posts.length / (span/7)).toFixed(1) : 0;
+      if (postsPerWeek < 2)
+        attention.push(`<strong>Posting ${postsPerWeek}×/week on average</strong> — below the recommended 3–4×/week minimum for consistent algorithmic reach. Low frequency hurts discoverability. <span class="ins-badge ib-warn">Post more</span>`);
+      else if (postsPerWeek >= 4)
+        working.push(`Posting ${postsPerWeek}×/week — good frequency for consistent algorithmic exposure.`);
+    }
+
+    // ── REEL-SPECIFIC ──
+    const reels = posts.filter(p=>(p.format||'').toLowerCase().includes('reel'));
+    const nonReels = posts.filter(p=>!(p.format||'').toLowerCase().includes('reel'));
+    if (reels.length && nonReels.length) {
+      const reelAvgER = reels.reduce((s,p)=>s+parseFloat(calcER(p)),0)/reels.length;
+      const nonReelAvgER = nonReels.reduce((s,p)=>s+parseFloat(calcER(p)),0)/nonReels.length;
+      if (reelAvgER < nonReelAvgER * 0.5)
+        attention.push(`<strong>Reels ER (${reelAvgER.toFixed(1)}%) is significantly lower than other formats (${nonReelAvgER.toFixed(1)}%)</strong> — Reels may be reaching cold audiences who don't engage. Focus Reels on trending hooks and audio to improve retention. <span class="ins-badge ib-warn">Optimise hooks</span>`);
+    }
+
+    // ── REACH vs CSV REACH ──
+    const csvReachTotal = (csv.reach||[]).reduce((s,r)=>s+num(fc(r,'primary')),0);
+    const postReachTotal = posts.reduce((s,p)=>s+num(p.reach),0);
+    if (csvReachTotal > 0 && postReachTotal > 0 && csvReachTotal > postReachTotal * 1.5)
+      attention.push(`<strong>Account reach (${fmt(csvReachTotal)}) is ${Math.round(csvReachTotal/postReachTotal)}× higher than post reach combined</strong> — significant reach is coming from sources other than feed posts (Stories, Reels discovery, profile visits). Track Story analytics too.`);
+
+    // ── RECOMMENDATIONS ──
+    if (fmtStats.length >= 2)
+      recos.push({l:'Format mix', t:`Shift more posts to ${fmtStats[0].f}s — ${fmtStats[0].avgER.toFixed(0)}% avg ER vs ${fmtStats[fmtStats.length-1].avgER.toFixed(0)}% for ${fmtStats[fmtStats.length-1].f}s`});
+    if (savePct >= 40)
+      recos.push({l:'Saves CTA', t:'End every caption with "Save this for later" — test it on the next 4 posts and compare scores'});
+    if (commentPct >= 60)
+      recos.push({l:'Prompt comments', t:'Add a direct question at the end of every caption — even "Which one are you?" works'});
+    if (recos.length < 3)
+      recos.push({l:'Posting cadence', t:`Aim for 3–4 posts/week consistently — the algorithm rewards regular posting over sporadic bursts`});
+
+  } else {
+    attention.push('No posts logged yet — import your CSV in the Posts tab to generate insights. <span class="ins-badge ib-warn">No data</span>');
+    recos.push({l:'Get started', t:'Upload your Meta post export CSV in the Posts tab to unlock insights'});
+  }
+
+  // ── REACH TREND FROM CSV ──
+  const reachRows = csv.reach || [];
+  if (reachRows.length > 14) {
+    const half = Math.floor(reachRows.length/2);
+    const first = reachRows.slice(0,half).reduce((s,r)=>s+num(fc(r,'primary')),0);
+    const second = reachRows.slice(half).reduce((s,r)=>s+num(fc(r,'primary')),0);
+    if (second > first*1.2) working.push(`Account reach grew ${((second/first-1)*100).toFixed(0)}% in the second half of this period — content is gaining momentum.`);
+    else if (second < first*0.7) attention.push(`<strong>Account reach dropped ${((1-second/first)*100).toFixed(0)}% in the second half</strong> — posting frequency or quality may have dipped. Check dates of last few posts. <span class="ins-badge ib-bad">Declining</span>`);
+  }
+
+  if (!working.length) working.push("Upload post data to see what's working.");
+  if (!attention.length) attention.push('No significant issues detected — keep an eye on saves and comment rates as the account grows.');
+
+  document.getElementById('ins-working').innerHTML = working.map(t=>`<div class="ins-item"><div class="ins-bullet" style="background:var(--grn)"></div><div class="ins-text">${t}</div></div>`).join('');
+  document.getElementById('ins-attention').innerHTML = attention.map(t=>`<div class="ins-item"><div class="ins-bullet" style="background:var(--red)"></div><div class="ins-text">${t}</div></div>`).join('');
+  document.getElementById('ins-recos').innerHTML = recos.map(r=>`<div class="reco-item"><div class="reco-label">${r.l}</div><div class="reco-text">${r.t}</div></div>`).join('');
+}
+
+// ════════════════════════════════════════
+// AI ANALYSIS
+// ════════════════════════════════════════
+function buildDataContext() {
+  const pf = STATE.activePlatform.posts;
+  const posts = STATE.posts[pf];
+  const client = document.getElementById('cname').value || 'Client';
+  if (!posts.length) return `Client: ${client} on ${PF_NAMES[pf]}. No posts logged yet.`;
+  const avgER = posts.reduce((s,p)=>s+parseFloat(calcER(p)),0)/posts.length;
+  const byFmt = {};
+  posts.forEach(p=>{ const f=p.format||'Other'; if(!byFmt[f]) byFmt[f]=[]; byFmt[f].push(parseFloat(calcER(p))); });
+  const fmtSummary = Object.entries(byFmt).map(([f,ers])=>`${f}: avg ${(ers.reduce((a,b)=>a+b,0)/ers.length).toFixed(1)}% ER (${ers.length} posts)`).join(', ');
+  const topPosts = [...posts].sort((a,b)=>calcScore(b)-calcScore(a)).slice(0,3).map(p=>`"${p.caption||p.date}" (${p.format}, ${calcER(p)}% ER, score ${calcScore(p)})`).join('; ');
+  const avgSaves = posts.reduce((s,p)=>s+num(p.saves),0)/posts.length;
+  return `Client: ${client} on ${PF_NAMES[pf]}. Period: ${posts.length} posts. Avg ER: ${avgER.toFixed(1)}%. Format breakdown: ${fmtSummary}. Avg saves/post: ${avgSaves.toFixed(1)}. Top posts: ${topPosts}.`;
+}
+
+function askChip(el) {
+  document.getElementById('ai-input').value = el.textContent;
+  sendAI();
+}
+
+async function sendAI() {
+  const input = document.getElementById('ai-input');
+  const q = input.value.trim(); if (!q) return;
+  input.value = '';
+
+  const loadingEl = document.getElementById('ai-loading');
+  loadingEl.style.display = 'flex';
+
+  const context = buildDataContext();
+  const systemPrompt = `You are a social media analyst for Riddler Media, a digital marketing agency. You have access to a client's social media data. Analyse it and give specific, actionable insights. Be direct and concrete. Use the data to back every point. Format your response as JSON with this structure: {"findings":[{"num":1,"text":"..."},...],"recommendation":"..."}`;
+  const userPrompt = `Data: ${context}\n\nQuestion: ${q}`;
 
   try {
-    const response = await fetch('https://riddler-ai-proxy.aayush-5a9.workers.dev', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 1000,
-        system: systemPrompt,
-        messages: [{ role: 'user', content: question }]
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:1000,
+        system:systemPrompt,
+        messages:[{role:'user',content:userPrompt}]
       })
     });
-
-    const data = await response.json();
-    const text = data.content?.[0]?.text || 'Something went wrong. Please try again.';
-
-    loadingEl.remove();
-
-    const aiBubble = document.createElement('div');
-    aiBubble.className = 'ai-msg-ai';
-    aiBubble.innerHTML = formatAIResponse(text);
-    thread.appendChild(aiBubble);
-    thread.scrollTop = thread.scrollHeight;
-
-  } catch(err) {
-    loadingEl.remove();
-    const errBubble = document.createElement('div');
-    errBubble.className = 'ai-msg-ai';
-    errBubble.style.color = '#C62828';
-    errBubble.textContent = 'Network error — make sure you are connected and try again.';
-    thread.appendChild(errBubble);
+    const data = await res.json();
+    const raw = data.content?.[0]?.text || '';
+    let parsed;
+    try { parsed = JSON.parse(raw.replace(/```json|\n```|```/g,'')); } catch(e) { parsed = {findings:[{num:1,text:raw}],recommendation:''}; }
+    loadingEl.style.display = 'none';
+    renderAIResponse(q, parsed);
+    STATE.aiHistory.unshift({q, ts:new Date().toLocaleDateString('en-IN',{day:'numeric',month:'short'})});
+    renderAIHistory();
+  } catch(e) {
+    loadingEl.style.display = 'none';
+    renderAIResponse(q, {findings:[{num:1,text:'Could not connect to AI. Make sure you are using this tool through the Claude interface, or check your connection.'}],recommendation:''});
   }
 }
 
-function formatAIResponse(text) {
-  return text
-    .replace(/##\s+(.+)/g, '<h4>$1</h4>')
-    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-    .replace(/^\-\s+(.+)/gm, '<li>$1</li>')
-    .replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>')
-    .replace(/\n{2,}/g, '</p><p style="margin-top:8px">')
-    .replace(/\n/g, '<br>')
-    .replace(/^/, '<p>')
-    .replace(/$/, '</p>');
+function renderAIResponse(q, data) {
+  const container = document.getElementById('ai-responses');
+  const div = document.createElement('div');
+  div.className = 'ai-response';
+  div.style.display = 'block';
+  div.innerHTML = `
+    <div class="ai-resp-header"><span class="ai-star">✦</span> AI analysis — ${q.toLowerCase()}</div>
+    ${data.findings.map(f=>`<div class="ai-finding"><div class="ai-num">${f.num}</div><div class="ai-find-text">${f.text}</div></div>`).join('')}
+    ${data.recommendation?'<div class="ai-highlight"><strong>Recommendation:</strong> '+data.recommendation+'</div>':''}
+    <div class="ai-actions">
+      <div class="ai-act-btn" onclick="pushToInsights(this.parentElement.previousElementSibling?.textContent||'')">↗ Add to Insights</div>
+      <div class="ai-act-btn" onclick="copyText(this)">Copy text</div>
+      <div class="ai-act-btn">Include in PDF</div>
+    </div>
+  `;
+  container.insertBefore(div, container.firstChild);
+  const histEl = document.getElementById('ai-history');
+  histEl.style.display = 'block';
 }
 
-// ── Init ──
-document.getElementById('cp1').addEventListener('input',applyColors);
-document.getElementById('cp2').addEventListener('input',applyColors);
-document.getElementById('cname').addEventListener('input',function(){
-  document.getElementById('footer-client').textContent=this.value||'Client name';
-  document.querySelectorAll('.footer-client-ref').forEach(el=>el.textContent=this.value||'Client name');
-});
+function pushToInsights(text) {
+  const el = document.getElementById('ins-working');
+  if (el) { el.innerHTML += `<div class="ins-item"><div class="ins-bullet" style="background:var(--p)"></div><div class="ins-text">${text}</div></div>`; }
+  switchTab('insights', document.querySelector('[onclick*="insights"]'));
+}
 
-// Pre-add 10 empty post rows
-for(let i=0;i<10;i++) addPostRow();
+function copyText(btn) {
+  const card = btn.closest('.ai-response');
+  const text = [...card.querySelectorAll('.ai-find-text,.ai-highlight')].map(el=>el.textContent).join('\n');
+  navigator.clipboard.writeText(text).then(()=>{ btn.textContent='Copied ✓'; setTimeout(()=>btn.textContent='Copy text',2000); });
+}
 
-applyColors();
+function renderAIHistory() {
+  const list = document.getElementById('ai-history-list');
+  list.innerHTML = STATE.aiHistory.slice(0,5).map(h=>`
+    <div class="ai-hist-item" onclick="document.getElementById('ai-input').value='${h.q.replace(/'/g,"\\'")}';sendAI()">
+      <span class="ai-hist-q">${h.q}</span>
+      <span class="ai-hist-date">${h.ts}</span>
+      <span class="ai-hist-replay">↩</span>
+    </div>
+  `).join('');
+}
+
+// ════════════════════════════════════════
+// PDF EXPORT
+// ════════════════════════════════════════
+function togglePdfOpt(el) {
+  el.querySelector('.pdf-chk').classList.toggle('on');
+}
+
+function downloadPDF() {
+  const client = document.getElementById('cname').value || 'Client';
+  const pf = STATE.activePlatform.insights;
+  const posts = STATE.posts[pf];
+  const includeCharts = document.querySelectorAll('.pdf-chk.on').length > 0;
+  const win = window.open('','_blank');
+  const avgER = posts.length ? (posts.reduce((s,p)=>s+parseFloat(calcER(p)),0)/posts.length).toFixed(1) : '—';
+  const topPosts = [...posts].sort((a,b)=>calcScore(b)-calcScore(a)).slice(0,5);
+  const insWorking = document.getElementById('ins-working')?.innerText || '';
+  const insAttention = document.getElementById('ins-attention')?.innerText || '';
+  win.document.write(`<!DOCTYPE html><html><head><title>${client} — Social Media Report</title>
+  <style>body{font-family:Arial,sans-serif;color:#1a1a18;padding:40px;max-width:800px;margin:0 auto}
+  h1{font-size:22px;margin-bottom:4px}h2{font-size:14px;color:#5f5e5a;margin-bottom:24px}
+  .kpi-row{display:flex;gap:16px;margin-bottom:24px}
+  .kpi{background:#f4f3f0;border-radius:8px;padding:14px;flex:1;text-align:center}
+  .kpi-l{font-size:10px;color:#9b9a96;margin-bottom:4px}.kpi-v{font-size:22px;font-weight:700}
+  table{width:100%;border-collapse:collapse;font-size:12px;margin-bottom:24px}
+  th{background:#f4f3f0;padding:7px 9px;text-align:left;font-size:10px}
+  td{padding:7px 9px;border-bottom:1px solid #eeedea}
+  .section{margin-bottom:24px}.section-title{font-size:12px;font-weight:700;color:#D85A30;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px}
+  .footer{font-size:10px;color:#9b9a96;margin-top:40px;border-top:1px solid #eeedea;padding-top:12px}
+  @media print{button{display:none}}</style></head><body>
+  <h1>${client} — Social Media Report</h1>
+  <h2>${PF_NAMES[pf]} &nbsp;·&nbsp; ${new Date().toLocaleDateString('en-IN',{month:'long',year:'numeric'})}</h2>
+  <div class="kpi-row">
+    <div class="kpi"><div class="kpi-l">Posts</div><div class="kpi-v">${posts.length}</div></div>
+    <div class="kpi"><div class="kpi-l">Avg ER</div><div class="kpi-v">${avgER}%</div></div>
+    <div class="kpi"><div class="kpi-l">Best format</div><div class="kpi-v" style="font-size:14px">${posts.length?Object.entries((() => {const m={};posts.forEach(p=>{const f=p.format||'Other';if(!m[f])m[f]=[];m[f].push(parseFloat(calcER(p)));});return m;})()).sort((a,b)=>b[1].reduce((s,v)=>s+v,0)/b[1].length-a[1].reduce((s,v)=>s+v,0)/a[1].length)[0][0]:'—'}</div></div>
+    <div class="kpi"><div class="kpi-l">Avg saves</div><div class="kpi-v">${posts.length?(posts.reduce((s,p)=>s+num(p.saves),0)/posts.length).toFixed(1):'—'}</div></div>
+  </div>
+  <div class="section"><div class="section-title">What's working</div><p style="font-size:12px;line-height:1.7;color:#5f5e5a">${insWorking||'Log posts to generate insights.'}</p></div>
+  <div class="section"><div class="section-title">What needs attention</div><p style="font-size:12px;line-height:1.7;color:#5f5e5a">${insAttention}</p></div>
+  ${topPosts.length?'<div class="section"><div class="section-title">Top posts by score</div><table><thead><tr><th>Date</th><th>Format</th><th>Reach</th><th>ER%</th><th>Score</th><th>Caption</th></tr></thead><tbody>'+topPosts.map(p=>`<tr><td>${p.date}</td><td>${p.format}</td><td>${fmt(num(p.reach))}</td><td>${calcER(p)}%</td><td>${calcScore(p)}</td><td>${p.caption||'—'}</td></tr>`).join('')+'</tbody></table></div>':''}
+  <div class="footer">Prepared by Riddler Media &nbsp;·&nbsp; ${new Date().toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'})}</div>
+  <br><button onclick="window.print()">Print / Save as PDF</button>
+  </body></html>`);
+  win.document.close();
+}
+
+// ════════════════════════════════════════
+// REFRESH ALL
+// ════════════════════════════════════════
+function refreshAll() {
+  renderMetrics();
+  renderPosts();
+  renderInsights();
+}
+
+// INIT
+renderMetrics();
+renderPosts();
+renderInsights();
 </script>
 </body>
 </html>
