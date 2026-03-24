@@ -1103,51 +1103,139 @@ function renderInsights() {
   const pf = STATE.activePlatform.insights;
   const posts = STATE.posts[pf];
   const csv = STATE.csvData[pf] || {};
-  const man = getManual(pf);
 
   const working = [], attention = [], recos = [];
 
   if (posts.length) {
-    // Format analysis
+    const erVals = posts.map(p => parseFloat(calcER(p)));
+    const avgER = erVals.reduce((s,v)=>s+v,0)/posts.length;
+    const scores = posts.map(p => calcScore(p));
+    const avgScore = scores.reduce((s,v)=>s+v,0)/posts.length;
+
+    // ── FORMAT ANALYSIS ──
     const byFormat = {};
-    posts.forEach(p => { const f=p.format||'Other'; if(!byFormat[f]) byFormat[f]=[]; byFormat[f].push(parseFloat(calcER(p))); });
-    const fmtAvgs = Object.entries(byFormat).map(([f,ers])=>({f, avg:ers.reduce((s,v)=>s+v,0)/ers.length})).sort((a,b)=>b.avg-a.avg);
-    if (fmtAvgs.length>=2) {
-      const best=fmtAvgs[0], worst=fmtAvgs[fmtAvgs.length-1];
-      if (best.avg > worst.avg*1.5) working.push(`<strong>${best.f}s average ${best.avg.toFixed(0)}% ER</strong> — ${(best.avg/worst.avg).toFixed(1)}× higher than ${worst.f}s. Post more ${best.f}s.`);
+    posts.forEach(p => {
+      const f = p.format||'Other';
+      if(!byFormat[f]) byFormat[f] = {ers:[], saves:[], reach:[], count:0};
+      byFormat[f].ers.push(parseFloat(calcER(p)));
+      byFormat[f].saves.push(num(p.saves));
+      byFormat[f].reach.push(num(p.reach));
+      byFormat[f].count++;
+    });
+    const fmtStats = Object.entries(byFormat).map(([f,d])=>({
+      f, count:d.count,
+      avgER: d.ers.reduce((s,v)=>s+v,0)/d.ers.length,
+      avgSaves: d.saves.reduce((s,v)=>s+v,0)/d.saves.length,
+      avgReach: d.reach.reduce((s,v)=>s+v,0)/d.reach.length
+    })).sort((a,b)=>b.avgER-a.avgER);
+
+    if (fmtStats.length >= 2) {
+      const best = fmtStats[0], worst = fmtStats[fmtStats.length-1];
+      if (best.avgER > worst.avgER * 1.5)
+        working.push(`<strong>${best.f}s average ${best.avgER.toFixed(0)}% ER</strong> — ${(best.avgER/worst.avgER).toFixed(1)}× higher than ${worst.f}s (${worst.avgER.toFixed(0)}%). Shift content mix toward ${best.f}s.`);
+      // Flag if a high-reach format has poor ER
+      const highReachLowER = fmtStats.find(f => f.avgReach > avgReach*1.5 && f.avgER < avgER*0.6);
+      if (highReachLowER)
+        attention.push(`<strong>${highReachLowER.f}s get the most reach (avg ${fmt(Math.round(highReachLowER.avgReach))}) but only ${highReachLowER.avgER.toFixed(1)}% ER</strong> — high visibility but low engagement. Improve the hook, caption and CTA. <span class="ins-badge ib-bad">Optimise</span>`);
     }
-    // Saves
-    const avgSaves = posts.reduce((s,p)=>s+num(p.saves),0)/posts.length;
-    if (avgSaves < 0.5) attention.push('Saves are near zero across posts — add a "save this" CTA or post more reference/value content. <span class="ins-badge ib-warn">Monitor</span>');
-    else working.push(`Average ${avgSaves.toFixed(1)} saves/post — good algorithm signal. Keep posting save-worthy content.`);
-    // High ER posts
+
+    // ── REACH DISTRIBUTION ──
+    const reaches = posts.map(p => num(p.reach)).filter(r=>r>0);
+    const avgReach = reaches.reduce((s,v)=>s+v,0)/Math.max(reaches.length,1);
+    const maxReach = Math.max(...reaches);
+    const medianReach = reaches.sort((a,b)=>a-b)[Math.floor(reaches.length/2)]||0;
+    if (maxReach > medianReach * 5 && reaches.length > 3)
+      attention.push(`<strong>Reach is heavily skewed</strong> — one post got ${fmt(maxReach)} reach while the median is ${fmt(medianReach)}. Most content is not breaking out of your existing audience. <span class="ins-badge ib-warn">Inconsistent</span>`);
+
+    // ── SAVES ANALYSIS ──
+    const totalSaves = posts.reduce((s,p)=>s+num(p.saves),0);
+    const avgSaves = totalSaves/posts.length;
+    const postsWithZeroSaves = posts.filter(p=>num(p.saves)===0).length;
+    const savePct = Math.round(postsWithZeroSaves/posts.length*100);
+    if (savePct >= 60)
+      attention.push(`<strong>${savePct}% of posts have zero saves</strong> — saves are Instagram's strongest algorithm signal for recommendations. Add a "save this" CTA on every post. <span class="ins-badge ib-bad">Action needed</span>`);
+    else if (avgSaves >= 1.5)
+      working.push(`Average ${avgSaves.toFixed(1)} saves/post — above-average algorithm signal. Saves are helping push content to new audiences.`);
+
+    // ── COMMENTS ANALYSIS ──
+    const totalComments = posts.reduce((s,p)=>s+num(p.comments),0);
+    const postsWithZeroComments = posts.filter(p=>num(p.comments)===0).length;
+    const commentPct = Math.round(postsWithZeroComments/posts.length*100);
+    if (commentPct >= 70)
+      attention.push(`<strong>${commentPct}% of posts have zero comments</strong> — comments signal conversation value to the algorithm. End captions with a direct question to prompt replies. <span class="ins-badge ib-warn">Low engagement depth</span>`);
+
+    // ── SHARES ANALYSIS ──
+    const totalShares = posts.reduce((s,p)=>s+num(p.shares),0);
+    const avgShares = totalShares/posts.length;
+    if (avgShares < 0.3 && posts.length >= 5)
+      attention.push(`<strong>Average ${avgShares.toFixed(1)} shares/post</strong> — very low shareability. Posts that tap into relatable emotions or strong opinions get shared. Review content angles. <span class="ins-badge ib-warn">Monitor</span>`);
+
+    // ── HIGH PERFORMERS ──
     const highER = posts.filter(p=>parseFloat(calcER(p))>=20);
-    if (highER.length) working.push(`${highER.length} post${highER.length>1?'s':''} achieved 20%+ ER. Analyse their caption style and topic for replication.`);
-    // Low score posts
-    const lowScore = posts.filter(p=>calcScore(p)<3);
-    if (lowScore.length >= 2) attention.push(`${lowScore.length} posts scored below 3/10 — review hook, audio choice, and caption length on low performers. <span class="ins-badge ib-bad">Action needed</span>`);
-    // Recos
-    if (fmtAvgs.length>=2) recos.push({l:'Format mix', t:`Shift more posts to ${fmtAvgs[0].f}s — they're your strongest format by ER`});
-    recos.push({l:'Saves strategy', t:'Add "save this" CTA to next 4 posts and track the difference in score'});
-    recos.push({l:'Posting consistency', t:`${posts.length} posts this period — aim for 3–4/week minimum for algorithmic consistency`});
+    if (highER.length >= 2)
+      working.push(`<strong>${highER.length} posts achieved 20%+ ER.</strong> Common thread: ${highER.map(p=>p.format).join(', ')}. Study their caption style and topic — replicate the pattern.`);
+    else if (highER.length === 1)
+      working.push(`1 post achieved 20%+ ER (${highER[0].format}, ${calcER(highER[0])}% ER). Use it as a template — replicate the format, caption length, and topic.`);
+
+    // ── LOW PERFORMERS ──
+    const lowScore = posts.filter(p=>calcScore(p)<2.5);
+    if (lowScore.length >= 3)
+      attention.push(`<strong>${lowScore.length} posts scored below 2.5/10</strong> — review their hooks, format choice, and posting time. Pause underperforming content types. <span class="ins-badge ib-bad">Review needed</span>`);
+
+    // ── POSTING FREQUENCY ──
+    const dates = posts.map(p=>p.date).filter(Boolean).sort();
+    if (dates.length >= 2) {
+      const span = (new Date(dates[dates.length-1]) - new Date(dates[0])) / (1000*60*60*24);
+      const postsPerWeek = span > 0 ? (posts.length / (span/7)).toFixed(1) : 0;
+      if (postsPerWeek < 2)
+        attention.push(`<strong>Posting ${postsPerWeek}×/week on average</strong> — below the recommended 3–4×/week minimum for consistent algorithmic reach. Low frequency hurts discoverability. <span class="ins-badge ib-warn">Post more</span>`);
+      else if (postsPerWeek >= 4)
+        working.push(`Posting ${postsPerWeek}×/week — good frequency for consistent algorithmic exposure.`);
+    }
+
+    // ── REEL-SPECIFIC ──
+    const reels = posts.filter(p=>(p.format||'').toLowerCase().includes('reel'));
+    const nonReels = posts.filter(p=>!(p.format||'').toLowerCase().includes('reel'));
+    if (reels.length && nonReels.length) {
+      const reelAvgER = reels.reduce((s,p)=>s+parseFloat(calcER(p)),0)/reels.length;
+      const nonReelAvgER = nonReels.reduce((s,p)=>s+parseFloat(calcER(p)),0)/nonReels.length;
+      if (reelAvgER < nonReelAvgER * 0.5)
+        attention.push(`<strong>Reels ER (${reelAvgER.toFixed(1)}%) is significantly lower than other formats (${nonReelAvgER.toFixed(1)}%)</strong> — Reels may be reaching cold audiences who don't engage. Focus Reels on trending hooks and audio to improve retention. <span class="ins-badge ib-warn">Optimise hooks</span>`);
+    }
+
+    // ── REACH vs CSV REACH ──
+    const csvReachTotal = (csv.reach||[]).reduce((s,r)=>s+num(fc(r,'primary')),0);
+    const postReachTotal = posts.reduce((s,p)=>s+num(p.reach),0);
+    if (csvReachTotal > 0 && postReachTotal > 0 && csvReachTotal > postReachTotal * 1.5)
+      attention.push(`<strong>Account reach (${fmt(csvReachTotal)}) is ${Math.round(csvReachTotal/postReachTotal)}× higher than post reach combined</strong> — significant reach is coming from sources other than feed posts (Stories, Reels discovery, profile visits). Track Story analytics too.`);
+
+    // ── RECOMMENDATIONS ──
+    if (fmtStats.length >= 2)
+      recos.push({l:'Format mix', t:`Shift more posts to ${fmtStats[0].f}s — ${fmtStats[0].avgER.toFixed(0)}% avg ER vs ${fmtStats[fmtStats.length-1].avgER.toFixed(0)}% for ${fmtStats[fmtStats.length-1].f}s`});
+    if (savePct >= 40)
+      recos.push({l:'Saves CTA', t:'End every caption with "Save this for later" — test it on the next 4 posts and compare scores'});
+    if (commentPct >= 60)
+      recos.push({l:'Prompt comments', t:'Add a direct question at the end of every caption — even "Which one are you?" works'});
+    if (recos.length < 3)
+      recos.push({l:'Posting cadence', t:`Aim for 3–4 posts/week consistently — the algorithm rewards regular posting over sporadic bursts`});
+
   } else {
-    attention.push('No posts logged yet — add posts in the Posts tab to generate insights. <span class="ins-badge ib-warn">No data</span>');
-    recos.push({l:'Get started', t:'Upload CSV data or manually log posts to unlock insights'});
+    attention.push('No posts logged yet — import your CSV in the Posts tab to generate insights. <span class="ins-badge ib-warn">No data</span>');
+    recos.push({l:'Get started', t:'Upload your Meta post export CSV in the Posts tab to unlock insights'});
   }
 
-  // Reach trend
+  // ── REACH TREND FROM CSV ──
   const reachRows = csv.reach || [];
-  if (reachRows.length > 7) {
+  if (reachRows.length > 14) {
     const half = Math.floor(reachRows.length/2);
-    const first = reachRows.slice(0,half).reduce((s,r)=>s+num(fc(r,'reach','account')),0);
-    const second = reachRows.slice(half).reduce((s,r)=>s+num(fc(r,'reach','account')),0);
-    if (second > first*1.15) working.push(`Reach grew ${((second/first-1)*100).toFixed(0)}% in the second half of the period — content quality is improving.`);
-    else if (second < first*0.85) attention.push(`Reach dropped ${((1-second/first)*100).toFixed(0)}% in the second half — review posting frequency and content quality. <span class="ins-badge ib-bad">Declining</span>`);
+    const first = reachRows.slice(0,half).reduce((s,r)=>s+num(fc(r,'primary')),0);
+    const second = reachRows.slice(half).reduce((s,r)=>s+num(fc(r,'primary')),0);
+    if (second > first*1.2) working.push(`Account reach grew ${((second/first-1)*100).toFixed(0)}% in the second half of this period — content is gaining momentum.`);
+    else if (second < first*0.7) attention.push(`<strong>Account reach dropped ${((1-second/first)*100).toFixed(0)}% in the second half</strong> — posting frequency or quality may have dipped. Check dates of last few posts. <span class="ins-badge ib-bad">Declining</span>`);
   }
 
-  // Fallback
-  if (!working.length) working.push("Upload CSV data or log posts to see what's working.");
-  if (!attention.length) attention.push('No issues detected from available data.');
+  if (!working.length) working.push("Upload post data to see what's working.");
+  if (!attention.length) attention.push('No significant issues detected — keep an eye on saves and comment rates as the account grows.');
 
   document.getElementById('ins-working').innerHTML = working.map(t=>`<div class="ins-item"><div class="ins-bullet" style="background:var(--grn)"></div><div class="ins-text">${t}</div></div>`).join('');
   document.getElementById('ins-attention').innerHTML = attention.map(t=>`<div class="ins-item"><div class="ins-bullet" style="background:var(--red)"></div><div class="ins-text">${t}</div></div>`).join('');
