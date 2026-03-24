@@ -841,11 +841,18 @@ function computeER(interactions, reach) {
 // ════════════════════════════════════════
 function calcScore(post) {
   const likes = num(post.likes), comments = num(post.comments), saves = num(post.saves), shares = num(post.shares), reach = num(post.reach)||1;
-  const weighted = (likes*1 + comments*3 + saves*4 + shares*2);
-  const er = weighted/reach*100;
   if (!likes && !comments && !saves && !shares) return 0;
-  const raw = Math.min(er/5*10, 10);
-  return parseFloat(raw.toFixed(1));
+  // Weighted ER: saves and comments worth more (algorithm signals)
+  const weighted = (likes*1 + comments*3 + saves*4 + shares*2);
+  const wER = weighted/reach*100;
+  // Scale: 0-2% wER → 0-4, 2-8% → 4-7, 8-20% → 7-9, 20%+ → 9-10
+  let score;
+  if (wER <= 0) score = 0;
+  else if (wER < 2) score = wER/2*4;
+  else if (wER < 8) score = 4 + (wER-2)/6*3;
+  else if (wER < 20) score = 7 + (wER-8)/12*2;
+  else score = 9 + Math.min((wER-20)/30, 1);
+  return parseFloat(Math.min(score,10).toFixed(1));
 }
 
 function calcER(post) {
@@ -1112,6 +1119,14 @@ function renderInsights() {
     const scores = posts.map(p => calcScore(p));
     const avgScore = scores.reduce((s,v)=>s+v,0)/posts.length;
 
+    // ── REACH DISTRIBUTION ──
+    const reaches = posts.map(p => num(p.reach)).filter(r=>r>0);
+    const avgReach = reaches.reduce((s,v)=>s+v,0)/Math.max(reaches.length,1);
+    const maxReach = reaches.length ? Math.max(...reaches) : 0;
+    const medianReach = reaches.length ? [...reaches].sort((a,b)=>a-b)[Math.floor(reaches.length/2)] : 0;
+    if (maxReach > medianReach * 5 && reaches.length > 3)
+      attention.push(`<strong>Reach is heavily skewed</strong> — one post got ${fmt(maxReach)} reach while the median is ${fmt(medianReach)}. Most content is not breaking out of your existing audience. <span class="ins-badge ib-warn">Inconsistent</span>`);
+
     // ── FORMAT ANALYSIS ──
     const byFormat = {};
     posts.forEach(p => {
@@ -1139,13 +1154,7 @@ function renderInsights() {
         attention.push(`<strong>${highReachLowER.f}s get the most reach (avg ${fmt(Math.round(highReachLowER.avgReach))}) but only ${highReachLowER.avgER.toFixed(1)}% ER</strong> — high visibility but low engagement. Improve the hook, caption and CTA. <span class="ins-badge ib-bad">Optimise</span>`);
     }
 
-    // ── REACH DISTRIBUTION ──
-    const reaches = posts.map(p => num(p.reach)).filter(r=>r>0);
-    const avgReach = reaches.reduce((s,v)=>s+v,0)/Math.max(reaches.length,1);
-    const maxReach = Math.max(...reaches);
-    const medianReach = reaches.sort((a,b)=>a-b)[Math.floor(reaches.length/2)]||0;
-    if (maxReach > medianReach * 5 && reaches.length > 3)
-      attention.push(`<strong>Reach is heavily skewed</strong> — one post got ${fmt(maxReach)} reach while the median is ${fmt(medianReach)}. Most content is not breaking out of your existing audience. <span class="ins-badge ib-warn">Inconsistent</span>`);
+
 
     // ── SAVES ANALYSIS ──
     const totalSaves = posts.reduce((s,p)=>s+num(p.saves),0);
