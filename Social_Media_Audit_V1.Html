@@ -609,8 +609,47 @@ function parseCSV(text) {
 }
 function splitCSV(l) {
   const r=[]; let c=''; let q=false;
-  for(let i=0;i<l.length;i++){if(l[i]==='"'){q=!q;continue;}if(l[i]===','&&!q){r.push(c);c='';continue;}c+=l[i];}r.push(c);return r;
+  for(let i=0;i<l.length;i++){
+    if(l[i]==='"'){ if(q&&l[i+1]==='"'){c+='"';i++;continue;} q=!q;continue; }
+    if(l[i]===','&&!q){r.push(c);c='';continue;}
+    c+=l[i];
+  }
+  r.push(c); return r;
 }
+
+function parseCSVMultiline(text) {
+  text = text.replace(/^[﻿￾]+/, '');
+  const rawLines = text.split(/
+?
+/).map(l=>l.trim()).filter(l=>l);
+  let startIdx = 0;
+  for (let i=0; i<Math.min(rawLines.length,5); i++) {
+    if (rawLines[i].startsWith('sep=')) { startIdx=i+1; continue; }
+    if (splitCSV(rawLines[i]).length >= 2) { startIdx=i; break; }
+    startIdx=i+1;
+  }
+  const lines = rawLines.slice(startIdx);
+  if (!lines.length) return [];
+  const headers = splitCSV(lines[0]).map(h=>h.trim().replace(/^"|"$/g,'').toLowerCase().trim());
+  const dataLines = [];
+  let buf = ''; let openQ = 0;
+  for (let i=1; i<lines.length; i++) {
+    buf += (buf ? '\n' : '') + lines[i];
+    for (let j=0; j<lines[i].length; j++) {
+      if (lines[i][j]==='"' && lines[i][j+1]==='"') { j++; continue; }
+      if (lines[i][j]==='"') openQ++;
+    }
+    if (openQ%2===0) { dataLines.push(buf); buf=''; openQ=0; }
+  }
+  if (buf) dataLines.push(buf);
+  return dataLines.map(line => {
+    const vals = splitCSV(line);
+    const row = {};
+    headers.forEach((h,i) => { row[h] = (vals[i]||'').trim().replace(/^"|"$/g,''); });
+    return row;
+  }).filter(r => Object.values(r).some(v=>v.trim()));
+}
+
 function num(v) { if (!v || v==='-') return 0; return parseFloat(v.replace(/[,%\s₹]/g,''))||0; }
 function fmt(v) { if (!v&&v!==0) return '—'; if(Math.abs(v)>=1e7) return (v/1e7).toFixed(1)+'Cr'; if(Math.abs(v)>=1e5) return (v/1e5).toFixed(1)+'L'; if(Math.abs(v)>=1e3) return (v/1e3).toFixed(1)+'K'; return v.toLocaleString('en-IN'); }
 function fc(row,...keys) { for(const k of keys){ let m=Object.keys(row).find(r=>r===k); if(!m) m=Object.keys(row).find(r=>r.includes(k)); if(m) return row[m]; } return ''; }
