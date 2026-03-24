@@ -978,7 +978,7 @@ function renderInsights() {
   }
 
   // Fallback
-  if (!working.length) working.push('Upload CSV data or log posts to see what's working.');
+  if (!working.length) working.push("Upload CSV data or log posts to see what's working.");
   if (!attention.length) attention.push('No issues detected from available data.');
 
   document.getElementById('ins-working').innerHTML = working.map(t=>`<div class="ins-item"><div class="ins-bullet" style="background:var(--grn)"></div><div class="ins-text">${t}</div></div>`).join('');
