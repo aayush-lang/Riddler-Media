@@ -847,8 +847,8 @@ function bulkUploadPosts(input) {
   const pf = STATE.activePlatform.posts;
   const tryEnc = enc => new Promise(res => { const r = new FileReader(); r.onload = e => res(e.target.result); r.readAsText(file, enc); });
   tryEnc('UTF-16').then(t => {
-    let rows = parseCSV(t);
-    if (!rows.length || JSON.stringify(rows).includes('\uFFFD')) return tryEnc('UTF-8').then(t2 => parseCSV(t2));
+    let rows = parseCSVMultiline(t);
+    if (!rows.length || JSON.stringify(rows).includes('\uFFFD')) return tryEnc('UTF-8').then(t2 => parseCSVMultiline(t2));
     return rows;
   }).then(rows => {
     // Meta post CSV: Post ID, Description, Publish time, Post type, Date, Views, Reach, Likes, Shares, Follows, Comments, Saves
@@ -863,14 +863,20 @@ function bulkUploadPosts(input) {
     };
     // Meta post CSV: Date = "Lifetime", actual date is in "Publish time" (MM/DD/YYYY HH:MM)
     // Skip empty rows
-    const validRows = rows.filter(r => fc(r,'publish time','date') !== '');
+    const validRows = rows.filter(r => {
+      const pub = fc(r,'publish time') || fc(r,'date');
+      return pub && pub.trim() !== '';
+    });
+    console.log('[bulk] total rows:', rows.length, 'valid:', validRows.length, 'sample col:', rows[0] ? Object.keys(rows[0]).slice(0,5).join(',') : 'none');
     const imported = validRows.map(r => {
-      const pub = fc(r,'publish time','date') || '';
-      // Convert MM/DD/YYYY or YYYY-MM-DD to YYYY-MM-DD
+      // "Publish time" col: "02/13/2026 04:44" → "2026-02-13"
+      const pub = fc(r,'publish time') || fc(r,'date') || '';
       let dateStr = '';
       if (pub.includes('/')) {
         const parts = pub.split(' ')[0].split('/');
         if (parts.length === 3) dateStr = parts[2]+'-'+parts[0].padStart(2,'0')+'-'+parts[1].padStart(2,'0');
+      } else if (pub.includes('-')) {
+        dateStr = pub.slice(0,10);
       } else {
         dateStr = pub.slice(0,10);
       }
@@ -878,12 +884,12 @@ function bulkUploadPosts(input) {
         id: Date.now() + Math.random(),
         date: dateStr,
         format: mapFormat(fc(r,'post type','type','format','media type')),
-        reach: fc(r,'reach') || '',
-        likes: fc(r,'likes','like') || '',
-        comments: fc(r,'comments','comment') || '',
-        saves: fc(r,'saves','save') || '',
-        shares: fc(r,'shares','share') || '',
-        caption: (fc(r,'description','caption','topic','title')||'').replace(/\n/g,' ').slice(0,100)
+        reach:    fc(r,'reach') || '0',
+        likes:    fc(r,'likes','like') || '0',
+        comments: fc(r,'comments','comment') || '0',
+        saves:    fc(r,'saves','save') || '0',
+        shares:   fc(r,'shares','share') || '0',
+        caption:  (fc(r,'description','caption','topic','title')||'').replace(/[\r\n]+/g,' ').trim().slice(0,100)
       };
     });
     STATE.posts[pf] = [...imported, ...STATE.posts[pf]];
