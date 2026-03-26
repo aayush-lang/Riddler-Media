@@ -40,20 +40,20 @@ body {
 .btn-white { background: #fff; color: var(--black); }
 .btn-grey  { background: #555; color: #fff; }
 
-/* ── PAGE WRAP — A4 portrait, scaled down to feel like a sheet ── */
+/* ── PAGE WRAP — true A4 portrait width, always ── */
 #page-wrap {
   margin: 62px auto 48px;
-  width: 600px;         /* narrower on screen — portrait feel */
+  width: 794px;
 }
 
 /* ── INVOICE ── */
 #invoice {
   background: #fff;
-  width: 600px;
+  width: 794px;
   border: 2px solid var(--black);
-  font-size: 10.5px;
+  font-size: 11px;
   line-height: 1.45;
-  box-shadow: 0 4px 24px rgba(0,0,0,.18);
+  box-shadow: 0 6px 32px rgba(0,0,0,.22);
 }
 
 /* Title */
@@ -472,29 +472,12 @@ function resetForm(){
 
 /* DOWNLOAD PDF */
 function downloadPDF(){
-  const inv  = document.getElementById('invoice');
+  const inv        = document.getElementById('invoice');
   const invNum     = document.getElementById('inv-number').textContent.trim() || 'inv';
   const clientName = document.getElementById('client-name').textContent.trim().replace(/\s+/g,'-') || 'client';
 
-  // Clone invoice into a dedicated off-screen A4 container
-  const container = document.createElement('div');
-  container.style.cssText = [
-    'position:fixed', 'top:0', 'left:0',
-    'width:794px', 'background:#fff',
-    'z-index:9999', 'padding:0', 'margin:0'
-  ].join(';');
-
-  const clone = inv.cloneNode(true);
-  clone.style.cssText = 'width:794px !important; font-size:11px !important; border:2px solid #111;';
-  // Remove edit/interactive chrome from clone
-  clone.querySelectorAll('.add-row-btn, .del-btn').forEach(el => el.remove());
-  clone.querySelectorAll('[contenteditable]').forEach(el => {
-    el.removeAttribute('contenteditable');
-    el.style.borderBottom = 'none';
-  });
-
-  container.appendChild(clone);
-  document.body.appendChild(container);
+  // Add pdf-mode class to hide edit chrome (dashed borders, buttons)
+  inv.classList.add('pdf-mode');
 
   html2pdf()
     .set({
@@ -505,15 +488,15 @@ function downloadPDF(){
         scale: 2,
         useCORS: true,
         scrollX: 0,
-        scrollY: 0,
+        scrollY: -window.scrollY,
         width: 794,
         windowWidth: 794
       },
       jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
     })
-    .from(clone)
+    .from(inv)
     .save()
-    .then(() => document.body.removeChild(container));
+    .then(() => inv.classList.remove('pdf-mode'));
 }
 
 /* INIT */
