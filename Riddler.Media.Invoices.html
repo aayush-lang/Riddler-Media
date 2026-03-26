@@ -4,7 +4,8 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Riddler Media — Invoice Generator</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -471,32 +472,44 @@ function resetForm(){
 }
 
 /* DOWNLOAD PDF */
-function downloadPDF(){
+async function downloadPDF(){
+  const { jsPDF } = window.jspdf;
   const inv        = document.getElementById('invoice');
   const invNum     = document.getElementById('inv-number').textContent.trim() || 'inv';
   const clientName = document.getElementById('client-name').textContent.trim().replace(/\s+/g,'-') || 'client';
 
-  // Add pdf-mode class to hide edit chrome (dashed borders, buttons)
   inv.classList.add('pdf-mode');
 
-  html2pdf()
-    .set({
-      margin:   [8, 8, 8, 8],
-      filename: `RiddlerMedia_Invoice_${invNum}_${clientName}.pdf`,
-      image:    { type: 'jpeg', quality: 0.99 },
-      html2canvas: {
-        scale: 2,
-        useCORS: true,
-        scrollX: 0,
-        scrollY: -window.scrollY,
-        width: 794,
-        windowWidth: 794
-      },
-      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-    })
-    .from(inv)
-    .save()
-    .then(() => inv.classList.remove('pdf-mode'));
+  // Get the exact bounding rect so we capture from (0,0) of the element
+  const rect = inv.getBoundingClientRect();
+
+  const canvas = await html2canvas(inv, {
+    scale: 2,
+    useCORS: true,
+    logging: false,
+    x: 0,
+    y: 0,
+    scrollX: -rect.left,
+    scrollY: -rect.top,
+    width: inv.offsetWidth,
+    height: inv.offsetHeight,
+    windowWidth: inv.offsetWidth,
+    windowHeight: inv.offsetHeight
+  });
+
+  inv.classList.remove('pdf-mode');
+
+  const imgData = canvas.toDataURL('image/jpeg', 0.99);
+
+  // A4 dimensions in mm
+  const pageW = 210, pageH = 297;
+  const margin = 8;
+  const printW = pageW - margin * 2;
+  const printH = (canvas.height / canvas.width) * printW;
+
+  const pdf = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
+  pdf.addImage(imgData, 'JPEG', margin, margin, printW, printH);
+  pdf.save(`RiddlerMedia_Invoice_${invNum}_${clientName}.pdf`);
 }
 
 /* INIT */
