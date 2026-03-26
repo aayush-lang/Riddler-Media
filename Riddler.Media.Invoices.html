@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Riddler Media — Invoice Generator</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<style>
+  /* ── GLOBAL ── */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --red:   #c0392b;
+    --black: #111111;
+    --mid:   #444444;
+    --light: #f5f5f5;
+    --border:#cccccc;
+  }
+
+  body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    font-size: 13px;
+    background: #e8e8e8;
+    color: var(--black);
+  }
+
+  /* ── TOOLBAR ── */
+  #toolbar {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    background: var(--black);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 24px;
+    box-shadow: 0 2px 8px rgba(0,0,0,.4);
+  }
+  #toolbar .logo-txt { color: #fff; font-size: 16px; font-weight: 700; letter-spacing: 1px; }
+  #toolbar .logo-txt span { color: var(--red); }
+  #toolbar .btns { display: flex; gap: 10px; }
+  .btn {
+    padding: 7px 18px; border: none; border-radius: 4px;
+    font-size: 13px; font-weight: 600; cursor: pointer; transition: opacity .15s;
+  }
+  .btn:hover { opacity: .85; }
+  .btn-red   { background: var(--red);   color: #fff; }
+  .btn-white { background: #fff;         color: var(--black); }
+  .btn-grey  { background: #555;         color: #fff; }
+
+  /* ── PAGE WRAPPER ── */
+  #page-wrap {
+    margin: 70px auto 40px;
+    max-width: 900px;
+    padding: 0 16px;
+  }
+
+  /* ── INVOICE SHEET ── */
+  #invoice {
+    background: #fff;
+    border: 1px solid var(--border);
+    padding: 0;
+    width: 100%;
+  }
+
+  /* header title bar */
+  .inv-title {
+    text-align: center;
+    border-bottom: 2px solid var(--black);
+    border-top: 2px solid var(--black);
+    font-weight: 700; font-size: 14px;
+    padding: 5px 0;
+    letter-spacing: 1px;
+  }
+
+  /* logo row */
+  .logo-row {
+    text-align: center;
+    padding: 18px 10px 10px;
+    border-bottom: 1px solid var(--border);
+  }
+  .logo-row img { max-height: 56px; }
+  .logo-row .tagline { font-size: 11px; color: #888; margin-top: 4px; font-style: italic; }
+
+  /* company meta strip */
+  .meta-strip {
+    background: var(--black);
+    color: #fff;
+    font-size: 11px;
+    padding: 5px 12px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 20px;
+    align-items: center;
+  }
+  .meta-strip [contenteditable] { color: #fff; }
+
+  /* to/invoice info row */
+  .to-row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    border-bottom: 2px solid var(--black);
+  }
+  .to-block {
+    padding: 10px 14px;
+    border-right: 1px solid var(--border);
+  }
+  .to-block label { font-weight: 700; font-size: 12px; }
+  .inv-info {
+    min-width: 200px;
+    padding: 10px 14px;
+    display: flex; flex-direction: column; gap: 6px; justify-content: center;
+  }
+  .inv-info-row { display: flex; align-items: center; gap: 8px; }
+  .inv-info-row label { font-weight: 700; min-width: 90px; font-size: 12px; }
+
+  /* items table */
+  table.items {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+  }
+  table.items th {
+    background: var(--black);
+    color: #fff;
+    padding: 7px 8px;
+    text-align: center;
+    border: 1px solid #333;
+    font-size: 12px;
+  }
+  table.items td {
+    border: 1px solid var(--border);
+    padding: 6px 8px;
+    vertical-align: top;
+  }
+  table.items td.center { text-align: center; }
+  table.items td.right  { text-align: right; }
+  table.items tr:hover td { background: #fafafa; }
+
+  .add-row-btn {
+    margin: 6px 8px;
+    padding: 4px 12px;
+    background: var(--red);
+    color: #fff;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .add-row-btn:hover { opacity: .85; }
+  .del-btn {
+    background: none; border: none;
+    color: var(--red); cursor: pointer;
+    font-size: 14px; font-weight: 700;
+    padding: 0 4px;
+  }
+  .del-btn:hover { opacity: .7; }
+
+  /* totals + bank side by side */
+  .bottom-row {
+    display: grid;
+    grid-template-columns: 1fr 260px;
+    border-top: 2px solid var(--black);
+  }
+  .bank-block {
+    padding: 10px 14px;
+    border-right: 1px solid var(--border);
+    font-size: 12px;
+    line-height: 1.7;
+  }
+  .bank-block strong { font-size: 12px; display: block; margin-bottom: 4px; }
+  .totals-block {
+    font-size: 12px;
+  }
+  .totals-block table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  .totals-block td {
+    padding: 5px 10px;
+    border: 1px solid var(--border);
+  }
+  .totals-block td:last-child { text-align: right; font-weight: 600; min-width: 80px; }
+  .totals-block tr.gross td {
+    background: var(--black); color: #fff; font-weight: 700;
+  }
+
+  /* tax row with editable % */
+  .tax-pct {
+    display: inline-flex; align-items: center; gap: 3px;
+  }
+
+  /* terms + signatory */
+  .terms-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    border-top: 2px solid var(--black);
+    font-size: 12px;
+  }
+  .terms-block {
+    padding: 10px 14px;
+    border-right: 1px solid var(--border);
+  }
+  .terms-block strong { display: block; margin-bottom: 4px; }
+  .sign-block {
+    padding: 10px 14px;
+    text-align: right;
+    display: flex; flex-direction: column; justify-content: space-between;
+  }
+  .sign-block .sig-line { margin-top: 40px; font-weight: 700; font-size: 12px; }
+
+  /* ── EDITABLE FIELDS ── */
+  [contenteditable="true"] {
+    outline: none;
+    border-bottom: 1px dashed var(--red);
+    min-width: 40px;
+    display: inline-block;
+    cursor: text;
+    padding: 0 2px;
+  }
+  [contenteditable="true"]:focus {
+    background: #fff8f8;
+    border-bottom-color: var(--black);
+  }
+
+  /* hide delete btn in print mode */
+  @media print {
+    #toolbar, .add-row-btn, .del-btn { display: none !important; }
+    #page-wrap { margin-top: 0; }
+    body { background: #fff; }
+  }
+
+  /* ── PDF ONLY (injected clone gets this) ── */
+  .pdf-mode .add-row-btn,
+  .pdf-mode .del-btn,
+  .pdf-mode [contenteditable] { border-bottom: none !important; cursor: default; }
+</style>
+</head>
+<body>
+
+<!-- TOOLBAR -->
+<div id="toolbar">
+  <div class="logo-txt"><span>R</span>iddler Media — Invoice Generator</div>
+  <div class="btns">
+    <button class="btn btn-grey" onclick="addItem()">+ Add Line Item</button>
+    <button class="btn btn-white" onclick="resetForm()">Reset</button>
+    <button class="btn btn-red"  onclick="downloadPDF()">⬇ Download PDF</button>
+  </div>
+</div>
+
+<!-- INVOICE SHEET -->
+<div id="page-wrap">
+<div id="invoice">
+
+  <!-- Title bar -->
+  <div class="inv-title">TAX INVOICE</div>
+
+  <!-- Logo -->
+  <div class="logo-row">
+    <!-- Inline SVG replication of Riddler Media logo -->
+    <svg width="180" height="50" viewBox="0 0 360 100" xmlns="http://www.w3.org/2000/svg" style="display:inline-block">
+      <text x="0" y="72" font-family="Georgia, serif" font-size="80" font-weight="900" fill="#c0392b" letter-spacing="-2">?</text>
+      <text x="38" y="72" font-family="Georgia, serif" font-size="80" font-weight="700" fill="#111" letter-spacing="-2">iddler</text>
+      <text x="38" y="95" font-family="Georgia, serif" font-size="28" font-weight="400" fill="#111" letter-spacing="6">media</text>
+    </svg>
+    <div class="tagline">Your Success, Digitally Designed....!!!!</div>
+  </div>
+
+  <!-- Meta strip (company info) -->
+  <div class="meta-strip">
+    <span>📍 <span contenteditable="true" id="comp-address">90-B, Sector-16, Near IDFC Bank, Faridabad, Haryana - 121003</span></span>
+    <span>📞 <span contenteditable="true" id="comp-phone">8595265904</span></span>
+    <span>✉ <span contenteditable="true" id="comp-email">Corp@riddlermedia.in</span></span>
+    <span>GSTIN: <span contenteditable="true" id="comp-gstin">06ABIFR6825P1ZH</span></span>
+    <span>PAN: <span contenteditable="true" id="comp-pan">ABIFR6825P</span></span>
+    <span>MSME: <span contenteditable="true" id="comp-msme">UDYAM-HR-011-0040541</span></span>
+  </div>
+
+  <!-- To / Invoice Info -->
+  <div class="to-row">
+    <div class="to-block">
+      <div style="margin-bottom:6px"><label>To —</label>&nbsp;&nbsp;<strong contenteditable="true" id="client-name" style="font-size:14px">CLIENT COMPANY NAME</strong></div>
+      <div style="margin-bottom:4px"><b>Address &nbsp;</b><span contenteditable="true" id="client-address">Client Address Line 1, City, State, PIN</span></div>
+      <div style="margin-bottom:4px"><b>PAN NO. : &nbsp;</b><span contenteditable="true" id="client-pan">XXXXXXXXXX</span></div>
+      <div><b>GSTIN : &nbsp;</b><span contenteditable="true" id="client-gstin">XXXXXXXXXXXXXXXXX</span></div>
+    </div>
+    <div class="inv-info">
+      <div class="inv-info-row">
+        <label>Invoice No. :</label>
+        <span contenteditable="true" id="inv-number">1</span>
+      </div>
+      <div class="inv-info-row">
+        <label>Date:</label>
+        <span contenteditable="true" id="inv-date" id="inv-date"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Line Items Table -->
+  <table class="items" id="items-table">
+    <thead>
+      <tr>
+        <th style="width:42px">S.NO.</th>
+        <th>Particulars</th>
+        <th style="width:90px">SAC Code</th>
+        <th style="width:90px">Amount (₹)</th>
+        <th style="width:36px" class="no-print"></th>
+      </tr>
+    </thead>
+    <tbody id="items-body">
+      <!-- rows injected by JS -->
+    </tbody>
+  </table>
+  <button class="add-row-btn" onclick="addItem()">+ Add Line Item</button>
+
+  <!-- Bottom: Bank + Totals -->
+  <div class="bottom-row">
+    <div class="bank-block">
+      <strong>Bank Details : –</strong>
+      <div><b>Name : </b><span contenteditable="true">Riddler Media</span></div>
+      <div><b>Bank : </b><span contenteditable="true">IDFC Bank Sector - 16, Faridabad, Haryana</span></div>
+      <div><b>Account No. : </b><span contenteditable="true">10175669818</span></div>
+      <div><b>IFSC Code : </b><span contenteditable="true">IDFB0021311</span></div>
+      <div style="font-size:11px; margin-top:4px; color:#555">
+        GSTIN - <span contenteditable="true">06ABIFR6825P1ZH</span> &nbsp;|&nbsp;
+        PAN - <span contenteditable="true">ABIFR6825P</span> &nbsp;|&nbsp;
+        TAN - <span contenteditable="true">RTKS123456</span>
+      </div>
+    </div>
+    <div class="totals-block">
+      <table>
+        <tr>
+          <td>Total</td>
+          <td id="total-sub">0</td>
+        </tr>
+        <tr id="row-igst">
+          <td>
+            IGST
+            <span class="tax-pct">
+              <span contenteditable="true" id="igst-pct" oninput="calcTotals()">18</span>%
+            </span>
+          </td>
+          <td id="igst-amt">0</td>
+        </tr>
+        <tr id="row-cgst">
+          <td>
+            CGST
+            <span class="tax-pct">
+              <span contenteditable="true" id="cgst-pct" oninput="calcTotals()">9</span>%
+            </span>
+          </td>
+          <td id="cgst-amt">0</td>
+        </tr>
+        <tr id="row-sgst">
+          <td>
+            SGST
+            <span class="tax-pct">
+              <span contenteditable="true" id="sgst-pct" oninput="calcTotals()">9</span>%
+            </span>
+          </td>
+          <td id="sgst-amt">0</td>
+        </tr>
+        <tr class="gross">
+          <td>Gross Total</td>
+          <td id="total-gross">0</td>
+        </tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- Terms + Signatory -->
+  <div class="terms-row">
+    <div class="terms-block">
+      <strong>Terms &amp; Conditions :–</strong>
+      <div contenteditable="true" id="terms">TDS to be deducted at 2%, Under Section 194C of The Income Tax Act 1961.</div>
+    </div>
+    <div class="sign-block">
+      <div>For <strong contenteditable="true">Riddler Media</strong></div>
+      <div class="sig-line">Authorised Signatory</div>
+    </div>
+  </div>
+
+</div><!-- /invoice -->
+</div><!-- /page-wrap -->
+
+<script>
+/* ── HELPERS ── */
+const fmt = n => '₹' + Number(n).toLocaleString('en-IN', {minimumFractionDigits:2});
+const num  = s => parseFloat((s||'0').replace(/[^0-9.-]/g,'')) || 0;
+
+/* ── SET TODAY'S DATE ── */
+(function setDate(){
+  const d = new Date();
+  document.getElementById('inv-date').textContent =
+    String(d.getDate()).padStart(2,'0') + '/' +
+    String(d.getMonth()+1).padStart(2,'0') + '/' +
+    d.getFullYear();
+})();
+
+/* ── ROW MANAGEMENT ── */
+let rowCount = 0;
+
+function addItem(particular='', sac='998365', amount=''){
+  rowCount++;
+  const sno = document.querySelectorAll('#items-body tr').length + 1;
+  const tr = document.createElement('tr');
+  tr.dataset.id = rowCount;
+  tr.innerHTML = `
+    <td class="center sno">${sno}</td>
+    <td><div contenteditable="true" class="part" style="min-height:22px">${particular}</div></td>
+    <td class="center"><div contenteditable="true" class="sac">${sac}</div></td>
+    <td class="right"><div contenteditable="true" class="amt" oninput="calcTotals()">${amount}</div></td>
+    <td class="center no-print"><button class="del-btn" onclick="delRow(this)" title="Remove">✕</button></td>
+  `;
+  document.getElementById('items-body').appendChild(tr);
+  calcTotals();
+}
+
+function delRow(btn){
+  btn.closest('tr').remove();
+  reNumberRows();
+  calcTotals();
+}
+
+function reNumberRows(){
+  document.querySelectorAll('#items-body tr').forEach((tr,i)=>{
+    tr.querySelector('.sno').textContent = i+1;
+  });
+}
+
+/* ── CALCULATE TOTALS ── */
+function calcTotals(){
+  let sub = 0;
+  document.querySelectorAll('#items-body .amt').forEach(el=>{
+    sub += num(el.textContent);
+  });
+
+  const igst = num(document.getElementById('igst-pct').textContent);
+  const cgst = num(document.getElementById('cgst-pct').textContent);
+  const sgst = num(document.getElementById('sgst-pct').textContent);
+
+  const igstAmt = sub * igst / 100;
+  const cgstAmt = sub * cgst / 100;
+  const sgstAmt = sub * sgst / 100;
+  const gross   = sub + igstAmt + cgstAmt + sgstAmt;
+
+  document.getElementById('total-sub').textContent  = fmt(sub);
+  document.getElementById('igst-amt').textContent   = igst ? fmt(igstAmt) : '0';
+  document.getElementById('cgst-amt').textContent   = cgst ? fmt(cgstAmt) : '0';
+  document.getElementById('sgst-amt').textContent   = sgst ? fmt(sgstAmt) : '0';
+  document.getElementById('total-gross').textContent= fmt(gross);
+}
+
+/* ── RESET ── */
+function resetForm(){
+  if(!confirm('Reset all invoice data?')) return;
+  document.getElementById('items-body').innerHTML = '';
+  rowCount = 0;
+  document.getElementById('client-name').textContent    = 'CLIENT COMPANY NAME';
+  document.getElementById('client-address').textContent = 'Client Address Line 1, City, State, PIN';
+  document.getElementById('client-pan').textContent     = 'XXXXXXXXXX';
+  document.getElementById('client-gstin').textContent   = 'XXXXXXXXXXXXXXXXX';
+  document.getElementById('inv-number').textContent     = '1';
+  document.getElementById('igst-pct').textContent       = '18';
+  document.getElementById('cgst-pct').textContent       = '9';
+  document.getElementById('sgst-pct').textContent       = '9';
+  calcTotals();
+}
+
+/* ── DOWNLOAD PDF ── */
+function downloadPDF(){
+  // Snapshot editable content to plain text (no dotted underlines in PDF)
+  const inv = document.getElementById('invoice');
+
+  // Temporarily mark for pdf-mode (removes dashed borders)
+  inv.classList.add('pdf-mode');
+
+  // Hide toolbar-duplicate add btn & del btns from PDF
+  document.querySelectorAll('.add-row-btn, .del-btn').forEach(el=>el.style.display='none');
+
+  const invNum = document.getElementById('inv-number').textContent.trim() || 'invoice';
+  const clientName = document.getElementById('client-name').textContent.trim().replace(/\s+/g,'-') || 'client';
+
+  const opt = {
+    margin:       [4, 4, 4, 4],
+    filename:     `RiddlerMedia_Invoice_${invNum}_${clientName}.pdf`,
+    image:        { type: 'jpeg', quality: 0.98 },
+    html2canvas:  { scale: 2, useCORS: true, letterRendering: true },
+    jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
+    pagebreak:    { mode: 'avoid-all' }
+  };
+
+  html2pdf().set(opt).from(inv).save().then(()=>{
+    inv.classList.remove('pdf-mode');
+    document.querySelectorAll('.add-row-btn, .del-btn').forEach(el=>el.style.display='');
+  });
+}
+
+/* ── INIT with one blank row ── */
+addItem('', '998365', '');
+</script>
+</body>
+</html>
