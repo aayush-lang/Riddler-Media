@@ -474,31 +474,51 @@ function resetForm(){
 function downloadPDF(){
   const inv  = document.getElementById('invoice');
   const wrap = document.getElementById('page-wrap');
-  inv.classList.add('pdf-mode');
-
-  // Temporarily expand to true A4 width for PDF render
-  inv.style.width  = '794px';
-  wrap.style.width = '794px';
 
   const invNum     = document.getElementById('inv-number').textContent.trim() || 'inv';
   const clientName = document.getElementById('client-name').textContent.trim().replace(/\s+/g,'-') || 'client';
 
-  html2pdf()
-    .set({
-      margin:      [8, 8, 8, 8],
-      filename:    `RiddlerMedia_Invoice_${invNum}_${clientName}.pdf`,
-      image:       { type: 'jpeg', quality: 0.99 },
-      html2canvas: { scale: 2, useCORS: true, width: 794, windowWidth: 794 },
-      jsPDF:       { unit: 'mm', format: 'a4', orientation: 'portrait' }
-    })
-    .from(inv)
-    .save()
-    .then(() => {
-      // Restore screen size
-      inv.classList.remove('pdf-mode');
-      inv.style.width  = '600px';
-      wrap.style.width = '600px';
-    });
+  // 1. Expand to full A4 width
+  inv.style.width   = '794px';
+  wrap.style.width  = '794px';
+  inv.style.fontSize = '11px';
+  inv.classList.add('pdf-mode');
+
+  // 2. Give browser one frame to reflow, then capture
+  requestAnimationFrame(() => {
+    setTimeout(() => {
+      html2pdf()
+        .set({
+          margin:      [6, 6, 6, 6],
+          filename:    `RiddlerMedia_Invoice_${invNum}_${clientName}.pdf`,
+          image:       { type: 'jpeg', quality: 0.99 },
+          html2canvas: {
+            scale: 2,
+            useCORS: true,
+            scrollX: 0,
+            scrollY: 0,
+            width: 794,
+            windowWidth: 794,
+            onclone: (doc) => {
+              const el = doc.getElementById('invoice');
+              if(el){ el.style.width = '794px'; el.style.fontSize = '11px'; }
+              const wp = doc.getElementById('page-wrap');
+              if(wp){ wp.style.width = '794px'; }
+            }
+          },
+          jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        })
+        .from(inv)
+        .save()
+        .then(() => {
+          // Restore screen width
+          inv.classList.remove('pdf-mode');
+          inv.style.width    = '600px';
+          inv.style.fontSize = '10.5px';
+          wrap.style.width   = '600px';
+        });
+    }, 100);
+  });
 }
 
 /* INIT */
