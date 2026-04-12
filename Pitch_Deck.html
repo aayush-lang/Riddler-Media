@@ -4,390 +4,95 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Pitch Brief Generator — Riddler Media</title>
+<script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
 <style>
-  :root {
-    --bg: #0e0e0e;
-    --surface: #161616;
-    --surface2: #1e1e1e;
-    --border: #2a2a2a;
-    --border2: #333;
-    --text: #f0f0f0;
-    --text2: #888;
-    --text3: #555;
-    --accent: #c8f135;
-    --accent-dim: #a8cc25;
-    --red: #ff4d4d;
-    --red-bg: #1a0a0a;
-    --blue: #4d9fff;
-    --blue-bg: #0a1220;
-    --green: #4dff91;
-    --green-bg: #0a1a10;
-    --amber: #ffb84d;
-    --amber-bg: #1a1200;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'DM Sans', 'Inter', sans-serif;
-    min-height: 100vh;
-    padding: 0;
-  }
-  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
-
-  .topbar {
-    border-bottom: 1px solid var(--border);
-    padding: 16px 32px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    position: sticky;
-    top: 0;
-    background: var(--bg);
-    z-index: 100;
-  }
-  .brand {
-    font-size: 13px;
-    font-weight: 600;
-    letter-spacing: .1em;
-    color: var(--accent);
-  }
-  .brand span { color: var(--text2); font-weight: 400; }
-
-  .main {
-    max-width: 860px;
-    margin: 0 auto;
-    padding: 48px 32px 80px;
-  }
-
-  .hero {
-    margin-bottom: 40px;
-  }
-  .hero h1 {
-    font-size: 28px;
-    font-weight: 500;
-    color: var(--text);
-    margin-bottom: 8px;
-    letter-spacing: -.02em;
-  }
-  .hero p {
-    font-size: 14px;
-    color: var(--text2);
-    line-height: 1.6;
-  }
-
-  .input-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 24px;
-    margin-bottom: 32px;
-  }
-  .input-label {
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: .08em;
-    color: var(--text3);
-    text-transform: uppercase;
-    margin-bottom: 10px;
-  }
-  .input-row {
-    display: flex;
-    gap: 10px;
-  }
-  .input-row input {
-    flex: 1;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    color: var(--text);
-    font-size: 14px;
-    padding: 0 14px;
-    height: 42px;
-    font-family: 'DM Mono', monospace;
-    transition: border-color .15s;
-  }
-  .input-row input:focus { outline: none; border-color: var(--accent); }
-  .input-row input::placeholder { color: var(--text3); }
-
-  .btn {
-    height: 42px;
-    padding: 0 20px;
-    font-size: 13px;
-    font-weight: 600;
-    border-radius: 8px;
-    border: none;
-    cursor: pointer;
-    transition: all .15s;
-    white-space: nowrap;
-    letter-spacing: .02em;
-  }
-  .btn-primary {
-    background: var(--accent);
-    color: #0e0e0e;
-  }
-  .btn-primary:hover { background: var(--accent-dim); }
-  .btn-primary:disabled { opacity: .4; cursor: not-allowed; }
-  .btn-ghost {
-    background: transparent;
-    color: var(--text2);
-    border: 1px solid var(--border);
-  }
-  .btn-ghost:hover { border-color: var(--border2); color: var(--text); }
-  .btn-sm {
-    height: 28px;
-    padding: 0 12px;
-    font-size: 11px;
-    font-weight: 600;
-    border-radius: 6px;
-    border: 1px solid var(--border);
-    cursor: pointer;
-    transition: all .15s;
-    background: transparent;
-    color: var(--text2);
-    letter-spacing: .03em;
-  }
-  .btn-sm:hover { color: var(--text); border-color: var(--border2); }
-  .btn-sm.exclude { color: var(--red); border-color: #3a1515; }
-  .btn-sm.exclude:hover { background: var(--red-bg); }
-  .btn-sm.include { color: var(--green); border-color: #0a2a15; }
-  .btn-sm.include:hover { background: var(--green-bg); }
-
-  .status-bar {
-    font-size: 13px;
-    color: var(--text2);
-    margin-bottom: 24px;
-    min-height: 20px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .dot-loader {
-    display: inline-flex;
-    gap: 3px;
-  }
-  .dot-loader span {
-    width: 4px;
-    height: 4px;
-    border-radius: 50%;
-    background: var(--accent);
-    animation: pulse 1.2s ease-in-out infinite;
-    display: inline-block;
-  }
-  .dot-loader span:nth-child(2) { animation-delay: .2s; }
-  .dot-loader span:nth-child(3) { animation-delay: .4s; }
-  @keyframes pulse { 0%,80%,100%{opacity:.2;transform:scale(.8)} 40%{opacity:1;transform:scale(1)} }
-
-  .cards { display: flex; flex-direction: column; gap: 12px; margin-bottom: 32px; }
-
-  .card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 20px 22px;
-    transition: opacity .2s, border-color .2s;
-  }
-  .card.excluded {
-    opacity: .35;
-    border-style: dashed;
-  }
-  .card.highlight {
-    border-color: var(--accent);
-  }
-  .card-top {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 12px;
-  }
-  .card-label {
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: .1em;
-    text-transform: uppercase;
-    color: var(--text3);
-  }
-  .card-actions { display: flex; gap: 6px; }
-  .card-body {
-    font-size: 14px;
-    color: var(--text);
-    line-height: 1.7;
-  }
-  .card-body textarea {
-    width: 100%;
-    background: var(--surface2);
-    border: 1px solid var(--border2);
-    border-radius: 6px;
-    color: var(--text);
-    font-size: 14px;
-    line-height: 1.7;
-    padding: 10px 12px;
-    resize: vertical;
-    min-height: 90px;
-    font-family: 'DM Sans', sans-serif;
-  }
-  .card-body textarea:focus { outline: none; border-color: var(--accent); }
-
-  .tags {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    margin-top: 10px;
-  }
-  .tag {
-    font-size: 11px;
-    padding: 3px 10px;
-    border-radius: 20px;
-    font-weight: 500;
-  }
-  .tag.gap { background: var(--red-bg); color: var(--red); border: 1px solid #3a1515; }
-  .tag.info { background: var(--blue-bg); color: var(--blue); border: 1px solid #152035; }
-  .tag.custom { background: var(--amber-bg); color: var(--amber); border: 1px solid #352500; }
-
-  .add-note-row {
-    display: flex;
-    gap: 6px;
-    margin-top: 12px;
-    padding-top: 12px;
-    border-top: 1px solid var(--border);
-  }
-  .add-note-row input {
-    flex: 1;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    color: var(--text);
-    font-size: 13px;
-    padding: 0 10px;
-    height: 30px;
-    font-family: 'DM Sans', sans-serif;
-  }
-  .add-note-row input:focus { outline: none; border-color: var(--accent); }
-  .add-note-row input::placeholder { color: var(--text3); }
-
-  .generate-row {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 32px;
-  }
-
-  .brief-section { display: none; }
-  .brief-section.visible { display: block; }
-
-  .brief-label {
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: .1em;
-    color: var(--text3);
-    text-transform: uppercase;
-    margin-bottom: 12px;
-  }
-  .brief-output {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 24px;
-    font-family: 'DM Mono', monospace;
-    font-size: 13px;
-    line-height: 1.9;
-    color: var(--text);
-    white-space: pre-wrap;
-    margin-bottom: 16px;
-  }
-  .brief-actions { display: flex; gap: 10px; margin-bottom: 48px; }
-
-  .copy-confirm {
-    font-size: 12px;
-    color: var(--green);
-    display: none;
-    align-items: center;
-    gap: 6px;
-  }
-  .copy-confirm.show { display: flex; }
-
-  .gate {
-    position: fixed;
-    inset: 0;
-    background: var(--bg);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 999;
-  }
-  .gate-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 40px 36px;
-    width: 100%;
-    max-width: 380px;
-  }
-  .gate-card h2 {
-    font-size: 18px;
-    font-weight: 500;
-    margin-bottom: 6px;
-    letter-spacing: -.02em;
-  }
-  .gate-card p {
-    font-size: 13px;
-    color: var(--text2);
-    margin-bottom: 24px;
-  }
-  .gate-label {
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: .08em;
-    color: var(--text3);
-    text-transform: uppercase;
-    margin-bottom: 8px;
-  }
-  .gate-input {
-    width: 100%;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    color: var(--text);
-    font-size: 14px;
-    padding: 0 14px;
-    height: 42px;
-    font-family: 'DM Mono', monospace;
-    margin-bottom: 14px;
-    letter-spacing: .1em;
-  }
-  .gate-input:focus { outline: none; border-color: var(--accent); }
-  .gate-error {
-    font-size: 12px;
-    color: var(--red);
-    margin-bottom: 12px;
-    min-height: 18px;
-  }
-  .gate-btn {
-    width: 100%;
-    height: 42px;
-    background: var(--accent);
-    color: #0e0e0e;
-    border: none;
-    border-radius: 8px;
-    font-size: 13px;
-    font-weight: 700;
-    cursor: pointer;
-    letter-spacing: .03em;
-  }
-  .gate-btn:hover { background: var(--accent-dim); }
-  .brand-gate {
-    font-size: 13px;
-    font-weight: 600;
-    letter-spacing: .1em;
-    color: var(--accent);
-    margin-bottom: 28px;
-  }
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400&display=swap');
+:root {
+  --bg:#0e0e0e;--surface:#161616;--surface2:#1e1e1e;--border:#2a2a2a;--border2:#333;
+  --text:#f0f0f0;--text2:#888;--text3:#444;--accent:#c8f135;--accent-dim:#a8cc25;
+  --red:#ff5555;--red-bg:#1a0a0a;--green:#4dff91;--green-bg:#0a1a10;--amber:#ffb84d;--amber-bg:#1a1200;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh}
+.gate{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:999}
+.gate-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:40px 36px;width:100%;max-width:380px}
+.gate-brand{font-size:12px;font-weight:700;letter-spacing:.12em;color:var(--accent);margin-bottom:24px}
+.gate-card h2{font-size:20px;font-weight:500;margin-bottom:6px}
+.gate-card p{font-size:13px;color:var(--text2);margin-bottom:24px}
+.gate-label{font-size:11px;font-weight:600;letter-spacing:.08em;color:var(--text3);text-transform:uppercase;margin-bottom:8px}
+.gate-input{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:14px;padding:0 14px;height:42px;font-family:'DM Mono',monospace;letter-spacing:.1em;margin-bottom:10px}
+.gate-input:focus{outline:none;border-color:var(--accent)}
+.gate-error{font-size:12px;color:var(--red);min-height:18px;margin-bottom:10px}
+.gate-btn{width:100%;height:42px;background:var(--accent);color:#0e0e0e;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer}
+.gate-btn:hover{background:var(--accent-dim)}
+.topbar{border-bottom:1px solid var(--border);padding:14px 32px;display:flex;align-items:center;position:sticky;top:0;background:var(--bg);z-index:100}
+.brand{font-size:12px;font-weight:700;letter-spacing:.12em;color:var(--accent)}
+.brand span{color:var(--text2);font-weight:400}
+.main{max-width:880px;margin:0 auto;padding:48px 32px 80px}
+.hero{margin-bottom:36px}
+.hero h1{font-size:26px;font-weight:500;letter-spacing:-.02em;margin-bottom:8px}
+.hero p{font-size:14px;color:var(--text2);line-height:1.6;max-width:600px}
+.input-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:24px;margin-bottom:24px}
+.input-label{font-size:11px;font-weight:600;letter-spacing:.08em;color:var(--text3);text-transform:uppercase;margin-bottom:10px}
+.input-row{display:flex;gap:10px}
+.url-input{flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:14px;padding:0 14px;height:42px;font-family:'DM Mono',monospace}
+.url-input:focus{outline:none;border-color:var(--accent)}
+.url-input::placeholder{color:var(--text3)}
+.btn{height:42px;padding:0 20px;font-size:13px;font-weight:600;border-radius:8px;border:none;cursor:pointer;transition:all .15s;white-space:nowrap}
+.btn-primary{background:var(--accent);color:#0e0e0e}
+.btn-primary:hover{background:var(--accent-dim)}
+.btn-primary:disabled{opacity:.4;cursor:not-allowed}
+.btn-ghost{background:transparent;color:var(--text2);border:1px solid var(--border)}
+.btn-ghost:hover{border-color:var(--border2);color:var(--text)}
+.btn-sm{height:28px;padding:0 12px;font-size:11px;font-weight:600;border-radius:6px;border:1px solid var(--border);cursor:pointer;background:transparent;color:var(--text2);transition:all .15s}
+.btn-sm:hover{color:var(--text);border-color:var(--border2)}
+.btn-sm.excl{color:var(--red);border-color:#3a1515}
+.btn-sm.excl:hover{background:var(--red-bg)}
+.btn-sm.incl{color:var(--green);border-color:#0a2a15}
+.btn-sm.incl:hover{background:var(--green-bg)}
+.status{font-size:13px;color:var(--text2);margin-bottom:20px;min-height:20px;display:flex;align-items:center;gap:8px}
+.dots span{width:4px;height:4px;border-radius:50%;background:var(--accent);animation:pulse 1.2s ease-in-out infinite;display:inline-block;margin-right:3px}
+.dots span:nth-child(2){animation-delay:.2s}
+.dots span:nth-child(3){animation-delay:.4s}
+@keyframes pulse{0%,80%,100%{opacity:.2;transform:scale(.8)}40%{opacity:1;transform:scale(1)}}
+.section-label{font-size:11px;font-weight:600;letter-spacing:.08em;color:var(--text3);text-transform:uppercase;margin-bottom:12px;margin-top:28px}
+.meta-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:4px}
+.field-group{display:flex;flex-direction:column;gap:6px}
+.field-label{font-size:11px;font-weight:600;letter-spacing:.08em;color:var(--text3);text-transform:uppercase}
+.field-input{background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;padding:8px 12px;font-family:'DM Sans',sans-serif}
+.field-input:focus{outline:none;border-color:var(--accent)}
+.field-input::placeholder{color:var(--text3)}
+.color-row{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:4px}
+.color-opt{display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer}
+.color-swatch{width:38px;height:38px;border-radius:8px;border:2px solid transparent;transition:all .15s}
+.color-opt.selected .color-swatch{border-color:var(--accent)}
+.color-name{font-size:10px;color:var(--text3)}
+.cards{display:flex;flex-direction:column;gap:12px;margin-bottom:24px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px 22px;transition:opacity .2s,border-color .2s}
+.card.excluded{opacity:.3;border-style:dashed}
+.card.highlight{border-color:#c8f13566}
+.card-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.card-label{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text3)}
+.card-actions{display:flex;gap:6px}
+.card-body{font-size:14px;color:var(--text);line-height:1.7}
+.card-body textarea{width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:6px;color:var(--text);font-size:14px;line-height:1.7;padding:10px 12px;resize:vertical;min-height:80px;font-family:'DM Sans',sans-serif}
+.card-body textarea:focus{outline:none;border-color:var(--accent)}
+.tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.tag{font-size:11px;padding:3px 10px;border-radius:20px;font-weight:500}
+.tag.gap{background:var(--red-bg);color:var(--red);border:1px solid #3a1515}
+.tag.custom{background:var(--amber-bg);color:var(--amber);border:1px solid #352500}
+.add-note-row{display:flex;gap:6px;margin-top:12px;padding-top:12px;border-top:1px solid var(--border)}
+.add-note-row input{flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:13px;padding:0 10px;height:30px;font-family:'DM Sans',sans-serif}
+.add-note-row input:focus{outline:none;border-color:var(--accent)}
+.add-note-row input::placeholder{color:var(--text3)}
+.gen-row{display:flex;gap:10px;margin-bottom:32px}
 </style>
 </head>
 <body>
 
 <div class="gate" id="gate">
   <div class="gate-card">
-    <div class="brand-gate">RIDDLER MEDIA</div>
+    <div class="gate-brand">RIDDLER MEDIA</div>
     <h2>Pitch brief generator</h2>
     <p>Internal tool. Enter your access password to continue.</p>
     <div class="gate-label">Password</div>
@@ -404,241 +109,341 @@
 <div class="main">
   <div class="hero">
     <h1>Pitch brief generator</h1>
-    <p>Paste a brand's website URL. The AI researches their website, ads, SEO, social media, and competitors — then outputs a pre-pitch brief ready for deck building.</p>
+    <p>Paste a brand URL. AI researches their website, ads, SEO, social, and competitors. Review the brief, pick a theme, and download the deck.</p>
   </div>
 
   <div class="input-card">
     <div class="input-label">Brand website URL</div>
     <div class="input-row">
-      <input type="text" id="urlInput" placeholder="https://brandwebsite.com" />
+      <input type="text" class="url-input" id="urlInput" placeholder="https://brandwebsite.com" />
       <button class="btn btn-primary" id="researchBtn" onclick="startResearch()">Research brand</button>
     </div>
   </div>
 
-  <div class="status-bar" id="status"></div>
-  <div class="cards" id="cards"></div>
+  <div class="status" id="status"></div>
 
-  <div class="generate-row" id="generateRow" style="display:none">
-    <button class="btn btn-primary" onclick="generateBrief()">Generate brief</button>
-    <button class="btn btn-ghost" onclick="reset()">Start over</button>
+  <div id="metaSection" style="display:none">
+    <div class="section-label">Deck details</div>
+    <div class="meta-grid">
+      <div class="field-group"><div class="field-label">Brand name</div><input class="field-input" type="text" id="brandName" placeholder="e.g. Wild Caribou" /></div>
+      <div class="field-group"><div class="field-label">Cover tagline</div><input class="field-input" type="text" id="tagline" placeholder="e.g. Rooted. Revenue-Ready." /></div>
+    </div>
+    <div class="section-label">Color theme</div>
+    <div class="color-row" id="colorRow"></div>
   </div>
 
-  <div class="brief-section" id="briefSection">
-    <div class="brief-label">Generated brief</div>
-    <div class="brief-output" id="briefOutput"></div>
-    <div class="brief-actions">
-      <button class="btn btn-primary" onclick="copyBrief()">Copy brief</button>
-      <button class="btn btn-ghost" onclick="reset()">Start over</button>
-      <div class="copy-confirm" id="copyConfirm">Copied to clipboard</div>
-    </div>
+  <div class="cards" id="cards"></div>
+  <div class="gen-row" id="genRow" style="display:none">
+    <button class="btn btn-primary" onclick="generateDeck()">Download deck (.pptx)</button>
+    <button class="btn btn-ghost" onclick="reset()">Start over</button>
   </div>
 </div>
 
 <script>
-const PASSWORD = 'riddler2024';
+const PASSWORD = 'riddler2025';
+const PROXY = 'https://riddler-ai-proxy.aayush-5a9.workers.dev';
+
+const THEMES = [
+  { name:'Forest',   bg:'1B4332', light:'F5F0E8', accent:'C9A84C', dark:'0D2B1E', red:'7B2D2D' },
+  { name:'Navy',     bg:'1E2761', light:'F4F6FA', accent:'C9A84C', dark:'0D1540', red:'8B1A1A' },
+  { name:'Charcoal', bg:'1A1A2E', light:'F0EEE9', accent:'E2B96F', dark:'0D0D1A', red:'8B2635' },
+  { name:'Berry',    bg:'4A1942', light:'FAF3F8', accent:'D4A853', dark:'2D0F28', red:'8B1A1A' },
+  { name:'Teal',     bg:'0D3B38', light:'F0F7F6', accent:'C8A84B', dark:'071E1C', red:'7B2525' },
+];
+let sections = [], selectedTheme = THEMES[0];
 
 function checkPassword() {
-  const val = document.getElementById('gateInput').value;
-  if (val === PASSWORD) {
+  if (document.getElementById('gateInput').value === PASSWORD) {
     document.getElementById('gate').style.display = 'none';
-    sessionStorage.setItem('rm_auth', '1');
+    sessionStorage.setItem('rm_auth','1');
   } else {
-    document.getElementById('gateError').textContent = 'Incorrect password. Try again.';
+    document.getElementById('gateError').textContent = 'Incorrect password.';
     document.getElementById('gateInput').value = '';
   }
 }
-
 window.addEventListener('DOMContentLoaded', () => {
-  if (sessionStorage.getItem('rm_auth') === '1') {
-    document.getElementById('gate').style.display = 'none';
-  }
+  if (sessionStorage.getItem('rm_auth')==='1') document.getElementById('gate').style.display='none';
+  const row = document.getElementById('colorRow');
+  THEMES.forEach((t,i) => {
+    const div = document.createElement('div');
+    div.className = 'color-opt'+(i===0?' selected':'');
+    div.onclick = () => { selectedTheme=t; document.querySelectorAll('.color-opt').forEach(e=>e.classList.remove('selected')); div.classList.add('selected'); };
+    div.innerHTML = `<div class="color-swatch" style="background:#${t.bg}"></div><div class="color-name">${t.name}</div>`;
+    row.appendChild(div);
+  });
 });
 
-const PROXY = 'https://riddler-ai-proxy.aayush-5a9.workers.dev';
-let sections = [];
-
-async function callClaude(prompt) {
-  const res = await fetch(PROXY, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: 2000,
-      messages: [{ role: 'user', content: prompt }]
-    })
-  });
-  const data = await res.json();
-  return data.content?.[0]?.text || '';
+function setStatus(msg, loading) {
+  document.getElementById('status').innerHTML = loading
+    ? `${msg}&nbsp;<span class="dots"><span></span><span></span><span></span></span>` : msg;
 }
 
-function setStatus(msg, loading) {
-  const el = document.getElementById('status');
-  if (loading) {
-    el.innerHTML = `${msg}&nbsp;<span class="dot-loader"><span></span><span></span><span></span></span>`;
-  } else {
-    el.textContent = msg;
-  }
+async function callClaude(prompt) {
+  const res = await fetch(PROXY, { method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:2500, messages:[{role:'user',content:prompt}] }) });
+  const data = await res.json();
+  return data.content?.[0]?.text || '';
 }
 
 async function startResearch() {
   const url = document.getElementById('urlInput').value.trim();
   if (!url) return;
-
-  sections = [];
+  sections = []; window._d = null;
   document.getElementById('cards').innerHTML = '';
-  document.getElementById('generateRow').style.display = 'none';
-  document.getElementById('briefSection').classList.remove('visible');
+  document.getElementById('genRow').style.display = 'none';
+  document.getElementById('metaSection').style.display = 'none';
   document.getElementById('researchBtn').disabled = true;
-
   setStatus('Researching brand', true);
 
-  const prompt = `You are a senior digital marketing strategist doing pre-pitch research for Riddler Media, a full-service digital marketing agency in India that offers: performance marketing (Meta/Google ads), SEO, social media management, influencer marketing, and website development. Clients are D2C and SME brands.
+  const prompt = `You are a senior digital marketing strategist doing pre-pitch research for Riddler Media, a full-service digital marketing agency in India offering: performance marketing (Meta/Google ads), SEO, social media management, influencer marketing, and website development. Clients are D2C and SME brands in India.
 
-Research the brand at this URL: ${url}
+Research the brand at: ${url}
 
-Based on what you know about this brand and its online presence, return ONLY a raw JSON object with NO markdown formatting, NO backticks, NO explanation. Just the JSON:
+Return ONLY a raw JSON object with no markdown, no backticks, no explanation:
 
 {
-  "brand_overview": "2-3 sentences covering brand name, what they sell, target audience, price positioning, and overall brand tone",
-  "website_audit": "2-3 specific observations about their website: design quality, page speed likelihood, CTA clarity, product page quality, checkout experience, tracking pixel presence",
-  "website_gaps": ["specific gap 1", "specific gap 2", "specific gap 3"],
-  "ads_activity": "Are they running paid ads on Meta or Google? What kind of creatives, offers, or messaging? Active or dormant?",
-  "ads_gaps": ["specific gap 1", "specific gap 2"],
-  "seo_keywords": "Top 6-8 keywords they appear to target based on their site content, meta tags, and category",
-  "seo_gaps": ["specific gap 1", "specific gap 2"],
-  "social_media": "Which platforms they are on, estimated follower size, posting cadence, content format mix (reels vs carousels vs static), engagement quality",
-  "social_gaps": ["specific gap 1", "specific gap 2"],
-  "competitors": "3-4 direct competitor brands in the same space with one line on each competitor's positioning or strength",
-  "key_gaps_summary": "Top 3 gaps written as business consequences, not technical issues. Example style: 'Visitors are landing but leaving without buying', 'Invisible on search while competitors capture demand', 'No retargeting means lost buyers are gone forever'",
-  "recommended_services": "Which of Riddler's services fit best and why, ranked by priority: performance marketing, SEO, social media management, influencer marketing, website development",
-  "pitch_hook": "Single most compelling problem to open the pitch with. One punchy sentence that creates urgency.",
-  "flags": "Anything unusual or important to know: already running heavy ads, working with a known agency, direct competitor of another client, very small or very large scale, etc. Write 'None' if nothing notable."
+  "brand_name": "Brand name",
+  "tagline_hook": "Punchy 2-5 word cover tagline. Use short punchy words separated by periods. e.g. Rooted. Revenue-Ready. or Seen. Searched. Sold.",
+  "strengths": ["Title: one line description","Title: one line description","Title: one line description","Title: one line description"],
+  "gaps": ["Title: one line description","Title: one line description","Title: one line description","Title: one line description"],
+  "market_stat1": "e.g. ₹8,000 Cr+",
+  "market_stat1_label": "India market size and growth context",
+  "market_stat2": "e.g. 3x",
+  "market_stat2_label": "D2C or category growth stat",
+  "gap_cards": [
+    {"number":"01","title":"Short gap title 3-4 words","body":"One paragraph as business consequence. Create urgency. Never reveal the fix."},
+    {"number":"02","title":"Short gap title","body":"..."},
+    {"number":"03","title":"Short gap title","body":"..."},
+    {"number":"04","title":"Short gap title","body":"..."}
+  ],
+  "what_we_found_subtitle": "e.g. 4 high-impact gaps identified in your current digital presence",
+  "phase_narrative": "One sentence why this sequenced approach works for this brand specifically.",
+  "recommended_plan": "Growth",
+  "pitch_hook": "Single most compelling problem. One punchy sentence creating urgency.",
+  "ads_activity": "2 sentences on their current ad presence",
+  "ads_gaps": ["gap 1","gap 2"],
+  "seo_keywords": "Top 6-8 keywords they target",
+  "seo_gaps": ["gap 1","gap 2"],
+  "social_media": "Platforms, follower size, posting cadence, content mix",
+  "social_gaps": ["gap 1","gap 2"],
+  "competitors": "3-4 competitors with one line each",
+  "flags": "Anything unusual or None"
 }`;
 
   try {
     const raw = await callClaude(prompt);
     let parsed;
-    try {
-      parsed = JSON.parse(raw.trim());
-    } catch(e) {
-      const match = raw.match(/\{[\s\S]*\}/);
-      if (match) parsed = JSON.parse(match[0]);
-    }
-    if (!parsed) throw new Error('Parse failed');
-
+    try { parsed = JSON.parse(raw.trim()); }
+    catch(e) { const m = raw.match(/\{[\s\S]*\}/); if(m) parsed = JSON.parse(m[0]); }
+    if (!parsed) throw new Error('parse fail');
+    window._d = parsed;
+    document.getElementById('brandName').value = parsed.brand_name||'';
+    document.getElementById('tagline').value = parsed.tagline_hook||'';
     sections = [
-      { id: 'brand_overview', title: 'Brand overview', content: parsed.brand_overview || '', tags: [], included: true, editing: false },
-      { id: 'website_audit', title: 'Website audit', content: parsed.website_audit || '', tags: (parsed.website_gaps || []).map(g => ({ text: g, type: 'gap' })), included: true, editing: false },
-      { id: 'ads_activity', title: 'Ad activity', content: parsed.ads_activity || '', tags: (parsed.ads_gaps || []).map(g => ({ text: g, type: 'gap' })), included: true, editing: false },
-      { id: 'seo_keywords', title: 'SEO & keywords', content: parsed.seo_keywords || '', tags: (parsed.seo_gaps || []).map(g => ({ text: g, type: 'gap' })), included: true, editing: false },
-      { id: 'social_media', title: 'Social media', content: parsed.social_media || '', tags: (parsed.social_gaps || []).map(g => ({ text: g, type: 'gap' })), included: true, editing: false },
-      { id: 'competitors', title: 'Competitor landscape', content: parsed.competitors || '', tags: [], included: true, editing: false },
-      { id: 'key_gaps_summary', title: 'Key gaps (business language)', content: parsed.key_gaps_summary || '', tags: [], included: true, editing: false, highlight: true },
-      { id: 'recommended_services', title: 'Recommended services', content: parsed.recommended_services || '', tags: [], included: true, editing: false },
-      { id: 'pitch_hook', title: 'Pitch hook', content: parsed.pitch_hook || '', tags: [], included: true, editing: false, highlight: true },
-      { id: 'flags', title: 'Flags', content: parsed.flags || 'None', tags: [], included: true, editing: false },
+      {id:'pitch_hook',title:'Pitch hook',content:parsed.pitch_hook||'',tags:[],included:true,editing:false,highlight:true},
+      {id:'gaps',title:'Key gaps (4 cards in deck)',content:(parsed.gap_cards||[]).map(g=>`${g.number}. ${g.title}\n${g.body}`).join('\n\n'),tags:[],included:true,editing:false},
+      {id:'ads',title:'Ad activity',content:parsed.ads_activity||'',tags:(parsed.ads_gaps||[]).map(g=>({text:g,type:'gap'})),included:true,editing:false},
+      {id:'seo',title:'SEO & keywords',content:parsed.seo_keywords||'',tags:(parsed.seo_gaps||[]).map(g=>({text:g,type:'gap'})),included:true,editing:false},
+      {id:'social',title:'Social media',content:parsed.social_media||'',tags:(parsed.social_gaps||[]).map(g=>({text:g,type:'gap'})),included:true,editing:false},
+      {id:'competitors',title:'Competitor landscape',content:parsed.competitors||'',tags:[],included:true,editing:false},
+      {id:'flags',title:'Flags',content:parsed.flags||'None',tags:[],included:true,editing:false},
     ];
-
-    setStatus(`Research complete — ${sections.length} sections generated. Review, edit, then generate brief.`);
+    setStatus('Research complete. Review, pick a theme, then download deck.');
+    document.getElementById('metaSection').style.display='block';
     renderCards();
-    document.getElementById('generateRow').style.display = 'flex';
-  } catch(e) {
-    setStatus('Research failed. Check your internet connection or Worker URL.');
-  }
-
-  document.getElementById('researchBtn').disabled = false;
+    document.getElementById('genRow').style.display='flex';
+  } catch(e) { setStatus('Research failed. Make sure riddler-ai-proxy.aayush-5a9.workers.dev is live.'); }
+  document.getElementById('researchBtn').disabled=false;
 }
 
 function renderCards() {
-  const container = document.getElementById('cards');
-  container.innerHTML = '';
-
-  sections.forEach((s, i) => {
+  const c = document.getElementById('cards'); c.innerHTML='';
+  sections.forEach((s,i) => {
     const card = document.createElement('div');
-    card.className = `card${s.included ? '' : ' excluded'}${s.highlight ? ' highlight' : ''}`;
-
-    const tagsHtml = s.tags.map(t => `<span class="tag ${t.type}">${t.text}</span>`).join('');
-
-    card.innerHTML = `
-      <div class="card-top">
-        <div class="card-label">${s.title}</div>
-        <div class="card-actions">
-          <button class="btn-sm" onclick="toggleEdit(${i})">${s.editing ? 'Done' : 'Edit'}</button>
-          <button class="btn-sm ${s.included ? 'exclude' : 'include'}" onclick="toggleInclude(${i})">${s.included ? 'Exclude' : 'Include'}</button>
-        </div>
-      </div>
-      <div class="card-body">
-        ${s.editing
-          ? `<textarea id="edit_${i}">${s.content}</textarea>`
-          : `<div>${s.content}</div>`
-        }
-        ${tagsHtml ? `<div class="tags">${tagsHtml}</div>` : ''}
-      </div>
-      <div class="add-note-row">
-        <input type="text" id="note_${i}" placeholder="Add a custom note..." />
-        <button class="btn-sm" onclick="addNote(${i})">+ Add</button>
-      </div>`;
-
-    container.appendChild(card);
+    card.className=`card${s.included?'':' excluded'}${s.highlight?' highlight':''}`;
+    const tagsHtml=(s.tags||[]).map(t=>`<span class="tag ${t.type}">${t.text}</span>`).join('');
+    card.innerHTML=`<div class="card-top"><div class="card-label">${s.title}</div><div class="card-actions"><button class="btn-sm" onclick="toggleEdit(${i})">${s.editing?'Done':'Edit'}</button><button class="btn-sm ${s.included?'excl':'incl'}" onclick="toggleInclude(${i})">${s.included?'Exclude':'Include'}</button></div></div><div class="card-body">${s.editing?`<textarea id="edit_${i}">${s.content}</textarea>`:`<div style="white-space:pre-line">${s.content}</div>`}${tagsHtml?`<div class="tags">${tagsHtml}</div>`:''}</div><div class="add-note-row"><input type="text" id="note_${i}" placeholder="Add a custom note..." /><button class="btn-sm" onclick="addNote(${i})">+ Add</button></div>`;
+    c.appendChild(card);
   });
 }
+function toggleEdit(i){if(sections[i].editing){const ta=document.getElementById(`edit_${i}`);if(ta)sections[i].content=ta.value;}sections[i].editing=!sections[i].editing;renderCards();}
+function toggleInclude(i){sections[i].included=!sections[i].included;renderCards();}
+function addNote(i){const inp=document.getElementById(`note_${i}`);if(!inp?.value.trim())return;sections[i].tags.push({text:inp.value.trim(),type:'custom'});inp.value='';renderCards();}
+function reset(){sections=[];window._d=null;document.getElementById('cards').innerHTML='';document.getElementById('genRow').style.display='none';document.getElementById('metaSection').style.display='none';document.getElementById('urlInput').value='';setStatus('');}
 
-function toggleEdit(i) {
-  if (sections[i].editing) {
-    const ta = document.getElementById(`edit_${i}`);
-    if (ta) sections[i].content = ta.value;
-  }
-  sections[i].editing = !sections[i].editing;
-  renderCards();
-}
+// ── DECK GENERATION ───────────────────────────────────────────────────
+async function generateDeck() {
+  const d = window._d; if(!d){alert('Run research first.');return;}
+  const brandName = document.getElementById('brandName').value||d.brand_name||'Brand';
+  const tagline = document.getElementById('tagline').value||d.tagline_hook||'Growth Ready.';
+  const T = selectedTheme;
+  setStatus('Generating deck', true);
 
-function toggleInclude(i) {
-  sections[i].included = !sections[i].included;
-  renderCards();
-}
+  const pres = new PptxGenJS();
+  pres.layout = 'LAYOUT_WIDE';
+  const W=13.3, H=7.5;
 
-function addNote(i) {
-  const input = document.getElementById(`note_${i}`);
-  if (!input || !input.value.trim()) return;
-  sections[i].tags.push({ text: input.value.trim(), type: 'custom' });
-  input.value = '';
-  renderCards();
-}
-
-function generateBrief() {
-  const included = sections.filter(s => s.included);
-  let brief = `PITCH BRIEF — RIDDLER MEDIA\n${'━'.repeat(44)}\n\n`;
-  included.forEach(s => {
-    brief += `[ ${s.title.toUpperCase()} ]\n`;
-    brief += s.content + '\n';
-    if (s.tags.length) {
-      s.tags.forEach(t => { brief += `  • ${t.text}\n`; });
-    }
-    brief += '\n';
+  // ── S1: Cover ──
+  let s1=pres.addSlide();
+  s1.background={color:T.bg};
+  s1.addShape(pres.shapes.RECTANGLE,{x:8.5,y:0,w:W-8.5,h:H,fill:{color:T.dark},line:{color:T.dark}});
+  s1.addShape(pres.shapes.LINE,{x:0.5,y:0.55,w:7.5,h:0,line:{color:T.accent,width:1}});
+  s1.addText(`R I D D L E R  M E D I A  ×  ${brandName.toUpperCase()}`,{x:0.5,y:0.28,w:7.5,h:0.3,fontSize:9,color:T.accent,charSpacing:4,fontFace:'Calibri',margin:0});
+  const tagParts=tagline.split(/[.\n]/).map(s=>s.trim()).filter(Boolean);
+  let tagY=1.0;
+  tagParts.forEach((part,i)=>{
+    s1.addText(part+(i<tagParts.length-1?'.':''),{x:0.5,y:tagY,w:8,h:1.0,fontSize:60,bold:true,color:'F5F0E8',fontFace:'Georgia',margin:0});
+    tagY+=0.85;
   });
+  s1.addText(`A Digital Growth Strategy Built Specifically for ${brandName}`,{x:0.5,y:tagY+0.15,w:7.5,h:0.4,fontSize:13,color:'C8C0B0',fontFace:'Calibri',margin:0});
+  const cx=8.5+(W-8.5)/2;
+  s1.addShape(pres.shapes.OVAL,{x:cx-1.3,y:0.9,w:2.6,h:2.6,fill:{color:'FFFFFF',transparency:100},line:{color:T.accent,width:1.5}});
+  s1.addText('✦',{x:cx-0.4,y:1.7,w:0.8,h:0.8,fontSize:22,color:T.accent,align:'center',fontFace:'Calibri',margin:0});
+  s1.addText('Performance-Led',{x:8.6,y:4.8,w:W-8.8,h:0.35,fontSize:11,color:'A09080',align:'center',fontFace:'Calibri',margin:0});
+  s1.addText('Digital Growth',{x:8.6,y:5.15,w:W-8.8,h:0.35,fontSize:12,color:'D4C8B0',align:'center',fontFace:'Calibri',margin:0});
+  s1.addShape(pres.shapes.LINE,{x:9.2,y:5.6,w:W-9.6,h:0,line:{color:T.accent,width:0.75}});
+  s1.addText('R i d d l e r  M e d i a',{x:8.6,y:5.7,w:W-8.8,h:0.35,fontSize:10,color:T.accent,align:'center',charSpacing:3,fontFace:'Calibri',margin:0});
 
-  document.getElementById('briefOutput').textContent = brief;
-  const bs = document.getElementById('briefSection');
-  bs.classList.add('visible');
-  bs.scrollIntoView({ behavior: 'smooth' });
-}
-
-function copyBrief() {
-  const text = document.getElementById('briefOutput').textContent;
-  navigator.clipboard.writeText(text).then(() => {
-    const cc = document.getElementById('copyConfirm');
-    cc.classList.add('show');
-    setTimeout(() => cc.classList.remove('show'), 2500);
+  // ── S2: Where They Stand ──
+  let s2=pres.addSlide();
+  s2.background={color:T.light};
+  s2.addText(`Where ${brandName} Stands Today`,{x:0.4,y:0.2,w:12.5,h:0.85,fontSize:34,bold:true,color:T.bg,fontFace:'Georgia',margin:0});
+  s2.addText('An honest look at what is working and where growth is being left behind',{x:0.4,y:1.0,w:12.5,h:0.35,fontSize:12,color:'777777',fontFace:'Calibri',margin:0});
+  s2.addShape(pres.shapes.RECTANGLE,{x:0.4,y:1.5,w:6.0,h:0.42,fill:{color:T.bg},line:{color:T.bg}});
+  s2.addText("W H A T ' S  W O R K I N G",{x:0.4,y:1.5,w:6.0,h:0.42,fontSize:10,color:'F5F0E8',bold:true,align:'center',charSpacing:3,fontFace:'Calibri',margin:0});
+  s2.addShape(pres.shapes.RECTANGLE,{x:6.7,y:1.5,w:6.2,h:0.42,fill:{color:T.red},line:{color:T.red}});
+  s2.addText("W H E R E  G R O W T H  I S  L E A K I N G",{x:6.7,y:1.5,w:6.2,h:0.42,fontSize:10,color:'F5E8E8',bold:true,align:'center',charSpacing:3,fontFace:'Calibri',margin:0});
+  (d.strengths||[]).slice(0,4).forEach((str,i)=>{
+    const parts=str.split(':'),title=(parts[0]||'').trim(),desc=(parts[1]||'').trim(),rowY=2.05+i*1.05;
+    s2.addShape(pres.shapes.RECTANGLE,{x:0.4,y:rowY,w:0.06,h:0.85,fill:{color:T.bg},line:{color:T.bg}});
+    s2.addShape(pres.shapes.RECTANGLE,{x:0.46,y:rowY,w:5.94,h:0.85,fill:{color:'FFFFFF'},line:{color:'EEEEEE',width:0.5}});
+    s2.addText(title,{x:0.62,y:rowY+0.04,w:5.6,h:0.28,fontSize:11,bold:true,color:'333333',fontFace:'Calibri',margin:0});
+    s2.addText(desc,{x:0.62,y:rowY+0.32,w:5.6,h:0.46,fontSize:10,color:'555555',fontFace:'Calibri',margin:0});
   });
-}
+  (d.gaps||[]).slice(0,4).forEach((gap,i)=>{
+    const parts=gap.split(':'),title=(parts[0]||'').trim(),desc=(parts[1]||'').trim(),rowY=2.05+i*1.05;
+    s2.addShape(pres.shapes.RECTANGLE,{x:6.7,y:rowY,w:0.06,h:0.85,fill:{color:T.red},line:{color:T.red}});
+    s2.addShape(pres.shapes.RECTANGLE,{x:6.76,y:rowY,w:6.14,h:0.85,fill:{color:'FFFFFF'},line:{color:'EEEEEE',width:0.5}});
+    s2.addText(title,{x:6.92,y:rowY+0.04,w:5.8,h:0.28,fontSize:11,bold:true,color:T.red,fontFace:'Calibri',margin:0});
+    s2.addText(desc,{x:6.92,y:rowY+0.32,w:5.8,h:0.46,fontSize:10,color:'555555',fontFace:'Calibri',margin:0});
+  });
+  s2.addText('Riddler Media',{x:0.4,y:7.1,w:12.5,h:0.3,fontSize:9,color:'AAAAAA',align:'right',fontFace:'Calibri',margin:0});
 
-function reset() {
-  sections = [];
-  document.getElementById('cards').innerHTML = '';
-  document.getElementById('generateRow').style.display = 'none';
-  document.getElementById('briefSection').classList.remove('visible');
-  document.getElementById('urlInput').value = '';
-  setStatus('');
+  // ── S3: Market ──
+  let s3=pres.addSlide();
+  s3.background={color:T.light};
+  s3.addText('The Market Is Moving.',{x:0.5,y:0.3,w:12.3,h:0.75,fontSize:34,bold:true,color:T.bg,fontFace:'Georgia',margin:0});
+  s3.addText('The Question Is Who Captures It.',{x:0.5,y:1.0,w:12.3,h:0.6,fontSize:26,color:'555555',fontFace:'Georgia',italic:true,margin:0});
+  [{val:d.market_stat1||'₹8,000 Cr+',label:d.market_stat1_label||'India market size, growing fast year on year'},{val:d.market_stat2||'3x',label:d.market_stat2_label||'Growth in D2C brand searches since 2021'},{val:'Top 3',label:'Google positions capture 68% of all organic clicks in any category'}].forEach((st,i)=>{
+    const sx=0.5+i*4.2;
+    s3.addText(st.val,{x:sx,y:2.0,w:3.8,h:0.85,fontSize:44,bold:true,color:T.accent,fontFace:'Georgia',margin:0});
+    s3.addText(st.label,{x:sx,y:2.82,w:3.8,h:0.8,fontSize:11,color:'666666',fontFace:'Calibri',margin:0});
+  });
+  s3.addShape(pres.shapes.LINE,{x:0.5,y:3.8,w:12.3,h:0,line:{color:'CCCCCC',width:0.5}});
+  s3.addText(`${brandName} has the product range, the direct brand presence, and a real customer base. What is missing is the digital infrastructure to turn all of that into consistent, scalable online revenue.`,{x:0.5,y:4.0,w:12.3,h:1.1,fontSize:13,color:'444444',fontFace:'Calibri',margin:0});
+  s3.addText('Riddler Media',{x:0.5,y:7.1,w:12.3,h:0.3,fontSize:9,color:'AAAAAA',align:'right',fontFace:'Calibri',margin:0});
+
+  // ── S4: What We Found ──
+  let s4=pres.addSlide();
+  s4.background={color:T.light};
+  s4.addText('What We Found When We Looked Closely',{x:0.4,y:0.15,w:12.5,h:0.85,fontSize:32,bold:true,color:T.bg,fontFace:'Georgia',margin:0});
+  s4.addText(d.what_we_found_subtitle||'4 high-impact gaps identified in your current digital presence',{x:0.4,y:0.95,w:12.5,h:0.35,fontSize:12,color:'777777',fontFace:'Calibri',margin:0});
+  const gcards=d.gap_cards||[];
+  [{x:0.4,y:1.45},{x:6.95,y:1.45},{x:0.4,y:4.05},{x:6.95,y:4.05}].forEach((p,i)=>{
+    const gc=gcards[i]||{};const cw=6.2,ch=2.4;
+    s4.addShape(pres.shapes.RECTANGLE,{x:p.x,y:p.y,w:cw,h:ch,fill:{color:'FFFFFF'},line:{color:'E5E5E5',width:0.5}});
+    s4.addShape(pres.shapes.RECTANGLE,{x:p.x,y:p.y,w:0.06,h:ch,fill:{color:T.red},line:{color:T.red}});
+    s4.addShape(pres.shapes.OVAL,{x:p.x+0.18,y:p.y+0.18,w:0.52,h:0.52,fill:{color:T.red},line:{color:T.red}});
+    s4.addText(gc.number||String(i+1).padStart(2,'0'),{x:p.x+0.18,y:p.y+0.18,w:0.52,h:0.52,fontSize:11,bold:true,color:'FFFFFF',align:'center',valign:'middle',fontFace:'Calibri',margin:0});
+    s4.addText(gc.title||'',{x:p.x+0.85,y:p.y+0.15,w:cw-1.05,h:0.4,fontSize:13,bold:true,color:'333333',fontFace:'Calibri',margin:0});
+    s4.addShape(pres.shapes.LINE,{x:p.x+0.85,y:p.y+0.6,w:cw-1.1,h:0,line:{color:'DDDDDD',width:0.5}});
+    s4.addText(gc.body||'',{x:p.x+0.18,y:p.y+0.72,w:cw-0.36,h:1.55,fontSize:11,color:'555555',fontFace:'Calibri',margin:0});
+  });
+  s4.addText('Riddler Media',{x:0.4,y:7.1,w:12.5,h:0.3,fontSize:9,color:'AAAAAA',align:'right',fontFace:'Calibri',margin:0});
+
+  // ── S5: Approach ──
+  let s5=pres.addSlide();
+  s5.background={color:T.light};
+  s5.addText(`Our Approach for ${brandName}`,{x:0.4,y:0.2,w:12.5,h:0.65,fontSize:28,bold:true,color:T.bg,fontFace:'Georgia',margin:0});
+  s5.addText('A sequenced growth system where each phase amplifies the one before it',{x:0.4,y:0.82,w:12.5,h:0.35,fontSize:12,color:'777777',fontFace:'Calibri',margin:0});
+  [{num:'Phase 1',title:'Foundation and\nGrowth Readiness',sub:'Built to convert from day one',pts:['Credibility and trust established','Conversion leaks sealed','Ready for investment'],dark:true},{num:'Phase 2',title:'Organic\nVisibility',sub:'Capture demand that already exists',pts:['Free inbound traffic','Long-term brand authority','Compounding returns'],dark:false},{num:'Phase 3',title:'Paid\nGrowth',sub:'Revenue on demand, with clear returns',pts:['Immediate revenue pipeline','Measurable return on spend','Controlled and scalable'],dark:false},{num:'Phase 4',title:'Brand and\nDistribution',sub:'More channels, more customers',pts:['Broader brand recognition','New buyer segments reached','Reduced channel dependency'],dark:false}].forEach((ph,i)=>{
+    const px=0.3+i*3.2,pw=3.0;
+    s5.addShape(pres.shapes.RECTANGLE,{x:px,y:1.35,w:pw,h:5.55,fill:{color:ph.dark?T.bg:'FFFFFF'},line:{color:ph.dark?T.bg:'E0E0E0',width:0.5}});
+    s5.addText(ph.num,{x:px+0.15,y:1.5,w:pw-0.3,h:0.35,fontSize:10,color:ph.dark?T.accent:'999999',fontFace:'Calibri',margin:0});
+    s5.addText(ph.title,{x:px+0.15,y:1.85,w:pw-0.3,h:0.85,fontSize:15,bold:true,color:ph.dark?'F5F0E8':'333333',fontFace:'Georgia',margin:0});
+    s5.addShape(pres.shapes.LINE,{x:px+0.15,y:2.78,w:pw-0.3,h:0,line:{color:ph.dark?T.accent:'E0E0E0',width:0.75}});
+    s5.addText(ph.sub,{x:px+0.15,y:2.88,w:pw-0.3,h:0.5,fontSize:11,color:ph.dark?'C8C0B0':'666666',fontFace:'Calibri',italic:true,margin:0});
+    ph.pts.forEach((pt,j)=>{s5.addText(pt,{x:px+0.2,y:3.55+j*0.6,w:pw-0.4,h:0.52,fontSize:10,color:ph.dark?'D4C8B0':'555555',fontFace:'Calibri',bullet:true,margin:0});});
+  });
+  s5.addText(d.phase_narrative||'Every phase is designed so the next one performs better. This is not a menu of services, it is a system.',{x:0.4,y:7.05,w:12.5,h:0.35,fontSize:10,color:'888888',fontFace:'Calibri',italic:true,margin:0});
+
+  // ── S6: 30-60-90 ──
+  let s6=pres.addSlide();
+  s6.background={color:T.bg};
+  s6.addText('30  60  90 Day Execution Plan',{x:0.5,y:0.25,w:12.3,h:0.7,fontSize:28,bold:true,color:'F5F0E8',fontFace:'Georgia',margin:0});
+  [{days:'Days 1-30',title:'Foundation and Signal',items:['Digital presence review and audit','Behind-the-scenes groundwork','Growth tooling set up','Brand communication framework','Starting point benchmarks locked']},{days:'Days 31-60',title:'Optimisation and Traction',items:['Visibility improvements go live','First growth campaigns launched','Content plan activated','Key page improvements begin','Weekly results reviews']},{days:'Days 61-90',title:'Scale and Compound',items:['Best-performing activity scaled','Organic and content compounding','New channel strategy initiated','Trust-building programme launched','Month 4 roadmap presented']}].forEach((pl,i)=>{
+    const px=0.4+i*4.3,pw=4.1;
+    s6.addShape(pres.shapes.RECTANGLE,{x:px,y:1.2,w:pw,h:5.7,fill:{color:'FFFFFF',transparency:92},line:{color:'FFFFFF',transparency:75,width:0.5}});
+    s6.addText(pl.days,{x:px+0.2,y:1.35,w:pw-0.4,h:0.35,fontSize:10,color:T.accent,fontFace:'Calibri',bold:true,margin:0});
+    s6.addText(pl.title,{x:px+0.2,y:1.7,w:pw-0.4,h:0.55,fontSize:15,bold:true,color:'F5F0E8',fontFace:'Georgia',margin:0});
+    s6.addShape(pres.shapes.LINE,{x:px+0.2,y:2.32,w:pw-0.4,h:0,line:{color:T.accent,width:0.75}});
+    pl.items.forEach((item,j)=>{s6.addText(item,{x:px+0.2,y:2.52+j*0.76,w:pw-0.4,h:0.68,fontSize:11,color:'C8C0B0',fontFace:'Calibri',bullet:true,margin:0});});
+  });
+  s6.addText('Results build progressively. Early phases prioritise data and foundation over aggressive spend.',{x:0.5,y:7.1,w:12.3,h:0.3,fontSize:10,color:'666666',fontFace:'Calibri',italic:true,margin:0});
+
+  // ── S7: Investment ──
+  let s7=pres.addSlide();
+  s7.background={color:T.bg};
+  s7.addText('Investment Plans',{x:0.4,y:0.18,w:12.5,h:0.75,fontSize:36,bold:true,color:'F5F0E8',fontFace:'Georgia',margin:0});
+  s7.addText(`Choose the engagement that fits where ${brandName} is today`,{x:0.4,y:0.88,w:12.5,h:0.35,fontSize:12,color:'999999',fontFace:'Calibri',margin:0});
+  const plans=[{name:'Launch',price:'₹30K',desc:'Entry-level growth setup with foundational work and monthly reporting'},{name:'Perf. Mktg',price:'₹60K',desc:'Managed paid growth with ongoing optimisation and structured reviews'},{name:'Growth',price:'₹1L',desc:'Paid growth plus organic visibility, with conversion improvements and content direction',rec:true},{name:'Scale',price:'₹1.5L',desc:'Full multi-channel growth covering paid, organic, and brand positioning'},{name:'Integrated',price:'₹2L',desc:'Complete digital growth partnership covering all channels and brand authority'}];
+  const recIdx=plans.findIndex(p=>p.rec);
+  plans.forEach((pl,i)=>{
+    const isRec=i===recIdx,px=0.3+i*2.55,pw=2.4;
+    if(isRec){s7.addShape(pres.shapes.RECTANGLE,{x:px-0.05,y:1.3,w:pw+0.1,h:0.4,fill:{color:T.accent},line:{color:T.accent}});s7.addText('R E C O M M E N D E D',{x:px-0.05,y:1.3,w:pw+0.1,h:0.4,fontSize:9,bold:true,color:T.bg,align:'center',charSpacing:2,fontFace:'Calibri',margin:0});}
+    s7.addShape(pres.shapes.RECTANGLE,{x:px,y:1.7,w:pw,h:5.4,fill:{color:isRec?T.red:T.bg},line:{color:'FFFFFF',transparency:80,width:0.5}});
+    s7.addText(pl.name,{x:px+0.1,y:1.85,w:pw-0.2,h:0.45,fontSize:13,bold:true,color:'F5F0E8',align:'center',fontFace:'Calibri',margin:0});
+    s7.addText(pl.price,{x:px+0.1,y:2.3,w:pw-0.2,h:0.9,fontSize:36,bold:true,color:T.accent,align:'center',fontFace:'Georgia',margin:0});
+    s7.addText('/month',{x:px+0.1,y:3.18,w:pw-0.2,h:0.3,fontSize:11,color:'999999',align:'center',fontFace:'Calibri',margin:0});
+    if(isRec){s7.addShape(pres.shapes.LINE,{x:px+0.2,y:3.56,w:pw-0.4,h:0,line:{color:'FFFFFF',transparency:70,width:0.5}});}
+    s7.addText(pl.desc,{x:px+0.15,y:3.72,w:pw-0.3,h:3.1,fontSize:10,color:'C8C0B0',fontFace:'Calibri',align:'center',margin:0});
+  });
+  s7.addText('Ad spend is separate and paid directly to platforms  |  Minimum 3-month engagement recommended  |  Influencer marketing fee: 10% of campaign budget',{x:0.4,y:7.17,w:12.5,h:0.28,fontSize:9,color:'666666',align:'center',fontFace:'Calibri',margin:0});
+
+  // ── S8: Why Riddler ──
+  let s8=pres.addSlide();
+  s8.background={color:T.light};
+  s8.addText('Why Riddler Media',{x:0.4,y:0.2,w:12.5,h:0.65,fontSize:30,bold:true,color:T.bg,fontFace:'Georgia',margin:0});
+  [{icon:'✦',title:'We Did the Homework First',body:`We looked at your brand, your buyers, and your competitive landscape before writing a single slide. This deck was built for ${brandName}, not adapted from a template.`},{icon:'↗',title:'Sequence Over Scatter',body:'We do not sell standalone services. Every engagement follows a deliberate order so each phase strengthens the one that follows. Your investment compounds, not scatters.'},{icon:'◎',title:'Outcome Accountability',body:'We track what actually matters: revenue driven, buyers acquired, and brand growth, not just activity. You always know what you are getting back.'},{icon:'◈',title:'Built for Brands at Your Stage',body:`We work with brands that have a real product, real buyers, and the ambition to grow direct. That is exactly where ${brandName} is right now.`}].forEach((r,i)=>{
+    const p=[{x:0.4,y:1.15},{x:6.8,y:1.15},{x:0.4,y:3.85},{x:6.8,y:3.85}][i];
+    s8.addText(r.icon,{x:p.x,y:p.y,w:0.55,h:0.55,fontSize:20,color:T.bg,fontFace:'Calibri',margin:0});
+    s8.addText(r.title,{x:p.x+0.65,y:p.y+0.05,w:5.8,h:0.44,fontSize:15,bold:true,color:'333333',fontFace:'Calibri',margin:0});
+    s8.addShape(pres.shapes.LINE,{x:p.x,y:p.y+0.68,w:6.2,h:0,line:{color:'DDDDDD',width:0.5}});
+    s8.addText(r.body,{x:p.x,y:p.y+0.82,w:6.2,h:1.85,fontSize:12,color:'555555',fontFace:'Calibri',margin:0});
+  });
+  s8.addText('Riddler Media',{x:0.4,y:7.1,w:12.5,h:0.3,fontSize:9,color:'AAAAAA',align:'right',fontFace:'Calibri',margin:0});
+
+  // ── S9: CTA ──
+  let s9=pres.addSlide();
+  s9.background={color:T.bg};
+  s9.addShape(pres.shapes.RECTANGLE,{x:8.1,y:0,w:W-8.1,h:H,fill:{color:T.dark},line:{color:T.dark}});
+  s9.addText('One Conversation.',{x:0.5,y:1.3,w:7.3,h:0.85,fontSize:42,bold:true,color:'F5F0E8',fontFace:'Georgia',margin:0});
+  s9.addText('✦',{x:0.5,y:2.25,w:0.6,h:0.6,fontSize:22,color:T.accent,fontFace:'Calibri',margin:0});
+  s9.addText("That's All",{x:0.5,y:2.92,w:7.3,h:0.72,fontSize:36,bold:true,color:'F5F0E8',fontFace:'Georgia',italic:true,margin:0});
+  s9.addText('It Takes.',{x:0.5,y:3.6,w:7.3,h:0.72,fontSize:36,bold:true,color:'F5F0E8',fontFace:'Georgia',italic:true,margin:0});
+  s9.addText('We are ready to begin work within 3 working days of sign-off.',{x:0.5,y:4.55,w:7.3,h:0.4,fontSize:12,color:'C8C0B0',fontFace:'Calibri',margin:0});
+  s9.addText('R I D D L E R  M E D I A',{x:8.3,y:1.0,w:W-8.5,h:0.4,fontSize:11,bold:true,color:T.accent,charSpacing:4,align:'center',fontFace:'Calibri',margin:0});
+  s9.addText("Let's schedule a 30-minute call to align on scope, answer your questions, and confirm next steps.",{x:8.3,y:1.6,w:W-8.5,h:1.2,fontSize:12,color:'C8C0B0',fontFace:'Calibri',align:'center',margin:0});
+  s9.addShape(pres.shapes.RECTANGLE,{x:8.6,y:3.1,w:W-9.0,h:0.55,fill:{color:T.accent},line:{color:T.accent}});
+  s9.addText('Book a Discovery Call',{x:8.6,y:3.1,w:W-9.0,h:0.55,fontSize:13,bold:true,color:T.bg,align:'center',valign:'middle',fontFace:'Calibri',margin:0});
+  s9.addText('Performance-Led',{x:8.3,y:5.5,w:W-8.5,h:0.35,fontSize:11,color:'A09080',align:'center',fontFace:'Calibri',margin:0});
+  s9.addText('Digital Growth',{x:8.3,y:5.85,w:W-8.5,h:0.35,fontSize:12,color:'D4C8B0',align:'center',fontFace:'Calibri',margin:0});
+  s9.addShape(pres.shapes.LINE,{x:9.0,y:6.28,w:W-9.8,h:0,line:{color:T.accent,width:0.75}});
+  s9.addText('R i d d l e r  M e d i a',{x:8.3,y:6.38,w:W-8.5,h:0.35,fontSize:10,color:T.accent,align:'center',charSpacing:3,fontFace:'Calibri',margin:0});
+
+  const fileName=`Riddler_Media_${brandName.replace(/\s+/g,'_')}.pptx`;
+  await pres.writeFile({fileName});
+  setStatus(`Deck downloaded: ${fileName}`);
 }
 </script>
 </body>
