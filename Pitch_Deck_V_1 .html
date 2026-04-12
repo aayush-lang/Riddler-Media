@@ -464,7 +464,9 @@ function detailGrid(items){
   return `<div class="detail-grid">${items.map(([l,v])=>`<div class="detail-item"><div class="detail-item-label">${l}</div><div class="detail-item-val">${v||'N/A'}</div></div>`).join('')}</div>`;
 }
 function findingsHTML(pos,gaps){
-  return `<div class="findings-grid">${(pos||[]).map(p=>`<div class="finding positive"><div class="finding-label">Working</div><div class="finding-text">${p}</div></div>`).join('')}${(gaps||[]).map(g=>`<div class="finding negative"><div class="finding-label">Gap</div><div class="finding-text">${g}</div></div>`).join('')}</div>`;
+  const p = Array.isArray(pos) ? pos : (pos ? [String(pos)] : []);
+  const g = Array.isArray(gaps) ? gaps : (gaps ? [String(gaps)] : []);
+  return `<div class="findings-grid">${p.map(x=>`<div class="finding positive"><div class="finding-label">Working</div><div class="finding-text">${x}</div></div>`).join('')}${g.map(x=>`<div class="finding negative"><div class="finding-label">Gap</div><div class="finding-text">${x}</div></div>`).join('')}</div>`;
 }
 function recHTML(text){
   return `<div class="rec-box"><div class="rec-box-label">Riddler recommendation</div><div class="rec-box-text">${text||''}</div></div>`;
@@ -474,9 +476,11 @@ function renderWebsite(d){
   return detailGrid([['Platform',d.platform],['Load Speed',d.load_speed],['Mobile Experience',d.mobile_experience],['Design Quality',d.design_quality],['CTA Clarity',d.cta_clarity],['Trust Signals',d.trust_signals],['Tracking',d.tracking],['Conversion Elements',d.conversion_elements]])+findingsHTML(d.positives,d.gaps)+recHTML(d.recommendation);
 }
 function renderSEO(d){
+  const rkw = Array.isArray(d.ranking_keywords) ? d.ranking_keywords : (d.ranking_keywords ? [d.ranking_keywords] : []);
+  const kgap = Array.isArray(d.keyword_gaps) ? d.keyword_gaps : (d.keyword_gaps ? [d.keyword_gaps] : []);
   return `<div class="metrics-row"><div class="metric"><div class="metric-label">Est. Traffic</div><div class="metric-value">${d.estimated_organic_traffic||'N/A'}</div></div><div class="metric"><div class="metric-label">Domain Age</div><div class="metric-value">${d.domain_age||'N/A'}</div></div><div class="metric"><div class="metric-label">Backlinks</div><div class="metric-value">${d.backlink_profile||'N/A'}</div></div></div>
-  <div style="margin-top:12px"><div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Ranking keywords</div><div class="keyword-list">${(d.ranking_keywords||[]).map(k=>`<span class="keyword target">${k}</span>`).join('')}</div></div>
-  <div style="margin-top:10px"><div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Keyword gaps</div><div class="keyword-list">${(d.keyword_gaps||[]).map(k=>`<span class="keyword gap">${k}</span>`).join('')}</div></div>`+detailGrid([['Content Strategy',d.content_strategy],['Technical SEO',d.technical_seo],['Local SEO',d.local_seo]])+findingsHTML(d.positives,d.gaps)+recHTML(d.recommendation);
+  <div style="margin-top:12px"><div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Ranking keywords</div><div class="keyword-list">${rkw.map(k=>`<span class="keyword target">${k}</span>`).join('')}</div></div>
+  <div style="margin-top:10px"><div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Keyword gaps</div><div class="keyword-list">${kgap.map(k=>`<span class="keyword gap">${k}</span>`).join('')}</div></div>`+detailGrid([['Content Strategy',d.content_strategy],['Technical SEO',d.technical_seo],['Local SEO',d.local_seo]])+findingsHTML(d.positives,d.gaps)+recHTML(d.recommendation);
 }
 function renderPerf(d){
   return detailGrid([['Meta Ads',d.meta_ads],['Google Ads',d.google_ads],['Creative Quality',d.ad_creative_quality],['Targeting',d.targeting_sophistication],['Offer Strategy',d.offer_strategy],['Est. Spend',d.estimated_spend],['Retargeting',d.retargeting]])+findingsHTML(d.positives,d.gaps)+recHTML(d.recommendation);
