@@ -303,8 +303,8 @@ async function startAudit() {
 
     // PHASE 5 — Compile
     setStatus('Phase 5/5 — Compiling report', true);
-    const gaps = [...(results.website.gaps||[]), ...(results.social_media.gaps||[]), ...(results.performance_marketing.gaps||[])].slice(0,6).join(', ');
-    const p5 = await callClaude(`Brand: ${brandName}. URL: ${url}. Notes: ${notes||'none'}. Key gaps: ${gaps}. Use double quotes only, no apostrophes in values. Return JSON only with keys: overall_score(0-100), brand_description, vertical, overall_summary, pitch_intel(array of 4 strings), influencer_marketing(object with score,current_activity,creator_type_fit,estimated_budget_needed,platform_fit,competitor_influencer_activity,opportunity,positives,gaps,recommendation), content_marketing(object with score,blog,email_marketing,video_content,ugc_strategy,content_calendar,seo_content,positives,gaps,recommendation), marketplace_presence(object with score,amazon,flipkart,meesho,nykaa,cred,other,positives,gaps,recommendation), red_flags(array), quick_wins(array), recommended_entry_point, estimated_budget_appetite`);
+    const gaps = [...(results.website.gaps||[]).slice(0,2), ...(results.social_media.gaps||[]).slice(0,2), ...(results.performance_marketing.gaps||[]).slice(0,2)].join(', ');
+    const p5 = await callClaude(`Brand: ${brandName}. Vertical: ${results.seo?.vertical||'D2C'}. Top gaps: ${gaps}. Use double quotes only, no apostrophes. Return JSON only with keys: overall_score(0-100), brand_description, vertical, overall_summary, pitch_intel(array of 4 strings), influencer_marketing(object with score,current_activity,creator_type_fit,estimated_budget_needed,platform_fit,competitor_influencer_activity,opportunity,positives,gaps,recommendation), content_marketing(object with score,blog,email_marketing,video_content,ugc_strategy,content_calendar,seo_content,positives,gaps,recommendation), marketplace_presence(object with score,amazon,flipkart,meesho,nykaa,cred,other,positives,gaps,recommendation), red_flags(array of 2), quick_wins(array of 3), recommended_entry_point, estimated_budget_appetite`);
     const p5data = parseJSON(p5) || {};
 
     const d = {
