@@ -289,7 +289,7 @@ Then return ONLY raw JSON with no markdown, no backticks:
     renderReport(d, url);
     setStatus('');
   } catch(e) {
-    setStatus('Audit failed. Check your Worker is live at riddler-ai-proxy.aayush-5a9.workers.dev');
+    setStatus(`Audit failed: ${e.message}`);
   }
   document.getElementById('auditBtn').disabled = false;
 }
