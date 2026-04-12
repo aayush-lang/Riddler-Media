@@ -134,13 +134,45 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min
 <div class="main">
   <div class="hero">
     <h1>Internal brand audit</h1>
-    <p>Full pre-pitch intelligence. Paste a brand URL — one query covers website, SEO, ads, social, influencers, content, marketplaces, and competitors.</p>
+    <p>Fill in the brand's real links before running — the more you provide, the more accurate the audit.</p>
   </div>
 
   <div class="input-card">
-    <div class="input-label">Brand website URL</div>
-    <div class="input-row">
-      <input type="text" class="url-input" id="urlInput" placeholder="https://brandwebsite.com" />
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div>
+        <div class="input-label">Brand name *</div>
+        <input type="text" class="url-input" id="brandNameInput" placeholder="e.g. GoldenRed Diamond" style="width:100%" />
+      </div>
+      <div>
+        <div class="input-label">Website URL *</div>
+        <input type="text" class="url-input" id="urlInput" placeholder="https://brandwebsite.com" style="width:100%" />
+      </div>
+      <div>
+        <div class="input-label">Instagram URL</div>
+        <input type="text" class="url-input" id="instagramInput" placeholder="https://instagram.com/handle" style="width:100%" />
+      </div>
+      <div>
+        <div class="input-label">LinkedIn URL</div>
+        <input type="text" class="url-input" id="linkedinInput" placeholder="https://linkedin.com/company/..." style="width:100%" />
+      </div>
+      <div>
+        <div class="input-label">Facebook URL</div>
+        <input type="text" class="url-input" id="facebookInput" placeholder="https://facebook.com/..." style="width:100%" />
+      </div>
+      <div>
+        <div class="input-label">YouTube URL</div>
+        <input type="text" class="url-input" id="youtubeInput" placeholder="https://youtube.com/@..." style="width:100%" />
+      </div>
+      <div>
+        <div class="input-label">Meta Ad Library URL</div>
+        <input type="text" class="url-input" id="metaAdsInput" placeholder="https://facebook.com/ads/library/..." style="width:100%" />
+      </div>
+      <div>
+        <div class="input-label">Any other notes</div>
+        <input type="text" class="url-input" id="notesInput" placeholder="e.g. runs Google Ads, on Nykaa" style="width:100%" />
+      </div>
+    </div>
+    <div style="margin-top:16px">
       <button class="btn-primary" id="auditBtn" onclick="startAudit()">Run full audit</button>
     </div>
   </div>
@@ -191,7 +223,9 @@ async function callClaude(prompt) {
     body: JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:4000, messages:[{role:'user',content:prompt}] })
   });
   const data = await res.json();
-  return data.content?.[0]?.text || '';
+  // Handle both direct text and web search tool use responses
+  const textBlocks = (data.content||[]).filter(b => b.type === 'text').map(b => b.text);
+  return textBlocks.join('') || '';
 }
 
 function scoreColor(n){ return n>=70?'var(--green)':n>=40?'var(--amber)':'var(--red)'; }
@@ -200,20 +234,47 @@ function statusLabel(n){ return n>=70?'Strong':n>=40?'Moderate':n>=1?'Weak':'Mis
 
 async function startAudit() {
   const url = document.getElementById('urlInput').value.trim();
-  if (!url) return;
+  const brandName = document.getElementById('brandNameInput').value.trim();
+  if (!url || !brandName) { alert('Brand name and website URL are required.'); return; }
+
+  const instagram = document.getElementById('instagramInput').value.trim();
+  const linkedin = document.getElementById('linkedinInput').value.trim();
+  const facebook = document.getElementById('facebookInput').value.trim();
+  const youtube = document.getElementById('youtubeInput').value.trim();
+  const metaAds = document.getElementById('metaAdsInput').value.trim();
+  const notes = document.getElementById('notesInput').value.trim();
+
   document.getElementById('report').classList.remove('visible');
   document.getElementById('auditBtn').disabled = true;
-  setStatus('Running full brand audit — analysing website, SEO, ads, social, influencers, content, competitors', true);
+  setStatus('Running full brand audit — searching real links provided', true);
 
-  const prompt = `You are a senior digital marketing strategist at Riddler Media, a full-service digital marketing agency in India. Services: performance marketing (Meta/Google ads), SEO, social media management, influencer marketing, website development. You are doing a comprehensive internal pre-pitch audit before a sales meeting with this brand.
+  const socialSection = `
+Known social media links (search and analyse each one provided):
+- Instagram: ${instagram || 'not provided — search for it'}
+- LinkedIn: ${linkedin || 'not provided — search for it'}
+- Facebook: ${facebook || 'not provided — search for it'}
+- YouTube: ${youtube || 'not provided — search for it'}
+- Meta Ad Library: ${metaAds || 'not provided — search Meta Ad Library for this brand'}
+- Additional notes: ${notes || 'none'}`;
 
-Brand URL: ${url}
+  const prompt = `You are a senior digital marketing strategist at Riddler Media, a full-service digital marketing agency in India. Services: performance marketing (Meta/Google ads), SEO, social media management, influencer marketing, website development. You are doing a comprehensive internal pre-pitch audit before a sales meeting.
 
-Single-pass comprehensive research. Be specific, critical, honest. Internal use only — not client-facing. Call out real problems. Use your knowledge of this brand, their industry, and the Indian D2C/SME market.
+Brand name: ${brandName}
+Website: ${url}
+${socialSection}
 
-Return ONLY raw JSON. No markdown, no backticks, no text before or after:
+IMPORTANT: Use web search to visit each link provided above and extract real data — actual follower counts, real posting frequency, real ad activity, real content. Do NOT guess or hallucinate. If a link is not provided, search for the brand's presence on that platform yourself.
 
-{"brand_name":"","brand_description":"2 sentences: what they sell, who they target, price range, D2C or marketplace","vertical":"e.g. skincare","overall_score":45,"overall_summary":"2-3 sentences honest digital maturity assessment","pitch_intel":["Most important thing to lead with — their biggest felt pain point","Something they probably do not know about themselves","A competitor or market angle they are missing","Likely objection they will raise and how to counter it"],"website":{"score":40,"platform":"Shopify/WordPress/Custom","load_speed":"specific observation","mobile_experience":"specific observation","design_quality":"honest assessment","cta_clarity":"CTA presence and clarity","trust_signals":"reviews, badges, social proof","tracking":"Meta Pixel, GA4, GTM","conversion_elements":"upsell, exit intent, email capture","positives":["working 1","working 2"],"gaps":["gap 1","gap 2","gap 3"],"recommendation":"what Riddler should pitch"},"seo":{"score":20,"domain_age":"estimated","estimated_organic_traffic":"estimated monthly visits","ranking_keywords":["keyword 1","keyword 2"],"keyword_gaps":["missing keyword 1","missing keyword 2","missing keyword 3"],"content_strategy":"blog, category pages, product descriptions","technical_seo":"schema, meta, structure","backlink_profile":"estimated referring domains","local_seo":"Google Business, local presence","positives":["positive 1"],"gaps":["gap 1","gap 2","gap 3"],"recommendation":"SEO pitch recommendation"},"performance_marketing":{"score":30,"meta_ads":"active ads, creative types, messaging","google_ads":"Google Ads presence and quality","ad_creative_quality":"creative assessment","targeting_sophistication":"targeting depth","offer_strategy":"discount, urgency, offer mechanics","estimated_spend":"estimated monthly spend","retargeting":"retargeting assessment","positives":["positive 1"],"gaps":["gap 1","gap 2","gap 3"],"recommendation":"paid marketing pitch recommendation"},"social_media":{"score":35,"platforms":{"instagram":{"present":true,"followers":"~8,000","posting_frequency":"2-3x per week","content_mix":"80% static, 20% reels","engagement_quality":"Low 1-2% ER","last_post":"3 days ago"},"facebook":{"present":true,"followers":"~2,000","posting_frequency":"Inconsistent","content_mix":"Shared from Instagram","engagement_quality":"Very low","last_post":"2 weeks ago"},"youtube":{"present":false,"followers":"N/A","posting_frequency":"N/A","content_mix":"N/A","engagement_quality":"N/A","last_post":"N/A"},"linkedin":{"present":false,"followers":"N/A","posting_frequency":"N/A","content_mix":"N/A","engagement_quality":"N/A","last_post":"N/A"},"twitter":{"present":false,"followers":"N/A","posting_frequency":"N/A","content_mix":"N/A","engagement_quality":"N/A","last_post":"N/A"}},"content_quality":"visual identity assessment","brand_voice":"tone consistency","viral_potential":"shareability assessment","community_engagement":"comment responses and UGC","positives":["positive 1","positive 2"],"gaps":["gap 1","gap 2","gap 3"],"recommendation":"social media management pitch recommendation"},"influencer_marketing":{"score":10,"current_activity":"any current influencer usage","creator_type_fit":"what creators would work best","estimated_budget_needed":"budget range","platform_fit":"best platforms","competitor_influencer_activity":"what competitors do with influencers","opportunity":"specific opportunity for Riddler","positives":["positive 1"],"gaps":["gap 1","gap 2"],"recommendation":"influencer marketing pitch recommendation"},"content_marketing":{"score":15,"blog":"blog presence and quality","email_marketing":"email capture and newsletter","video_content":"YouTube and long-form","ugc_strategy":"UGC collection","content_calendar":"evidence of planned content","seo_content":"informational content for SEO","positives":["positive 1"],"gaps":["gap 1","gap 2","gap 3"],"recommendation":"content marketing pitch recommendation"},"marketplace_presence":{"score":20,"amazon":"Amazon presence and listing quality","flipkart":"Flipkart presence","meesho":"Meesho presence","nykaa":"Nykaa if applicable","cred":"CRED if applicable","other":"other marketplaces","positives":["positive 1"],"gaps":["gap 1","gap 2"],"recommendation":"marketplace recommendation"},"competitors":[{"name":"Competitor 1","website":"url.com","strengths":"digital strengths","weaknesses":"digital weaknesses","estimated_scale":"e.g. 5x larger","threat_level":"High"},{"name":"Competitor 2","website":"url.com","strengths":"...","weaknesses":"...","estimated_scale":"...","threat_level":"Medium"},{"name":"Competitor 3","website":"url.com","strengths":"...","weaknesses":"...","estimated_scale":"...","threat_level":"Low"}],"market_opportunity":{"market_size":"India market size with number","growth_trend":"category growth trend","underserved_segments":"underserved segments","timing":"is now a good time to invest — why"},"red_flags":["risk 1","risk 2"],"quick_wins":["fast result 1","quick win 2","quick win 3"],"recommended_entry_point":"which service to lead with and why","estimated_budget_appetite":"likely monthly budget"}`;
+Search these in order:
+1. Visit the website URL and analyse it
+2. Search Meta Ad Library for "${brandName}" to check ad activity
+3. Visit each social media link provided and note real follower counts, last post date, content type
+4. Search Google for "${brandName}" to check SEO footprint and rankings
+5. Search for competitors in their category
+
+Then return ONLY raw JSON with no markdown, no backticks:
+
+{"brand_name":"${brandName}","brand_description":"2 sentences based on what you actually found on their website","vertical":"their actual category","overall_score":45,"overall_summary":"honest assessment based on real data found","pitch_intel":["Most important pain point based on real findings","Something they don't know about themselves — based on actual gaps found","A competitor or market angle — based on real competitor search","Likely objection and counter based on their profile"],"website":{"score":40,"platform":"actual platform found","load_speed":"actual observation","mobile_experience":"actual observation","design_quality":"actual observation","cta_clarity":"actual observation","trust_signals":"actual observation","tracking":"actual pixel/analytics presence found","conversion_elements":"actual observation","positives":["real positive 1","real positive 2"],"gaps":["real gap 1","real gap 2","real gap 3"],"recommendation":"specific recommendation"},"seo":{"score":20,"domain_age":"actual if findable","estimated_organic_traffic":"actual estimate from search results","ranking_keywords":["actual keyword 1","actual keyword 2"],"keyword_gaps":["real gap 1","real gap 2","real gap 3"],"content_strategy":"actual content found","technical_seo":"actual technical observation","backlink_profile":"actual estimate","local_seo":"actual Google Business presence","positives":["positive 1"],"gaps":["gap 1","gap 2","gap 3"],"recommendation":"specific SEO recommendation"},"performance_marketing":{"score":30,"meta_ads":"actual ads found or confirmed absent","google_ads":"actual Google Ads presence","ad_creative_quality":"actual creative assessment if ads found","targeting_sophistication":"actual assessment","offer_strategy":"actual offers seen","estimated_spend":"actual estimate","retargeting":"actual retargeting observation","positives":["positive 1"],"gaps":["gap 1","gap 2","gap 3"],"recommendation":"specific paid marketing recommendation"},"social_media":{"score":35,"platforms":{"instagram":{"present":true,"followers":"ACTUAL number from their page","posting_frequency":"ACTUAL frequency observed","content_mix":"ACTUAL content types seen","engagement_quality":"ACTUAL engagement observed","last_post":"ACTUAL last post date"},"facebook":{"present":true,"followers":"ACTUAL number","posting_frequency":"ACTUAL frequency","content_mix":"ACTUAL content","engagement_quality":"ACTUAL engagement","last_post":"ACTUAL date"},"youtube":{"present":false,"followers":"ACTUAL or N/A","posting_frequency":"ACTUAL or N/A","content_mix":"ACTUAL or N/A","engagement_quality":"ACTUAL or N/A","last_post":"ACTUAL or N/A"},"linkedin":{"present":false,"followers":"ACTUAL or N/A","posting_frequency":"ACTUAL or N/A","content_mix":"ACTUAL or N/A","engagement_quality":"ACTUAL or N/A","last_post":"ACTUAL or N/A"},"twitter":{"present":false,"followers":"ACTUAL or N/A","posting_frequency":"ACTUAL or N/A","content_mix":"ACTUAL or N/A","engagement_quality":"ACTUAL or N/A","last_post":"ACTUAL or N/A"}},"content_quality":"actual quality observation","brand_voice":"actual voice observation","viral_potential":"actual assessment","community_engagement":"actual engagement observation","positives":["positive 1","positive 2"],"gaps":["gap 1","gap 2","gap 3"],"recommendation":"specific social recommendation"},"influencer_marketing":{"score":10,"current_activity":"actual influencer activity found or confirmed absent","creator_type_fit":"best creator types for their category","estimated_budget_needed":"realistic budget","platform_fit":"best platforms","competitor_influencer_activity":"actual competitor influencer activity found","opportunity":"specific opportunity","positives":["positive 1"],"gaps":["gap 1","gap 2"],"recommendation":"specific influencer recommendation"},"content_marketing":{"score":15,"blog":"actual blog presence","email_marketing":"actual email capture found","video_content":"actual video presence","ugc_strategy":"actual UGC observed","content_calendar":"actual content regularity","seo_content":"actual SEO content found","positives":["positive 1"],"gaps":["gap 1","gap 2","gap 3"],"recommendation":"specific content recommendation"},"marketplace_presence":{"score":20,"amazon":"actual Amazon presence","flipkart":"actual Flipkart presence","meesho":"actual Meesho presence","nykaa":"actual Nykaa presence","cred":"actual CRED presence","other":"any other marketplace found","positives":["positive 1"],"gaps":["gap 1","gap 2"],"recommendation":"marketplace recommendation"},"competitors":[{"name":"Actual competitor 1","website":"actual url","strengths":"actual digital strengths","weaknesses":"actual weaknesses","estimated_scale":"actual scale estimate","threat_level":"High"},{"name":"Actual competitor 2","website":"actual url","strengths":"...","weaknesses":"...","estimated_scale":"...","threat_level":"Medium"},{"name":"Actual competitor 3","website":"actual url","strengths":"...","weaknesses":"...","estimated_scale":"...","threat_level":"Low"}],"market_opportunity":{"market_size":"actual India market size for their category","growth_trend":"actual growth trend","underserved_segments":"actual underserved segments","timing":"actual timing assessment"},"red_flags":["real risk 1","real risk 2"],"quick_wins":["specific fast win 1","specific fast win 2","specific fast win 3"],"recommended_entry_point":"specific service to lead with based on real findings","estimated_budget_appetite":"realistic budget estimate based on their scale"}`;
 
   try {
     const raw = await callClaude(prompt);
@@ -393,6 +454,13 @@ function renderMarket(d){
 function reset(){
   document.getElementById('report').classList.remove('visible');
   document.getElementById('urlInput').value='';
+  document.getElementById('brandNameInput').value='';
+  document.getElementById('instagramInput').value='';
+  document.getElementById('linkedinInput').value='';
+  document.getElementById('facebookInput').value='';
+  document.getElementById('youtubeInput').value='';
+  document.getElementById('metaAdsInput').value='';
+  document.getElementById('notesInput').value='';
   setStatus('');
   window._auditData=null;
 }
