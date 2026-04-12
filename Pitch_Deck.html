@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pitch Brief Generator — Riddler Media</title>
+<style>
+  :root {
+    --bg: #0e0e0e;
+    --surface: #161616;
+    --surface2: #1e1e1e;
+    --border: #2a2a2a;
+    --border2: #333;
+    --text: #f0f0f0;
+    --text2: #888;
+    --text3: #555;
+    --accent: #c8f135;
+    --accent-dim: #a8cc25;
+    --red: #ff4d4d;
+    --red-bg: #1a0a0a;
+    --blue: #4d9fff;
+    --blue-bg: #0a1220;
+    --green: #4dff91;
+    --green-bg: #0a1a10;
+    --amber: #ffb84d;
+    --amber-bg: #1a1200;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', 'Inter', sans-serif;
+    min-height: 100vh;
+    padding: 0;
+  }
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
+
+  .topbar {
+    border-bottom: 1px solid var(--border);
+    padding: 16px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    background: var(--bg);
+    z-index: 100;
+  }
+  .brand {
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: .1em;
+    color: var(--accent);
+  }
+  .brand span { color: var(--text2); font-weight: 400; }
+
+  .main {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 48px 32px 80px;
+  }
+
+  .hero {
+    margin-bottom: 40px;
+  }
+  .hero h1 {
+    font-size: 28px;
+    font-weight: 500;
+    color: var(--text);
+    margin-bottom: 8px;
+    letter-spacing: -.02em;
+  }
+  .hero p {
+    font-size: 14px;
+    color: var(--text2);
+    line-height: 1.6;
+  }
+
+  .input-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 32px;
+  }
+  .input-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: .08em;
+    color: var(--text3);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  .input-row {
+    display: flex;
+    gap: 10px;
+  }
+  .input-row input {
+    flex: 1;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-size: 14px;
+    padding: 0 14px;
+    height: 42px;
+    font-family: 'DM Mono', monospace;
+    transition: border-color .15s;
+  }
+  .input-row input:focus { outline: none; border-color: var(--accent); }
+  .input-row input::placeholder { color: var(--text3); }
+
+  .btn {
+    height: 42px;
+    padding: 0 20px;
+    font-size: 13px;
+    font-weight: 600;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    transition: all .15s;
+    white-space: nowrap;
+    letter-spacing: .02em;
+  }
+  .btn-primary {
+    background: var(--accent);
+    color: #0e0e0e;
+  }
+  .btn-primary:hover { background: var(--accent-dim); }
+  .btn-primary:disabled { opacity: .4; cursor: not-allowed; }
+  .btn-ghost {
+    background: transparent;
+    color: var(--text2);
+    border: 1px solid var(--border);
+  }
+  .btn-ghost:hover { border-color: var(--border2); color: var(--text); }
+  .btn-sm {
+    height: 28px;
+    padding: 0 12px;
+    font-size: 11px;
+    font-weight: 600;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    cursor: pointer;
+    transition: all .15s;
+    background: transparent;
+    color: var(--text2);
+    letter-spacing: .03em;
+  }
+  .btn-sm:hover { color: var(--text); border-color: var(--border2); }
+  .btn-sm.exclude { color: var(--red); border-color: #3a1515; }
+  .btn-sm.exclude:hover { background: var(--red-bg); }
+  .btn-sm.include { color: var(--green); border-color: #0a2a15; }
+  .btn-sm.include:hover { background: var(--green-bg); }
+
+  .status-bar {
+    font-size: 13px;
+    color: var(--text2);
+    margin-bottom: 24px;
+    min-height: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .dot-loader {
+    display: inline-flex;
+    gap: 3px;
+  }
+  .dot-loader span {
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: var(--accent);
+    animation: pulse 1.2s ease-in-out infinite;
+    display: inline-block;
+  }
+  .dot-loader span:nth-child(2) { animation-delay: .2s; }
+  .dot-loader span:nth-child(3) { animation-delay: .4s; }
+  @keyframes pulse { 0%,80%,100%{opacity:.2;transform:scale(.8)} 40%{opacity:1;transform:scale(1)} }
+
+  .cards { display: flex; flex-direction: column; gap: 12px; margin-bottom: 32px; }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 22px;
+    transition: opacity .2s, border-color .2s;
+  }
+  .card.excluded {
+    opacity: .35;
+    border-style: dashed;
+  }
+  .card.highlight {
+    border-color: var(--accent);
+  }
+  .card-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+  }
+  .card-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--text3);
+  }
+  .card-actions { display: flex; gap: 6px; }
+  .card-body {
+    font-size: 14px;
+    color: var(--text);
+    line-height: 1.7;
+  }
+  .card-body textarea {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    border-radius: 6px;
+    color: var(--text);
+    font-size: 14px;
+    line-height: 1.7;
+    padding: 10px 12px;
+    resize: vertical;
+    min-height: 90px;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .card-body textarea:focus { outline: none; border-color: var(--accent); }
+
+  .tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 10px;
+  }
+  .tag {
+    font-size: 11px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-weight: 500;
+  }
+  .tag.gap { background: var(--red-bg); color: var(--red); border: 1px solid #3a1515; }
+  .tag.info { background: var(--blue-bg); color: var(--blue); border: 1px solid #152035; }
+  .tag.custom { background: var(--amber-bg); color: var(--amber); border: 1px solid #352500; }
+
+  .add-note-row {
+    display: flex;
+    gap: 6px;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+  }
+  .add-note-row input {
+    flex: 1;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text);
+    font-size: 13px;
+    padding: 0 10px;
+    height: 30px;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .add-note-row input:focus { outline: none; border-color: var(--accent); }
+  .add-note-row input::placeholder { color: var(--text3); }
+
+  .generate-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 32px;
+  }
+
+  .brief-section { display: none; }
+  .brief-section.visible { display: block; }
+
+  .brief-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .1em;
+    color: var(--text3);
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+  .brief-output {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    line-height: 1.9;
+    color: var(--text);
+    white-space: pre-wrap;
+    margin-bottom: 16px;
+  }
+  .brief-actions { display: flex; gap: 10px; margin-bottom: 48px; }
+
+  .copy-confirm {
+    font-size: 12px;
+    color: var(--green);
+    display: none;
+    align-items: center;
+    gap: 6px;
+  }
+  .copy-confirm.show { display: flex; }
+
+  .gate {
+    position: fixed;
+    inset: 0;
+    background: var(--bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 999;
+  }
+  .gate-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 40px 36px;
+    width: 100%;
+    max-width: 380px;
+  }
+  .gate-card h2 {
+    font-size: 18px;
+    font-weight: 500;
+    margin-bottom: 6px;
+    letter-spacing: -.02em;
+  }
+  .gate-card p {
+    font-size: 13px;
+    color: var(--text2);
+    margin-bottom: 24px;
+  }
+  .gate-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .08em;
+    color: var(--text3);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .gate-input {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-size: 14px;
+    padding: 0 14px;
+    height: 42px;
+    font-family: 'DM Mono', monospace;
+    margin-bottom: 14px;
+    letter-spacing: .1em;
+  }
+  .gate-input:focus { outline: none; border-color: var(--accent); }
+  .gate-error {
+    font-size: 12px;
+    color: var(--red);
+    margin-bottom: 12px;
+    min-height: 18px;
+  }
+  .gate-btn {
+    width: 100%;
+    height: 42px;
+    background: var(--accent);
+    color: #0e0e0e;
+    border: none;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    letter-spacing: .03em;
+  }
+  .gate-btn:hover { background: var(--accent-dim); }
+  .brand-gate {
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: .1em;
+    color: var(--accent);
+    margin-bottom: 28px;
+  }
+</style>
+</head>
+<body>
+
+<div class="gate" id="gate">
+  <div class="gate-card">
+    <div class="brand-gate">RIDDLER MEDIA</div>
+    <h2>Pitch brief generator</h2>
+    <p>Internal tool. Enter your access password to continue.</p>
+    <div class="gate-label">Password</div>
+    <input class="gate-input" type="password" id="gateInput" placeholder="••••••••" onkeydown="if(event.key==='Enter')checkPassword()" />
+    <div class="gate-error" id="gateError"></div>
+    <button class="gate-btn" onclick="checkPassword()">Unlock</button>
+  </div>
+</div>
+
+<div class="topbar">
+  <div class="brand">RIDDLER <span>/ Pitch Brief Generator</span></div>
+</div>
+
+<div class="main">
+  <div class="hero">
+    <h1>Pitch brief generator</h1>
+    <p>Paste a brand's website URL. The AI researches their website, ads, SEO, social media, and competitors — then outputs a pre-pitch brief ready for deck building.</p>
+  </div>
+
+  <div class="input-card">
+    <div class="input-label">Brand website URL</div>
+    <div class="input-row">
+      <input type="text" id="urlInput" placeholder="https://brandwebsite.com" />
+      <button class="btn btn-primary" id="researchBtn" onclick="startResearch()">Research brand</button>
+    </div>
+  </div>
+
+  <div class="status-bar" id="status"></div>
+  <div class="cards" id="cards"></div>
+
+  <div class="generate-row" id="generateRow" style="display:none">
+    <button class="btn btn-primary" onclick="generateBrief()">Generate brief</button>
+    <button class="btn btn-ghost" onclick="reset()">Start over</button>
+  </div>
+
+  <div class="brief-section" id="briefSection">
+    <div class="brief-label">Generated brief</div>
+    <div class="brief-output" id="briefOutput"></div>
+    <div class="brief-actions">
+      <button class="btn btn-primary" onclick="copyBrief()">Copy brief</button>
+      <button class="btn btn-ghost" onclick="reset()">Start over</button>
+      <div class="copy-confirm" id="copyConfirm">Copied to clipboard</div>
+    </div>
+  </div>
+</div>
+
+<script>
+const PASSWORD = 'riddler2024';
+
+function checkPassword() {
+  const val = document.getElementById('gateInput').value;
+  if (val === PASSWORD) {
+    document.getElementById('gate').style.display = 'none';
+    sessionStorage.setItem('rm_auth', '1');
+  } else {
+    document.getElementById('gateError').textContent = 'Incorrect password. Try again.';
+    document.getElementById('gateInput').value = '';
+  }
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  if (sessionStorage.getItem('rm_auth') === '1') {
+    document.getElementById('gate').style.display = 'none';
+  }
+});
+
+const PROXY = 'https://riddler-ai-proxy.aayush-5a9.workers.dev';
+let sections = [];
+
+async function callClaude(prompt) {
+  const res = await fetch(PROXY, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 2000,
+      messages: [{ role: 'user', content: prompt }]
+    })
+  });
+  const data = await res.json();
+  return data.content?.[0]?.text || '';
+}
+
+function setStatus(msg, loading) {
+  const el = document.getElementById('status');
+  if (loading) {
+    el.innerHTML = `${msg}&nbsp;<span class="dot-loader"><span></span><span></span><span></span></span>`;
+  } else {
+    el.textContent = msg;
+  }
+}
+
+async function startResearch() {
+  const url = document.getElementById('urlInput').value.trim();
+  if (!url) return;
+
+  sections = [];
+  document.getElementById('cards').innerHTML = '';
+  document.getElementById('generateRow').style.display = 'none';
+  document.getElementById('briefSection').classList.remove('visible');
+  document.getElementById('researchBtn').disabled = true;
+
+  setStatus('Researching brand', true);
+
+  const prompt = `You are a senior digital marketing strategist doing pre-pitch research for Riddler Media, a full-service digital marketing agency in India that offers: performance marketing (Meta/Google ads), SEO, social media management, influencer marketing, and website development. Clients are D2C and SME brands.
+
+Research the brand at this URL: ${url}
+
+Based on what you know about this brand and its online presence, return ONLY a raw JSON object with NO markdown formatting, NO backticks, NO explanation. Just the JSON:
+
+{
+  "brand_overview": "2-3 sentences covering brand name, what they sell, target audience, price positioning, and overall brand tone",
+  "website_audit": "2-3 specific observations about their website: design quality, page speed likelihood, CTA clarity, product page quality, checkout experience, tracking pixel presence",
+  "website_gaps": ["specific gap 1", "specific gap 2", "specific gap 3"],
+  "ads_activity": "Are they running paid ads on Meta or Google? What kind of creatives, offers, or messaging? Active or dormant?",
+  "ads_gaps": ["specific gap 1", "specific gap 2"],
+  "seo_keywords": "Top 6-8 keywords they appear to target based on their site content, meta tags, and category",
+  "seo_gaps": ["specific gap 1", "specific gap 2"],
+  "social_media": "Which platforms they are on, estimated follower size, posting cadence, content format mix (reels vs carousels vs static), engagement quality",
+  "social_gaps": ["specific gap 1", "specific gap 2"],
+  "competitors": "3-4 direct competitor brands in the same space with one line on each competitor's positioning or strength",
+  "key_gaps_summary": "Top 3 gaps written as business consequences, not technical issues. Example style: 'Visitors are landing but leaving without buying', 'Invisible on search while competitors capture demand', 'No retargeting means lost buyers are gone forever'",
+  "recommended_services": "Which of Riddler's services fit best and why, ranked by priority: performance marketing, SEO, social media management, influencer marketing, website development",
+  "pitch_hook": "Single most compelling problem to open the pitch with. One punchy sentence that creates urgency.",
+  "flags": "Anything unusual or important to know: already running heavy ads, working with a known agency, direct competitor of another client, very small or very large scale, etc. Write 'None' if nothing notable."
+}`;
+
+  try {
+    const raw = await callClaude(prompt);
+    let parsed;
+    try {
+      parsed = JSON.parse(raw.trim());
+    } catch(e) {
+      const match = raw.match(/\{[\s\S]*\}/);
+      if (match) parsed = JSON.parse(match[0]);
+    }
+    if (!parsed) throw new Error('Parse failed');
+
+    sections = [
+      { id: 'brand_overview', title: 'Brand overview', content: parsed.brand_overview || '', tags: [], included: true, editing: false },
+      { id: 'website_audit', title: 'Website audit', content: parsed.website_audit || '', tags: (parsed.website_gaps || []).map(g => ({ text: g, type: 'gap' })), included: true, editing: false },
+      { id: 'ads_activity', title: 'Ad activity', content: parsed.ads_activity || '', tags: (parsed.ads_gaps || []).map(g => ({ text: g, type: 'gap' })), included: true, editing: false },
+      { id: 'seo_keywords', title: 'SEO & keywords', content: parsed.seo_keywords || '', tags: (parsed.seo_gaps || []).map(g => ({ text: g, type: 'gap' })), included: true, editing: false },
+      { id: 'social_media', title: 'Social media', content: parsed.social_media || '', tags: (parsed.social_gaps || []).map(g => ({ text: g, type: 'gap' })), included: true, editing: false },
+      { id: 'competitors', title: 'Competitor landscape', content: parsed.competitors || '', tags: [], included: true, editing: false },
+      { id: 'key_gaps_summary', title: 'Key gaps (business language)', content: parsed.key_gaps_summary || '', tags: [], included: true, editing: false, highlight: true },
+      { id: 'recommended_services', title: 'Recommended services', content: parsed.recommended_services || '', tags: [], included: true, editing: false },
+      { id: 'pitch_hook', title: 'Pitch hook', content: parsed.pitch_hook || '', tags: [], included: true, editing: false, highlight: true },
+      { id: 'flags', title: 'Flags', content: parsed.flags || 'None', tags: [], included: true, editing: false },
+    ];
+
+    setStatus(`Research complete — ${sections.length} sections generated. Review, edit, then generate brief.`);
+    renderCards();
+    document.getElementById('generateRow').style.display = 'flex';
+  } catch(e) {
+    setStatus('Research failed. Check your internet connection or Worker URL.');
+  }
+
+  document.getElementById('researchBtn').disabled = false;
+}
+
+function renderCards() {
+  const container = document.getElementById('cards');
+  container.innerHTML = '';
+
+  sections.forEach((s, i) => {
+    const card = document.createElement('div');
+    card.className = `card${s.included ? '' : ' excluded'}${s.highlight ? ' highlight' : ''}`;
+
+    const tagsHtml = s.tags.map(t => `<span class="tag ${t.type}">${t.text}</span>`).join('');
+
+    card.innerHTML = `
+      <div class="card-top">
+        <div class="card-label">${s.title}</div>
+        <div class="card-actions">
+          <button class="btn-sm" onclick="toggleEdit(${i})">${s.editing ? 'Done' : 'Edit'}</button>
+          <button class="btn-sm ${s.included ? 'exclude' : 'include'}" onclick="toggleInclude(${i})">${s.included ? 'Exclude' : 'Include'}</button>
+        </div>
+      </div>
+      <div class="card-body">
+        ${s.editing
+          ? `<textarea id="edit_${i}">${s.content}</textarea>`
+          : `<div>${s.content}</div>`
+        }
+        ${tagsHtml ? `<div class="tags">${tagsHtml}</div>` : ''}
+      </div>
+      <div class="add-note-row">
+        <input type="text" id="note_${i}" placeholder="Add a custom note..." />
+        <button class="btn-sm" onclick="addNote(${i})">+ Add</button>
+      </div>`;
+
+    container.appendChild(card);
+  });
+}
+
+function toggleEdit(i) {
+  if (sections[i].editing) {
+    const ta = document.getElementById(`edit_${i}`);
+    if (ta) sections[i].content = ta.value;
+  }
+  sections[i].editing = !sections[i].editing;
+  renderCards();
+}
+
+function toggleInclude(i) {
+  sections[i].included = !sections[i].included;
+  renderCards();
+}
+
+function addNote(i) {
+  const input = document.getElementById(`note_${i}`);
+  if (!input || !input.value.trim()) return;
+  sections[i].tags.push({ text: input.value.trim(), type: 'custom' });
+  input.value = '';
+  renderCards();
+}
+
+function generateBrief() {
+  const included = sections.filter(s => s.included);
+  let brief = `PITCH BRIEF — RIDDLER MEDIA\n${'━'.repeat(44)}\n\n`;
+  included.forEach(s => {
+    brief += `[ ${s.title.toUpperCase()} ]\n`;
+    brief += s.content + '\n';
+    if (s.tags.length) {
+      s.tags.forEach(t => { brief += `  • ${t.text}\n`; });
+    }
+    brief += '\n';
+  });
+
+  document.getElementById('briefOutput').textContent = brief;
+  const bs = document.getElementById('briefSection');
+  bs.classList.add('visible');
+  bs.scrollIntoView({ behavior: 'smooth' });
+}
+
+function copyBrief() {
+  const text = document.getElementById('briefOutput').textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    const cc = document.getElementById('copyConfirm');
+    cc.classList.add('show');
+    setTimeout(() => cc.classList.remove('show'), 2500);
+  });
+}
+
+function reset() {
+  sections = [];
+  document.getElementById('cards').innerHTML = '';
+  document.getElementById('generateRow').style.display = 'none';
+  document.getElementById('briefSection').classList.remove('visible');
+  document.getElementById('urlInput').value = '';
+  setStatus('');
+}
+</script>
+</body>
+</html>
