@@ -218,7 +218,7 @@ function setStatus(msg, loading) {
 }
 
 async function callClaude(prompt) {
-  await new Promise(r => setTimeout(r, 3000));
+  await new Promise(r => setTimeout(r, 35000));
   const res = await fetch(PROXY, {
     method:'POST', headers:{'Content-Type':'application/json'},
     body: JSON.stringify({
