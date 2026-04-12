@@ -218,12 +218,12 @@ function setStatus(msg, loading) {
 }
 
 async function callClaude(prompt) {
-  await new Promise(r => setTimeout(r, 65000));
+  await new Promise(r => setTimeout(r, 5000));
   const res = await fetch(PROXY, {
     method:'POST', headers:{'Content-Type':'application/json'},
     body: JSON.stringify({
-      model: 'claude-haiku-4-5-20251001',
-      max_tokens: 1000,
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 1500,
       messages: [{ role:'user', content: prompt }]
     })
   });
@@ -300,6 +300,10 @@ async function startAudit() {
     results.seo = p4data.seo || {};
     results.competitors = p4data.competitors || [];
     results.market_opportunity = p4data.market_opportunity || {};
+
+    // Check if we got meaningful data
+    const hasData = results.website.score || results.social_media.score || results.seo.score;
+    if (!hasData) throw new Error('All phases returned empty — rate limit hit. Wait 2 minutes and try again.');
 
     // PHASE 5 — Compile
     setStatus('Phase 5/5 — Compiling report', true);
