@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Internal Brand Audit — Riddler Media</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,600;1,400&family=DM+Mono:wght@400;500&display=swap');
+:root{--bg:#0a0a0a;--surface:#131313;--surface2:#1a1a1a;--surface3:#222;--border:#252525;--border2:#303030;--text:#efefef;--text2:#888;--text3:#555;--accent:#c8f135;--accent-dim:#a8cc25;--red:#ff4d4d;--red-bg:#1c0808;--red-border:#3a1212;--green:#3ddc84;--green-bg:#081c10;--green-border:#0f3a1e;--amber:#ffb347;--amber-bg:#1c1008;--amber-border:#3a2512;--blue:#4da6ff;--blue-bg:#081018;--blue-border:#122035}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh}
+.gate{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:999}
+.gate-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:40px 36px;width:100%;max-width:380px}
+.gate-brand{font-size:12px;font-weight:700;letter-spacing:.12em;color:var(--accent);margin-bottom:24px}
+.gate-card h2{font-size:20px;font-weight:500;margin-bottom:6px}
+.gate-card p{font-size:13px;color:var(--text2);margin-bottom:24px}
+.gate-label{font-size:11px;font-weight:600;letter-spacing:.08em;color:var(--text3);text-transform:uppercase;margin-bottom:8px}
+.gate-input{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:14px;padding:0 14px;height:42px;font-family:'DM Mono',monospace;letter-spacing:.1em;margin-bottom:10px}
+.gate-input:focus{outline:none;border-color:var(--accent)}
+.gate-error{font-size:12px;color:var(--red);min-height:18px;margin-bottom:10px}
+.gate-btn{width:100%;height:42px;background:var(--accent);color:#0a0a0a;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer}
+.gate-btn:hover{background:var(--accent-dim)}
+.topbar{border-bottom:1px solid var(--border);padding:14px 32px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--bg);z-index:100}
+.brand{font-size:12px;font-weight:700;letter-spacing:.12em;color:var(--accent)}
+.brand span{color:var(--text2);font-weight:400}
+.main{max-width:920px;margin:0 auto;padding:48px 32px 80px}
+.hero{margin-bottom:36px}
+.hero h1{font-size:26px;font-weight:500;letter-spacing:-.02em;margin-bottom:8px}
+.hero p{font-size:14px;color:var(--text2);line-height:1.6;max-width:580px}
+.input-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:24px;margin-bottom:24px}
+.input-label{font-size:11px;font-weight:600;letter-spacing:.08em;color:var(--text3);text-transform:uppercase;margin-bottom:10px}
+.input-row{display:flex;gap:10px}
+.url-input{flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:14px;padding:0 14px;height:42px;font-family:'DM Mono',monospace}
+.url-input:focus{outline:none;border-color:var(--accent)}
+.url-input::placeholder{color:var(--text3)}
+.btn-primary{height:42px;padding:0 20px;font-size:13px;font-weight:600;border-radius:8px;border:none;cursor:pointer;background:var(--accent);color:#0a0a0a;white-space:nowrap}
+.btn-primary:hover{background:var(--accent-dim)}
+.btn-primary:disabled{opacity:.4;cursor:not-allowed}
+.btn-ghost{background:transparent;color:var(--text2);border:1px solid var(--border);height:38px;padding:0 16px;font-size:13px;font-weight:500;border-radius:8px;cursor:pointer}
+.btn-ghost:hover{border-color:var(--border2);color:var(--text)}
+.status{font-size:13px;color:var(--text2);margin-bottom:24px;min-height:20px;display:flex;align-items:center;gap:8px}
+.dots span{width:4px;height:4px;border-radius:50%;background:var(--accent);animation:pulse 1.2s ease-in-out infinite;display:inline-block;margin-right:3px}
+.dots span:nth-child(2){animation-delay:.2s}.dots span:nth-child(3){animation-delay:.4s}
+@keyframes pulse{0%,80%,100%{opacity:.2;transform:scale(.8)}40%{opacity:1;transform:scale(1)}}
+.report{display:none}.report.visible{display:block}
+.report-header{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:24px 28px;margin-bottom:16px;display:flex;align-items:flex-start;justify-content:space-between;gap:20px}
+.report-brand-name{font-size:22px;font-weight:600;letter-spacing:-.02em;margin-bottom:4px}
+.report-url{font-size:12px;color:var(--text3);font-family:'DM Mono',monospace}
+.score-bar{flex:1;height:6px;background:var(--surface3);border-radius:3px;overflow:hidden}
+.score-fill{height:100%;border-radius:3px}
+.score-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}
+.score-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px}
+.score-card-label{font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--text3);margin-bottom:8px}
+.score-card-bar{height:4px;background:var(--surface3);border-radius:2px;overflow:hidden;margin-top:6px}
+.status-pill{display:inline-flex;align-items:center;font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;padding:3px 9px;border-radius:20px}
+.pill-strong{background:var(--green-bg);color:var(--green);border:1px solid var(--green-border)}
+.pill-moderate{background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-border)}
+.pill-weak{background:var(--red-bg);color:var(--red);border:1px solid var(--red-border)}
+.pill-missing{background:var(--surface2);color:var(--text3);border:1px solid var(--border)}
+.audit-section{background:var(--surface);border:1px solid var(--border);border-radius:12px;margin-bottom:12px;overflow:hidden}
+.section-header{padding:18px 22px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none}
+.section-header:hover{background:var(--surface2)}
+.section-left{display:flex;align-items:center;gap:12px}
+.section-icon{font-size:16px;width:32px;height:32px;display:flex;align-items:center;justify-content:center;border-radius:8px;flex-shrink:0}
+.section-title{font-size:14px;font-weight:500}
+.section-subtitle{font-size:12px;color:var(--text3);margin-top:2px}
+.section-right{display:flex;align-items:center;gap:10px}
+.chevron{color:var(--text3);font-size:12px;transition:transform .2s}
+.chevron.open{transform:rotate(180deg)}
+.section-body{display:none;padding:0 22px 22px;border-top:1px solid var(--border)}
+.section-body.open{display:block}
+.findings-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+.finding{background:var(--surface2);border-radius:8px;padding:14px 16px;border:1px solid var(--border)}
+.finding.positive{border-left:3px solid var(--green)}
+.finding.negative{border-left:3px solid var(--red)}
+.finding-label{font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px}
+.finding.positive .finding-label{color:var(--green)}
+.finding.negative .finding-label{color:var(--red)}
+.finding-text{font-size:13px;color:var(--text);line-height:1.6}
+.metrics-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.metric{background:var(--surface3);border-radius:8px;padding:10px 14px;flex:1;min-width:120px}
+.metric-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}
+.metric-value{font-size:13px;font-weight:500;color:var(--text);line-height:1.4}
+.keyword-list{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.keyword{font-size:12px;padding:4px 12px;border-radius:20px;border:1px solid var(--border2);color:var(--text2);background:var(--surface3)}
+.keyword.target{background:var(--blue-bg);color:var(--blue);border-color:var(--blue-border)}
+.keyword.gap{background:var(--red-bg);color:var(--red);border-color:var(--red-border)}
+.comp-table{width:100%;margin-top:14px;border-collapse:collapse}
+.comp-table th{font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--text3);text-align:left;padding:8px 12px;border-bottom:1px solid var(--border)}
+.comp-table td{font-size:13px;color:var(--text);padding:10px 12px;border-bottom:1px solid var(--border);vertical-align:top}
+.comp-table tr:last-child td{border-bottom:none}
+.comp-table tr:hover td{background:var(--surface2)}
+.pitch-intel{background:var(--surface);border:1px solid var(--accent);border-radius:12px;padding:22px 26px;margin-bottom:16px}
+.pitch-intel-label{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:14px}
+.intel-item{display:flex;gap:12px;align-items:flex-start;margin-bottom:10px}
+.intel-num{font-size:11px;font-weight:700;color:var(--accent);font-family:'DM Mono',monospace;flex-shrink:0;margin-top:2px}
+.intel-text{font-size:14px;color:var(--text);line-height:1.6}
+.rec-box{background:var(--surface2);border:1px solid var(--border2);border-radius:10px;padding:14px 16px;margin-top:14px}
+.rec-box-label{font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);margin-bottom:6px}
+.rec-box-text{font-size:13px;color:var(--text);line-height:1.7}
+.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.detail-item{background:var(--surface2);border-radius:8px;padding:12px 14px}
+.detail-item-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px}
+.detail-item-val{font-size:13px;color:var(--text);line-height:1.5}
+.actions-row{display:flex;gap:10px;margin-bottom:32px;margin-top:8px}
+.rfw{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
+.rfw-box{border-radius:12px;padding:18px 20px}
+.rfw-label{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin-bottom:12px}
+.rfw-item{display:flex;gap:8px;margin-bottom:8px;align-items:flex-start;font-size:13px;line-height:1.5}
+@media print{.gate,.topbar,.input-card,.status,.actions-row{display:none!important}.report{display:block!important}.section-body{display:block!important}.chevron{display:none}}
+</style>
+</head>
+<body>
+
+<div class="gate" id="gate">
+  <div class="gate-card">
+    <div class="gate-brand">RIDDLER MEDIA</div>
+    <h2>Internal brand audit</h2>
+    <p>Internal tool. Enter your access password.</p>
+    <div class="gate-label">Password</div>
+    <input class="gate-input" type="password" id="gateInput" placeholder="••••••••" onkeydown="if(event.key==='Enter')checkPassword()" />
+    <div class="gate-error" id="gateError"></div>
+    <button class="gate-btn" onclick="checkPassword()">Unlock</button>
+  </div>
+</div>
+
+<div class="topbar">
+  <div class="brand">RIDDLER <span>/ Internal Brand Audit</span></div>
+  <div style="font-size:12px;color:var(--text3)" id="auditDate"></div>
+</div>
+
+<div class="main">
+  <div class="hero">
+    <h1>Internal brand audit</h1>
+    <p>Full pre-pitch intelligence. Paste a brand URL — one query covers website, SEO, ads, social, influencers, content, marketplaces, and competitors.</p>
+  </div>
+
+  <div class="input-card">
+    <div class="input-label">Brand website URL</div>
+    <div class="input-row">
+      <input type="text" class="url-input" id="urlInput" placeholder="https://brandwebsite.com" />
+      <button class="btn-primary" id="auditBtn" onclick="startAudit()">Run full audit</button>
+    </div>
+  </div>
+
+  <div class="status" id="status"></div>
+
+  <div class="report" id="report">
+    <div class="report-header" id="reportHeader"></div>
+    <div class="pitch-intel" id="pitchIntel"></div>
+    <div class="score-grid" id="scoreGrid"></div>
+    <div class="rfw" id="rfqw"></div>
+    <div id="auditSections"></div>
+    <div class="actions-row">
+      <button class="btn-primary" onclick="downloadPDF()">Download PDF</button>
+      <button class="btn-ghost" onclick="window.print()">Print</button>
+      <button class="btn-ghost" onclick="reset()">New audit</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const PASSWORD = 'riddler2026';
+const PROXY = 'https://riddler-ai-proxy.aayush-5a9.workers.dev';
+
+function checkPassword() {
+  if (document.getElementById('gateInput').value === PASSWORD) {
+    document.getElementById('gate').style.display = 'none';
+    sessionStorage.setItem('rm_audit','1');
+  } else {
+    document.getElementById('gateError').textContent = 'Incorrect password.';
+    document.getElementById('gateInput').value = '';
+  }
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  if (sessionStorage.getItem('rm_audit')==='1') document.getElementById('gate').style.display='none';
+  document.getElementById('auditDate').textContent = new Date().toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'});
+});
+
+function setStatus(msg, loading) {
+  document.getElementById('status').innerHTML = loading
+    ? `${msg}&nbsp;<span class="dots"><span></span><span></span><span></span></span>` : msg;
+}
+
+async function callClaude(prompt) {
+  const res = await fetch(PROXY, {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:4000, messages:[{role:'user',content:prompt}] })
+  });
+  const data = await res.json();
+  return data.content?.[0]?.text || '';
+}
+
+function scoreColor(n){ return n>=70?'var(--green)':n>=40?'var(--amber)':'var(--red)'; }
+function scorePill(n){ return n>=70?'pill-strong':n>=40?'pill-moderate':n>=1?'pill-weak':'pill-missing'; }
+function statusLabel(n){ return n>=70?'Strong':n>=40?'Moderate':n>=1?'Weak':'Missing'; }
+
+async function startAudit() {
+  const url = document.getElementById('urlInput').value.trim();
+  if (!url) return;
+  document.getElementById('report').classList.remove('visible');
+  document.getElementById('auditBtn').disabled = true;
+  setStatus('Running full brand audit — analysing website, SEO, ads, social, influencers, content, competitors', true);
+
+  const prompt = `You are a senior digital marketing strategist at Riddler Media, a full-service digital marketing agency in India. Services: performance marketing (Meta/Google ads), SEO, social media management, influencer marketing, website development. You are doing a comprehensive internal pre-pitch audit before a sales meeting with this brand.
+
+Brand URL: ${url}
+
+Single-pass comprehensive research. Be specific, critical, honest. Internal use only — not client-facing. Call out real problems. Use your knowledge of this brand, their industry, and the Indian D2C/SME market.
+
+Return ONLY raw JSON. No markdown, no backticks, no text before or after:
+
+{"brand_name":"","brand_description":"2 sentences: what they sell, who they target, price range, D2C or marketplace","vertical":"e.g. skincare","overall_score":45,"overall_summary":"2-3 sentences honest digital maturity assessment","pitch_intel":["Most important thing to lead with — their biggest felt pain point","Something they probably do not know about themselves","A competitor or market angle they are missing","Likely objection they will raise and how to counter it"],"website":{"score":40,"platform":"Shopify/WordPress/Custom","load_speed":"specific observation","mobile_experience":"specific observation","design_quality":"honest assessment","cta_clarity":"CTA presence and clarity","trust_signals":"reviews, badges, social proof","tracking":"Meta Pixel, GA4, GTM","conversion_elements":"upsell, exit intent, email capture","positives":["working 1","working 2"],"gaps":["gap 1","gap 2","gap 3"],"recommendation":"what Riddler should pitch"},"seo":{"score":20,"domain_age":"estimated","estimated_organic_traffic":"estimated monthly visits","ranking_keywords":["keyword 1","keyword 2"],"keyword_gaps":["missing keyword 1","missing keyword 2","missing keyword 3"],"content_strategy":"blog, category pages, product descriptions","technical_seo":"schema, meta, structure","backlink_profile":"estimated referring domains","local_seo":"Google Business, local presence","positives":["positive 1"],"gaps":["gap 1","gap 2","gap 3"],"recommendation":"SEO pitch recommendation"},"performance_marketing":{"score":30,"meta_ads":"active ads, creative types, messaging","google_ads":"Google Ads presence and quality","ad_creative_quality":"creative assessment","targeting_sophistication":"targeting depth","offer_strategy":"discount, urgency, offer mechanics","estimated_spend":"estimated monthly spend","retargeting":"retargeting assessment","positives":["positive 1"],"gaps":["gap 1","gap 2","gap 3"],"recommendation":"paid marketing pitch recommendation"},"social_media":{"score":35,"platforms":{"instagram":{"present":true,"followers":"~8,000","posting_frequency":"2-3x per week","content_mix":"80% static, 20% reels","engagement_quality":"Low 1-2% ER","last_post":"3 days ago"},"facebook":{"present":true,"followers":"~2,000","posting_frequency":"Inconsistent","content_mix":"Shared from Instagram","engagement_quality":"Very low","last_post":"2 weeks ago"},"youtube":{"present":false,"followers":"N/A","posting_frequency":"N/A","content_mix":"N/A","engagement_quality":"N/A","last_post":"N/A"},"linkedin":{"present":false,"followers":"N/A","posting_frequency":"N/A","content_mix":"N/A","engagement_quality":"N/A","last_post":"N/A"},"twitter":{"present":false,"followers":"N/A","posting_frequency":"N/A","content_mix":"N/A","engagement_quality":"N/A","last_post":"N/A"}},"content_quality":"visual identity assessment","brand_voice":"tone consistency","viral_potential":"shareability assessment","community_engagement":"comment responses and UGC","positives":["positive 1","positive 2"],"gaps":["gap 1","gap 2","gap 3"],"recommendation":"social media management pitch recommendation"},"influencer_marketing":{"score":10,"current_activity":"any current influencer usage","creator_type_fit":"what creators would work best","estimated_budget_needed":"budget range","platform_fit":"best platforms","competitor_influencer_activity":"what competitors do with influencers","opportunity":"specific opportunity for Riddler","positives":["positive 1"],"gaps":["gap 1","gap 2"],"recommendation":"influencer marketing pitch recommendation"},"content_marketing":{"score":15,"blog":"blog presence and quality","email_marketing":"email capture and newsletter","video_content":"YouTube and long-form","ugc_strategy":"UGC collection","content_calendar":"evidence of planned content","seo_content":"informational content for SEO","positives":["positive 1"],"gaps":["gap 1","gap 2","gap 3"],"recommendation":"content marketing pitch recommendation"},"marketplace_presence":{"score":20,"amazon":"Amazon presence and listing quality","flipkart":"Flipkart presence","meesho":"Meesho presence","nykaa":"Nykaa if applicable","cred":"CRED if applicable","other":"other marketplaces","positives":["positive 1"],"gaps":["gap 1","gap 2"],"recommendation":"marketplace recommendation"},"competitors":[{"name":"Competitor 1","website":"url.com","strengths":"digital strengths","weaknesses":"digital weaknesses","estimated_scale":"e.g. 5x larger","threat_level":"High"},{"name":"Competitor 2","website":"url.com","strengths":"...","weaknesses":"...","estimated_scale":"...","threat_level":"Medium"},{"name":"Competitor 3","website":"url.com","strengths":"...","weaknesses":"...","estimated_scale":"...","threat_level":"Low"}],"market_opportunity":{"market_size":"India market size with number","growth_trend":"category growth trend","underserved_segments":"underserved segments","timing":"is now a good time to invest — why"},"red_flags":["risk 1","risk 2"],"quick_wins":["fast result 1","quick win 2","quick win 3"],"recommended_entry_point":"which service to lead with and why","estimated_budget_appetite":"likely monthly budget"}`;
+
+  try {
+    const raw = await callClaude(prompt);
+    let d;
+    try { d = JSON.parse(raw.trim()); }
+    catch(e) { const m = raw.match(/\{[\s\S]*\}/); if(m) d = JSON.parse(m[0]); }
+    if (!d) throw new Error('parse fail');
+    window._auditData = d;
+    renderReport(d, url);
+    setStatus('');
+  } catch(e) {
+    setStatus('Audit failed. Check your Worker is live at riddler-ai-proxy.aayush-5a9.workers.dev');
+  }
+  document.getElementById('auditBtn').disabled = false;
+}
+
+async function downloadPDF() {
+  const btn = document.querySelector('.actions-row .btn-primary');
+  btn.textContent = 'Generating...';
+  btn.disabled = true;
+  document.querySelectorAll('.section-body').forEach(b => b.classList.add('open'));
+  document.querySelectorAll('.chevron').forEach(c => c.classList.add('open'));
+  await new Promise(r => setTimeout(r, 400));
+  const brandName = window._auditData?.brand_name || 'Brand';
+  try {
+    const canvas = await html2canvas(document.getElementById('report'), {
+      scale: 1.5, useCORS: true, backgroundColor: '#0a0a0a', logging: false, windowWidth: 960
+    });
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF({ orientation:'portrait', unit:'mm', format:'a4' });
+    const pW=210, pH=297, imgW=pW, imgH=(canvas.height*imgW)/canvas.width;
+    let y=0, pg=0;
+    while(y < imgH) {
+      if(pg>0) pdf.addPage();
+      pdf.addImage(canvas.toDataURL('image/jpeg',0.9),'JPEG',0,-y,imgW,imgH);
+      y+=pH; pg++;
+    }
+    pdf.save(`Riddler_Audit_${brandName.replace(/\s+/g,'_')}.pdf`);
+  } catch(e) {
+    alert('PDF failed. Use Print (Cmd+P) → Save as PDF instead.');
+  }
+  btn.textContent = 'Download PDF';
+  btn.disabled = false;
+}
+
+function renderReport(d, url) {
+  const os = d.overall_score||0;
+
+  document.getElementById('reportHeader').innerHTML = `
+    <div>
+      <div class="report-brand-name">${d.brand_name||'Brand'}</div>
+      <div class="report-url">${url}</div>
+      <div style="margin-top:8px;font-size:13px;color:var(--text2);line-height:1.6;max-width:520px">${d.brand_description||''}</div>
+      <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
+        <span class="status-pill ${scorePill(os)}">${statusLabel(os)}</span>
+        <span style="font-size:12px;color:var(--text3);padding:3px 9px;background:var(--surface2);border-radius:20px;border:1px solid var(--border)">${d.vertical||''}</span>
+      </div>
+    </div>
+    <div style="text-align:right;flex-shrink:0">
+      <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Overall score</div>
+      <div style="font-size:36px;font-weight:700;font-family:'DM Mono',monospace;color:${scoreColor(os)}">${os}<span style="font-size:18px;color:var(--text3)">/100</span></div>
+      <div style="display:flex;align-items:center;gap:8px;margin-top:6px"><div class="score-bar"><div class="score-fill" style="width:${os}%;background:${scoreColor(os)}"></div></div></div>
+      <div style="font-size:12px;color:var(--text2);margin-top:8px;max-width:200px;text-align:right;line-height:1.5">${d.overall_summary||''}</div>
+    </div>`;
+
+  const intel = d.pitch_intel||[];
+  document.getElementById('pitchIntel').innerHTML = `
+    <div class="pitch-intel-label">Pre-meeting pitch intel</div>
+    ${intel.map((item,i)=>`<div class="intel-item"><div class="intel-num">${String(i+1).padStart(2,'0')}</div><div class="intel-text">${item}</div></div>`).join('')}
+    <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border2);display:flex;gap:24px;flex-wrap:wrap">
+      <div><div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Entry point</div><div style="font-size:13px;color:var(--text)">${d.recommended_entry_point||''}</div></div>
+      <div><div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Budget appetite</div><div style="font-size:13px;color:var(--text)">${d.estimated_budget_appetite||''}</div></div>
+    </div>`;
+
+  const areas=[{label:'Website',key:'website'},{label:'SEO',key:'seo'},{label:'Paid Marketing',key:'performance_marketing'},{label:'Social Media',key:'social_media'},{label:'Influencer',key:'influencer_marketing'},{label:'Content',key:'content_marketing'}];
+  document.getElementById('scoreGrid').innerHTML = areas.map(a=>{
+    const sc=d[a.key]?.score||0;
+    return `<div class="score-card"><div class="score-card-label">${a.label}</div><div style="font-size:20px;font-weight:700;font-family:'DM Mono',monospace;color:${scoreColor(sc)}">${sc}<span style="font-size:12px;color:var(--text3)">/100</span></div><div class="score-card-bar"><div style="height:100%;border-radius:2px;width:${sc}%;background:${scoreColor(sc)}"></div></div><div style="margin-top:8px"><span class="status-pill ${scorePill(sc)}">${statusLabel(sc)}</span></div></div>`;
+  }).join('');
+
+  document.getElementById('rfqw').innerHTML = `
+    <div class="rfw-box" style="background:var(--red-bg);border:1px solid var(--red-border)">
+      <div class="rfw-label" style="color:var(--red)">Red flags</div>
+      ${(d.red_flags||[]).map(f=>`<div class="rfw-item" style="color:var(--text)"><span style="color:var(--red);flex-shrink:0">▲</span>${f}</div>`).join('')}
+    </div>
+    <div class="rfw-box" style="background:var(--green-bg);border:1px solid var(--green-border)">
+      <div class="rfw-label" style="color:var(--green)">Quick wins for Riddler</div>
+      ${(d.quick_wins||[]).map(f=>`<div class="rfw-item" style="color:var(--text)"><span style="color:var(--green);flex-shrink:0">✓</span>${f}</div>`).join('')}
+    </div>`;
+
+  const sections=[
+    {key:'website',icon:'🌐',bg:'#0a1520',title:'Website audit',sub:'Platform, speed, UX, conversion, tracking',render:renderWebsite},
+    {key:'seo',icon:'🔍',bg:'#0a1a0a',title:'SEO audit',sub:'Rankings, keywords, content, technical',render:renderSEO},
+    {key:'performance_marketing',icon:'📈',bg:'#1a0a0a',title:'Performance marketing',sub:'Meta Ads, Google Ads, creatives, targeting',render:renderPerf},
+    {key:'social_media',icon:'📱',bg:'#0a0a1a',title:'Social media audit',sub:'All platforms, content quality, engagement',render:renderSocial},
+    {key:'influencer_marketing',icon:'🎯',bg:'#12081a',title:'Influencer marketing',sub:'Current activity, creator fit, opportunity',render:renderInfluencer},
+    {key:'content_marketing',icon:'✍️',bg:'#0a100a',title:'Content marketing',sub:'Blog, email, video, UGC, SEO content',render:renderContent},
+    {key:'marketplace_presence',icon:'🛒',bg:'#1a0f00',title:'Marketplace presence',sub:'Amazon, Flipkart, Meesho, Nykaa',render:renderMarketplace},
+    {key:'competitors',icon:'⚔️',bg:'#100a0a',title:'Competitor analysis',sub:'Direct competitors, strengths, threat level',render:renderCompetitors},
+    {key:'market_opportunity',icon:'🚀',bg:'#0a1510',title:'Market opportunity',sub:'Market size, growth, timing, segments',render:renderMarket},
+  ];
+
+  const container = document.getElementById('auditSections');
+  container.innerHTML = '';
+  sections.forEach((sec,idx)=>{
+    const sd = d[sec.key]; if(!sd) return;
+    const score = Array.isArray(sd)?null:sd.score;
+    const el = document.createElement('div');
+    el.className = 'audit-section';
+    el.innerHTML = `
+      <div class="section-header" onclick="toggleSection(${idx})">
+        <div class="section-left">
+          <div class="section-icon" style="background:${sec.bg}">${sec.icon}</div>
+          <div><div class="section-title">${sec.title}</div><div class="section-subtitle">${sec.sub}</div></div>
+        </div>
+        <div class="section-right">
+          ${score!=null?`<div style="font-size:13px;font-weight:600;font-family:'DM Mono',monospace;color:${scoreColor(score)}">${score}/100</div><span class="status-pill ${scorePill(score)}">${statusLabel(score)}</span>`:''}
+          <div class="chevron" id="chev_${idx}">▼</div>
+        </div>
+      </div>
+      <div class="section-body" id="body_${idx}">${sec.render(sd)}</div>`;
+    container.appendChild(el);
+  });
+
+  document.getElementById('report').classList.add('visible');
+  document.getElementById('report').scrollIntoView({behavior:'smooth'});
+}
+
+function toggleSection(idx){
+  document.getElementById(`body_${idx}`).classList.toggle('open');
+  document.getElementById(`chev_${idx}`).classList.toggle('open');
+}
+
+function detailGrid(items){
+  return `<div class="detail-grid">${items.map(([l,v])=>`<div class="detail-item"><div class="detail-item-label">${l}</div><div class="detail-item-val">${v||'N/A'}</div></div>`).join('')}</div>`;
+}
+function findingsHTML(pos,gaps){
+  return `<div class="findings-grid">${(pos||[]).map(p=>`<div class="finding positive"><div class="finding-label">Working</div><div class="finding-text">${p}</div></div>`).join('')}${(gaps||[]).map(g=>`<div class="finding negative"><div class="finding-label">Gap</div><div class="finding-text">${g}</div></div>`).join('')}</div>`;
+}
+function recHTML(text){
+  return `<div class="rec-box"><div class="rec-box-label">Riddler recommendation</div><div class="rec-box-text">${text||''}</div></div>`;
+}
+
+function renderWebsite(d){
+  return detailGrid([['Platform',d.platform],['Load Speed',d.load_speed],['Mobile Experience',d.mobile_experience],['Design Quality',d.design_quality],['CTA Clarity',d.cta_clarity],['Trust Signals',d.trust_signals],['Tracking',d.tracking],['Conversion Elements',d.conversion_elements]])+findingsHTML(d.positives,d.gaps)+recHTML(d.recommendation);
+}
+function renderSEO(d){
+  return `<div class="metrics-row"><div class="metric"><div class="metric-label">Est. Traffic</div><div class="metric-value">${d.estimated_organic_traffic||'N/A'}</div></div><div class="metric"><div class="metric-label">Domain Age</div><div class="metric-value">${d.domain_age||'N/A'}</div></div><div class="metric"><div class="metric-label">Backlinks</div><div class="metric-value">${d.backlink_profile||'N/A'}</div></div></div>
+  <div style="margin-top:12px"><div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Ranking keywords</div><div class="keyword-list">${(d.ranking_keywords||[]).map(k=>`<span class="keyword target">${k}</span>`).join('')}</div></div>
+  <div style="margin-top:10px"><div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Keyword gaps</div><div class="keyword-list">${(d.keyword_gaps||[]).map(k=>`<span class="keyword gap">${k}</span>`).join('')}</div></div>`+detailGrid([['Content Strategy',d.content_strategy],['Technical SEO',d.technical_seo],['Local SEO',d.local_seo]])+findingsHTML(d.positives,d.gaps)+recHTML(d.recommendation);
+}
+function renderPerf(d){
+  return detailGrid([['Meta Ads',d.meta_ads],['Google Ads',d.google_ads],['Creative Quality',d.ad_creative_quality],['Targeting',d.targeting_sophistication],['Offer Strategy',d.offer_strategy],['Est. Spend',d.estimated_spend],['Retargeting',d.retargeting]])+findingsHTML(d.positives,d.gaps)+recHTML(d.recommendation);
+}
+function renderSocial(d){
+  const pn={instagram:'Instagram',facebook:'Facebook',youtube:'YouTube',linkedin:'LinkedIn',twitter:'Twitter/X'};
+  const plats=d.platforms||{};
+  return `<div style="overflow-x:auto;margin-top:8px"><table class="comp-table"><tr><th>Platform</th><th>Status</th><th>Followers</th><th>Frequency</th><th>Content Mix</th><th>Engagement</th></tr>${Object.entries(plats).map(([k,p])=>`<tr><td style="font-weight:500">${pn[k]||k}</td><td><span class="status-pill ${p.present?'pill-moderate':'pill-missing'}">${p.present?'Active':'Absent'}</span></td><td style="font-family:'DM Mono',monospace;font-size:12px">${p.followers||'N/A'}</td><td>${p.posting_frequency||'N/A'}</td><td>${p.content_mix||'N/A'}</td><td>${p.engagement_quality||'N/A'}</td></tr>`).join('')}</table></div>`+detailGrid([['Content Quality',d.content_quality],['Brand Voice',d.brand_voice],['Viral Potential',d.viral_potential],['Community Engagement',d.community_engagement]])+findingsHTML(d.positives,d.gaps)+recHTML(d.recommendation);
+}
+function renderInfluencer(d){
+  return detailGrid([['Current Activity',d.current_activity],['Creator Type Fit',d.creator_type_fit],['Platform Fit',d.platform_fit],['Competitor Activity',d.competitor_influencer_activity],['Est. Budget Needed',d.estimated_budget_needed],['Opportunity',d.opportunity]])+findingsHTML(d.positives,d.gaps)+recHTML(d.recommendation);
+}
+function renderContent(d){
+  return detailGrid([['Blog',d.blog],['Email Marketing',d.email_marketing],['Video Content',d.video_content],['UGC Strategy',d.ugc_strategy],['Content Calendar',d.content_calendar],['SEO Content',d.seo_content]])+findingsHTML(d.positives,d.gaps)+recHTML(d.recommendation);
+}
+function renderMarketplace(d){
+  return detailGrid([['Amazon',d.amazon],['Flipkart',d.flipkart],['Meesho',d.meesho],['Nykaa',d.nykaa],['CRED',d.cred],['Other',d.other]])+findingsHTML(d.positives,d.gaps)+recHTML(d.recommendation);
+}
+function renderCompetitors(competitors){
+  if(!Array.isArray(competitors)) return '';
+  return `<table class="comp-table" style="margin-top:8px"><tr><th>Brand</th><th>Strengths</th><th>Weaknesses</th><th>Scale</th><th>Threat</th></tr>${competitors.map(c=>{const tc=c.threat_level==='High'?'var(--red)':c.threat_level==='Medium'?'var(--amber)':'var(--green)';return `<tr><td style="font-weight:500">${c.name||''}<br><span style="font-size:11px;color:var(--text3);font-family:'DM Mono',monospace">${c.website||''}</span></td><td>${c.strengths||''}</td><td>${c.weaknesses||''}</td><td>${c.estimated_scale||''}</td><td style="color:${tc};font-weight:600;font-size:12px">${c.threat_level||''}</td></tr>`;}).join('')}</table>`;
+}
+function renderMarket(d){
+  return detailGrid([['Market Size',d.market_size],['Growth Trend',d.growth_trend],['Underserved Segments',d.underserved_segments],['Timing',d.timing]]);
+}
+
+function reset(){
+  document.getElementById('report').classList.remove('visible');
+  document.getElementById('urlInput').value='';
+  setStatus('');
+  window._auditData=null;
+}
+</script>
+</body>
+</html>
