@@ -3,17 +3,23 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Pitch Brief Generator — Riddler Media</title>
-<script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
+<title>Internal Brand Audit — Riddler Media</title>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&family=DM+Mono:wght@400;500&display=swap');
 :root {
-  --bg:#0e0e0e;--surface:#161616;--surface2:#1e1e1e;--border:#2a2a2a;--border2:#333;
-  --text:#f0f0f0;--text2:#888;--text3:#444;--accent:#c8f135;--accent-dim:#a8cc25;
-  --red:#ff5555;--red-bg:#1a0a0a;--green:#4dff91;--green-bg:#0a1a10;--amber:#ffb84d;--amber-bg:#1a1200;
+  --bg:#0a0a0a;--surface:#131313;--surface2:#1a1a1a;--surface3:#222;
+  --border:#252525;--border2:#303030;--text:#efefef;--text2:#888;--text3:#555;
+  --accent:#c8f135;--accent-dim:#a8cc25;
+  --red:#ff4d4d;--red-bg:#1c0808;--red-border:#3a1212;
+  --green:#3ddc84;--green-bg:#081c10;--green-border:#0f3a1e;
+  --amber:#ffb347;--amber-bg:#1c1008;--amber-border:#3a2512;
+  --blue:#4da6ff;--blue-bg:#081018;--blue-border:#122035;
+  --purple:#b57aff;--purple-bg:#120a1c;--purple-border:#2a1540;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh}
+
+/* GATE */
 .gate{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:999}
 .gate-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:40px 36px;width:100%;max-width:380px}
 .gate-brand{font-size:12px;font-weight:700;letter-spacing:.12em;color:var(--accent);margin-bottom:24px}
@@ -23,15 +29,22 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min
 .gate-input{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:14px;padding:0 14px;height:42px;font-family:'DM Mono',monospace;letter-spacing:.1em;margin-bottom:10px}
 .gate-input:focus{outline:none;border-color:var(--accent)}
 .gate-error{font-size:12px;color:var(--red);min-height:18px;margin-bottom:10px}
-.gate-btn{width:100%;height:42px;background:var(--accent);color:#0e0e0e;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer}
+.gate-btn{width:100%;height:42px;background:var(--accent);color:#0a0a0a;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer}
 .gate-btn:hover{background:var(--accent-dim)}
-.topbar{border-bottom:1px solid var(--border);padding:14px 32px;display:flex;align-items:center;position:sticky;top:0;background:var(--bg);z-index:100}
+
+/* TOPBAR */
+.topbar{border-bottom:1px solid var(--border);padding:14px 32px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--bg);z-index:100}
 .brand{font-size:12px;font-weight:700;letter-spacing:.12em;color:var(--accent)}
 .brand span{color:var(--text2);font-weight:400}
-.main{max-width:880px;margin:0 auto;padding:48px 32px 80px}
+.topbar-right{font-size:12px;color:var(--text3)}
+
+/* MAIN */
+.main{max-width:920px;margin:0 auto;padding:48px 32px 80px}
 .hero{margin-bottom:36px}
 .hero h1{font-size:26px;font-weight:500;letter-spacing:-.02em;margin-bottom:8px}
-.hero p{font-size:14px;color:var(--text2);line-height:1.6;max-width:600px}
+.hero p{font-size:14px;color:var(--text2);line-height:1.6;max-width:580px}
+
+/* INPUT */
 .input-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:24px;margin-bottom:24px}
 .input-label{font-size:11px;font-weight:600;letter-spacing:.08em;color:var(--text3);text-transform:uppercase;margin-bottom:10px}
 .input-row{display:flex;gap:10px}
@@ -39,61 +52,128 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min
 .url-input:focus{outline:none;border-color:var(--accent)}
 .url-input::placeholder{color:var(--text3)}
 .btn{height:42px;padding:0 20px;font-size:13px;font-weight:600;border-radius:8px;border:none;cursor:pointer;transition:all .15s;white-space:nowrap}
-.btn-primary{background:var(--accent);color:#0e0e0e}
+.btn-primary{background:var(--accent);color:#0a0a0a}
 .btn-primary:hover{background:var(--accent-dim)}
 .btn-primary:disabled{opacity:.4;cursor:not-allowed}
-.btn-ghost{background:transparent;color:var(--text2);border:1px solid var(--border)}
+.btn-ghost{background:transparent;color:var(--text2);border:1px solid var(--border);height:42px;padding:0 16px;font-size:13px;font-weight:500;border-radius:8px;cursor:pointer}
 .btn-ghost:hover{border-color:var(--border2);color:var(--text)}
-.btn-sm{height:28px;padding:0 12px;font-size:11px;font-weight:600;border-radius:6px;border:1px solid var(--border);cursor:pointer;background:transparent;color:var(--text2);transition:all .15s}
-.btn-sm:hover{color:var(--text);border-color:var(--border2)}
-.btn-sm.excl{color:var(--red);border-color:#3a1515}
-.btn-sm.excl:hover{background:var(--red-bg)}
-.btn-sm.incl{color:var(--green);border-color:#0a2a15}
-.btn-sm.incl:hover{background:var(--green-bg)}
-.status{font-size:13px;color:var(--text2);margin-bottom:20px;min-height:20px;display:flex;align-items:center;gap:8px}
+
+/* STATUS */
+.status{font-size:13px;color:var(--text2);margin-bottom:24px;min-height:20px;display:flex;align-items:center;gap:8px}
 .dots span{width:4px;height:4px;border-radius:50%;background:var(--accent);animation:pulse 1.2s ease-in-out infinite;display:inline-block;margin-right:3px}
 .dots span:nth-child(2){animation-delay:.2s}
 .dots span:nth-child(3){animation-delay:.4s}
 @keyframes pulse{0%,80%,100%{opacity:.2;transform:scale(.8)}40%{opacity:1;transform:scale(1)}}
-.section-label{font-size:11px;font-weight:600;letter-spacing:.08em;color:var(--text3);text-transform:uppercase;margin-bottom:12px;margin-top:28px}
-.meta-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:4px}
-.field-group{display:flex;flex-direction:column;gap:6px}
-.field-label{font-size:11px;font-weight:600;letter-spacing:.08em;color:var(--text3);text-transform:uppercase}
-.field-input{background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;padding:8px 12px;font-family:'DM Sans',sans-serif}
-.field-input:focus{outline:none;border-color:var(--accent)}
-.field-input::placeholder{color:var(--text3)}
-.color-row{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:4px}
-.color-opt{display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer}
-.color-swatch{width:38px;height:38px;border-radius:8px;border:2px solid transparent;transition:all .15s}
-.color-opt.selected .color-swatch{border-color:var(--accent)}
-.color-name{font-size:10px;color:var(--text3)}
-.cards{display:flex;flex-direction:column;gap:12px;margin-bottom:24px}
-.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px 22px;transition:opacity .2s,border-color .2s}
-.card.excluded{opacity:.3;border-style:dashed}
-.card.highlight{border-color:#c8f13566}
-.card-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
-.card-label{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text3)}
-.card-actions{display:flex;gap:6px}
-.card-body{font-size:14px;color:var(--text);line-height:1.7}
-.card-body textarea{width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:6px;color:var(--text);font-size:14px;line-height:1.7;padding:10px 12px;resize:vertical;min-height:80px;font-family:'DM Sans',sans-serif}
-.card-body textarea:focus{outline:none;border-color:var(--accent)}
-.tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
-.tag{font-size:11px;padding:3px 10px;border-radius:20px;font-weight:500}
-.tag.gap{background:var(--red-bg);color:var(--red);border:1px solid #3a1515}
-.tag.custom{background:var(--amber-bg);color:var(--amber);border:1px solid #352500}
-.add-note-row{display:flex;gap:6px;margin-top:12px;padding-top:12px;border-top:1px solid var(--border)}
-.add-note-row input{flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:13px;padding:0 10px;height:30px;font-family:'DM Sans',sans-serif}
-.add-note-row input:focus{outline:none;border-color:var(--accent)}
-.add-note-row input::placeholder{color:var(--text3)}
-.gen-row{display:flex;gap:10px;margin-bottom:32px}
+
+/* REPORT */
+.report{display:none}
+.report.visible{display:block}
+
+/* REPORT HEADER */
+.report-header{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:24px 28px;margin-bottom:24px;display:flex;align-items:flex-start;justify-content:space-between;gap:20px}
+.report-brand-name{font-size:22px;font-weight:600;letter-spacing:-.02em;margin-bottom:4px}
+.report-url{font-size:12px;color:var(--text3);font-family:'DM Mono',monospace}
+.report-meta{font-size:12px;color:var(--text3);text-align:right;line-height:1.8}
+.overall-score{display:flex;align-items:center;gap:10px;margin-top:12px}
+.score-bar{flex:1;height:6px;background:var(--surface3);border-radius:3px;overflow:hidden}
+.score-fill{height:100%;border-radius:3px;transition:width .6s ease}
+.score-num{font-size:13px;font-weight:600;font-family:'DM Mono',monospace}
+
+/* SUMMARY SCORES */
+.score-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:24px}
+.score-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px}
+.score-card-label{font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--text3);margin-bottom:8px}
+.score-card-val{font-size:22px;font-weight:600;font-family:'DM Mono',monospace;margin-bottom:6px}
+.score-card-bar{height:4px;background:var(--surface3);border-radius:2px;overflow:hidden}
+.score-card-fill{height:100%;border-radius:2px}
+.status-pill{display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;padding:3px 9px;border-radius:20px}
+.pill-strong{background:var(--green-bg);color:var(--green);border:1px solid var(--green-border)}
+.pill-moderate{background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-border)}
+.pill-weak{background:var(--red-bg);color:var(--red);border:1px solid var(--red-border)}
+.pill-missing{background:var(--surface2);color:var(--text3);border:1px solid var(--border)}
+
+/* SECTION */
+.audit-section{background:var(--surface);border:1px solid var(--border);border-radius:12px;margin-bottom:16px;overflow:hidden}
+.section-header{padding:18px 22px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none}
+.section-header:hover{background:var(--surface2)}
+.section-left{display:flex;align-items:center;gap:12px}
+.section-icon{font-size:16px;width:32px;height:32px;display:flex;align-items:center;justify-content:center;border-radius:8px;flex-shrink:0}
+.section-title{font-size:14px;font-weight:500}
+.section-subtitle{font-size:12px;color:var(--text3);margin-top:2px}
+.section-right{display:flex;align-items:center;gap:10px}
+.section-score{font-size:13px;font-weight:600;font-family:'DM Mono',monospace}
+.chevron{color:var(--text3);font-size:12px;transition:transform .2s}
+.chevron.open{transform:rotate(180deg)}
+.section-body{display:none;padding:0 22px 22px;border-top:1px solid var(--border)}
+.section-body.open{display:block}
+
+/* FINDINGS */
+.findings-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}
+.finding{background:var(--surface2);border-radius:8px;padding:14px 16px;border:1px solid var(--border)}
+.finding.positive{border-left:3px solid var(--green)}
+.finding.negative{border-left:3px solid var(--red)}
+.finding.neutral{border-left:3px solid var(--amber)}
+.finding-label{font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px}
+.finding.positive .finding-label{color:var(--green)}
+.finding.negative .finding-label{color:var(--red)}
+.finding.neutral .finding-label{color:var(--amber)}
+.finding-text{font-size:13px;color:var(--text);line-height:1.6}
+
+/* METRICS ROW */
+.metrics-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.metric{background:var(--surface3);border-radius:8px;padding:10px 14px;flex:1;min-width:120px}
+.metric-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}
+.metric-value{font-size:16px;font-weight:600;font-family:'DM Mono',monospace}
+.metric-sub{font-size:11px;color:var(--text3);margin-top:2px}
+
+/* KEYWORDS */
+.keyword-list{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.keyword{font-size:12px;padding:4px 12px;border-radius:20px;border:1px solid var(--border2);color:var(--text2);background:var(--surface3)}
+.keyword.target{background:var(--blue-bg);color:var(--blue);border-color:var(--blue-border)}
+.keyword.gap{background:var(--red-bg);color:var(--red);border-color:var(--red-border)}
+.keyword.opportunity{background:var(--green-bg);color:var(--green);border-color:var(--green-border)}
+
+/* COMPETITOR TABLE */
+.comp-table{width:100%;margin-top:14px;border-collapse:collapse}
+.comp-table th{font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--text3);text-align:left;padding:8px 12px;border-bottom:1px solid var(--border)}
+.comp-table td{font-size:13px;color:var(--text);padding:10px 12px;border-bottom:1px solid var(--border);vertical-align:top}
+.comp-table tr:last-child td{border-bottom:none}
+.comp-table tr:hover td{background:var(--surface2)}
+
+/* OPPORTUNITY FLAGS */
+.flags-list{display:flex;flex-direction:column;gap:8px;margin-top:14px}
+.flag{display:flex;gap:10px;align-items:flex-start;background:var(--surface2);border-radius:8px;padding:12px 14px}
+.flag-icon{font-size:14px;flex-shrink:0;margin-top:1px}
+.flag-text{font-size:13px;color:var(--text);line-height:1.5}
+.flag-text strong{color:var(--accent);font-weight:500}
+
+/* RECOMMENDATION BOX */
+.rec-box{background:var(--surface2);border:1px solid var(--border2);border-radius:10px;padding:16px 18px;margin-top:14px}
+.rec-box-label{font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);margin-bottom:8px}
+.rec-box-text{font-size:13px;color:var(--text);line-height:1.7}
+
+/* PITCH INTEL */
+.pitch-intel{background:var(--surface);border:1px solid var(--accent);border-radius:12px;padding:22px 26px;margin-bottom:24px}
+.pitch-intel-label{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:14px}
+.intel-items{display:flex;flex-direction:column;gap:10px}
+.intel-item{display:flex;gap:12px;align-items:flex-start}
+.intel-num{font-size:11px;font-weight:700;color:var(--accent);font-family:'DM Mono',monospace;flex-shrink:0;margin-top:2px}
+.intel-text{font-size:14px;color:var(--text);line-height:1.6}
+
+/* ACTIONS */
+.actions-row{display:flex;gap:10px;margin-bottom:32px}
+
+/* PRINT */
+@media print{.gate,.topbar,.input-card,.status,.actions-row{display:none!important}.report{display:block!important}.audit-section .section-body{display:block!important}.chevron{display:none}}
 </style>
 </head>
 <body>
 
+<!-- GATE -->
 <div class="gate" id="gate">
   <div class="gate-card">
     <div class="gate-brand">RIDDLER MEDIA</div>
-    <h2>Pitch brief generator</h2>
+    <h2>Internal brand audit</h2>
     <p>Internal tool. Enter your access password to continue.</p>
     <div class="gate-label">Password</div>
     <input class="gate-input" type="password" id="gateInput" placeholder="••••••••" onkeydown="if(event.key==='Enter')checkPassword()" />
@@ -103,74 +183,64 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min
 </div>
 
 <div class="topbar">
-  <div class="brand">RIDDLER <span>/ Pitch Brief Generator</span></div>
+  <div class="brand">RIDDLER <span>/ Internal Brand Audit</span></div>
+  <div class="topbar-right" id="auditDate"></div>
 </div>
 
 <div class="main">
   <div class="hero">
-    <h1>Pitch brief generator</h1>
-    <p>Paste a brand URL. AI researches their website, ads, SEO, social, and competitors. Review the brief, pick a theme, and download the deck.</p>
+    <h1>Internal brand audit</h1>
+    <p>Full pre-pitch intelligence report. Paste any brand URL to get a comprehensive audit across SEO, ads, social, website, content, influencer activity, and competitors.</p>
   </div>
 
   <div class="input-card">
     <div class="input-label">Brand website URL</div>
     <div class="input-row">
       <input type="text" class="url-input" id="urlInput" placeholder="https://brandwebsite.com" />
-      <button class="btn btn-primary" id="researchBtn" onclick="startResearch()">Research brand</button>
+      <button class="btn btn-primary" id="auditBtn" onclick="startAudit()">Run full audit</button>
     </div>
   </div>
 
   <div class="status" id="status"></div>
 
-  <div id="metaSection" style="display:none">
-    <div class="section-label">Deck details</div>
-    <div class="meta-grid">
-      <div class="field-group"><div class="field-label">Brand name</div><input class="field-input" type="text" id="brandName" placeholder="e.g. Wild Caribou" /></div>
-      <div class="field-group"><div class="field-label">Cover tagline</div><input class="field-input" type="text" id="tagline" placeholder="e.g. Rooted. Revenue-Ready." /></div>
-    </div>
-    <div class="section-label">Color theme</div>
-    <div class="color-row" id="colorRow"></div>
-  </div>
+  <!-- REPORT -->
+  <div class="report" id="report">
 
-  <div class="cards" id="cards"></div>
-  <div class="gen-row" id="genRow" style="display:none">
-    <button class="btn btn-primary" onclick="generateDeck()">Download deck (.pptx)</button>
-    <button class="btn btn-ghost" onclick="reset()">Start over</button>
+    <div class="report-header" id="reportHeader"></div>
+
+    <!-- PITCH INTEL -->
+    <div class="pitch-intel" id="pitchIntel"></div>
+
+    <!-- SCORE GRID -->
+    <div class="score-grid" id="scoreGrid"></div>
+
+    <!-- AUDIT SECTIONS -->
+    <div id="auditSections"></div>
+
+    <div class="actions-row">
+      <button class="btn-ghost" onclick="window.print()">Print / Save PDF</button>
+      <button class="btn-ghost" onclick="reset()">New audit</button>
+    </div>
+
   </div>
 </div>
 
 <script>
-const PASSWORD = 'riddler2025';
+const PASSWORD = 'riddler2026';
 const PROXY = 'https://riddler-ai-proxy.aayush-5a9.workers.dev';
-
-const THEMES = [
-  { name:'Forest',   bg:'1B4332', light:'F5F0E8', accent:'C9A84C', dark:'0D2B1E', red:'7B2D2D' },
-  { name:'Navy',     bg:'1E2761', light:'F4F6FA', accent:'C9A84C', dark:'0D1540', red:'8B1A1A' },
-  { name:'Charcoal', bg:'1A1A2E', light:'F0EEE9', accent:'E2B96F', dark:'0D0D1A', red:'8B2635' },
-  { name:'Berry',    bg:'4A1942', light:'FAF3F8', accent:'D4A853', dark:'2D0F28', red:'8B1A1A' },
-  { name:'Teal',     bg:'0D3B38', light:'F0F7F6', accent:'C8A84B', dark:'071E1C', red:'7B2525' },
-];
-let sections = [], selectedTheme = THEMES[0];
 
 function checkPassword() {
   if (document.getElementById('gateInput').value === PASSWORD) {
     document.getElementById('gate').style.display = 'none';
-    sessionStorage.setItem('rm_auth','1');
+    sessionStorage.setItem('rm_auth2','1');
   } else {
     document.getElementById('gateError').textContent = 'Incorrect password.';
     document.getElementById('gateInput').value = '';
   }
 }
 window.addEventListener('DOMContentLoaded', () => {
-  if (sessionStorage.getItem('rm_auth')==='1') document.getElementById('gate').style.display='none';
-  const row = document.getElementById('colorRow');
-  THEMES.forEach((t,i) => {
-    const div = document.createElement('div');
-    div.className = 'color-opt'+(i===0?' selected':'');
-    div.onclick = () => { selectedTheme=t; document.querySelectorAll('.color-opt').forEach(e=>e.classList.remove('selected')); div.classList.add('selected'); };
-    div.innerHTML = `<div class="color-swatch" style="background:#${t.bg}"></div><div class="color-name">${t.name}</div>`;
-    row.appendChild(div);
-  });
+  if (sessionStorage.getItem('rm_auth2')==='1') document.getElementById('gate').style.display='none';
+  document.getElementById('auditDate').textContent = new Date().toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'});
 });
 
 function setStatus(msg, loading) {
@@ -179,271 +249,485 @@ function setStatus(msg, loading) {
 }
 
 async function callClaude(prompt) {
-  const res = await fetch(PROXY, { method:'POST', headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:2500, messages:[{role:'user',content:prompt}] }) });
+  const res = await fetch(PROXY, {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:4000, messages:[{role:'user',content:prompt}] })
+  });
   const data = await res.json();
   return data.content?.[0]?.text || '';
 }
 
-async function startResearch() {
+function scoreColor(n) {
+  if (n >= 70) return 'var(--green)';
+  if (n >= 40) return 'var(--amber)';
+  return 'var(--red)';
+}
+function scorePill(n) {
+  if (n >= 70) return 'pill-strong';
+  if (n >= 40) return 'pill-moderate';
+  return 'pill-weak';
+}
+function statusLabel(n) {
+  if (n >= 70) return 'Strong';
+  if (n >= 40) return 'Moderate';
+  if (n >= 1) return 'Weak';
+  return 'Missing';
+}
+
+async function startAudit() {
   const url = document.getElementById('urlInput').value.trim();
   if (!url) return;
-  sections = []; window._d = null;
-  document.getElementById('cards').innerHTML = '';
-  document.getElementById('genRow').style.display = 'none';
-  document.getElementById('metaSection').style.display = 'none';
-  document.getElementById('researchBtn').disabled = true;
-  setStatus('Researching brand', true);
+  document.getElementById('report').classList.remove('visible');
+  document.getElementById('auditBtn').disabled = true;
+  setStatus('Running full brand audit — this takes 20-30 seconds', true);
 
-  const prompt = `You are a senior digital marketing strategist doing pre-pitch research for Riddler Media, a full-service digital marketing agency in India offering: performance marketing (Meta/Google ads), SEO, social media management, influencer marketing, and website development. Clients are D2C and SME brands in India.
+  const prompt = `You are a senior digital marketing strategist at Riddler Media, a full-service digital marketing agency in India. You are doing a comprehensive pre-pitch internal audit of a brand before a sales meeting.
 
-Research the brand at: ${url}
+Audit the brand at: ${url}
 
-Return ONLY a raw JSON object with no markdown, no backticks, no explanation:
+Return ONLY a raw JSON object with no markdown, no backticks, no explanation. Be specific, critical, and honest. This is internal — not client-facing. Call out real problems.
 
 {
   "brand_name": "Brand name",
-  "tagline_hook": "Punchy 2-5 word cover tagline. Use short punchy words separated by periods. e.g. Rooted. Revenue-Ready. or Seen. Searched. Sold.",
-  "strengths": ["Title: one line description","Title: one line description","Title: one line description","Title: one line description"],
-  "gaps": ["Title: one line description","Title: one line description","Title: one line description","Title: one line description"],
-  "market_stat1": "e.g. ₹8,000 Cr+",
-  "market_stat1_label": "India market size and growth context",
-  "market_stat2": "e.g. 3x",
-  "market_stat2_label": "D2C or category growth stat",
-  "gap_cards": [
-    {"number":"01","title":"Short gap title 3-4 words","body":"One paragraph as business consequence. Create urgency. Never reveal the fix."},
-    {"number":"02","title":"Short gap title","body":"..."},
-    {"number":"03","title":"Short gap title","body":"..."},
-    {"number":"04","title":"Short gap title","body":"..."}
+  "brand_description": "2 sentences: what they sell, who they target, price range, channel (D2C/marketplace/retail)",
+  "vertical": "e.g. skincare, fashion, food & beverage, outdoor gear",
+  "overall_score": 45,
+  "overall_summary": "2-3 sentences honest assessment of their digital maturity",
+
+  "pitch_intel": [
+    "Most important thing to lead with in the meeting — their biggest pain point as they would feel it",
+    "Second key insight — something they probably don't know about themselves",
+    "Third key insight — a competitor or market angle they are missing",
+    "Fourth — what they are likely to say as an objection and how to counter it"
   ],
-  "what_we_found_subtitle": "e.g. 4 high-impact gaps identified in your current digital presence",
-  "phase_narrative": "One sentence why this sequenced approach works for this brand specifically.",
-  "recommended_plan": "Growth",
-  "pitch_hook": "Single most compelling problem. One punchy sentence creating urgency.",
-  "ads_activity": "2 sentences on their current ad presence",
-  "ads_gaps": ["gap 1","gap 2"],
-  "seo_keywords": "Top 6-8 keywords they target",
-  "seo_gaps": ["gap 1","gap 2"],
-  "social_media": "Platforms, follower size, posting cadence, content mix",
-  "social_gaps": ["gap 1","gap 2"],
-  "competitors": "3-4 competitors with one line each",
-  "flags": "Anything unusual or None"
+
+  "website": {
+    "score": 40,
+    "status": "Weak",
+    "platform": "e.g. Shopify / WordPress / Custom",
+    "load_speed": "e.g. Likely slow — heavy image assets, no lazy loading observed",
+    "mobile_experience": "e.g. Responsive but checkout flow is clunky on mobile",
+    "design_quality": "e.g. Dated design, poor hierarchy, product images inconsistent quality",
+    "cta_clarity": "e.g. No clear above-fold CTA, add to cart buried",
+    "trust_signals": "e.g. No reviews visible on homepage, no trust badges",
+    "tracking": "e.g. Meta Pixel likely absent, no GA4 detected",
+    "conversion_elements": "e.g. No upsell, no exit intent, no email capture popup",
+    "positives": ["positive 1", "positive 2"],
+    "gaps": ["specific gap 1", "specific gap 2", "specific gap 3"],
+    "recommendation": "Specific recommendation for what Riddler should pitch for website"
+  },
+
+  "seo": {
+    "score": 20,
+    "status": "Missing",
+    "domain_age": "e.g. Likely 2-3 years based on content volume",
+    "estimated_organic_traffic": "e.g. Very low — likely under 500 visits/month",
+    "ranking_keywords": ["keyword they likely rank for 1", "keyword 2"],
+    "target_keywords": ["keyword they are trying to target 1", "keyword 2", "keyword 3"],
+    "keyword_gaps": ["high-value keyword they are missing 1", "gap 2", "gap 3"],
+    "content_strategy": "e.g. No blog, no category pages optimised, thin product descriptions",
+    "technical_seo": "e.g. No schema markup, poor meta descriptions, duplicate title tags likely",
+    "backlink_profile": "e.g. Very thin — likely fewer than 50 referring domains",
+    "local_seo": "e.g. Not applicable / Google Business Profile present but incomplete",
+    "positives": ["positive 1"],
+    "gaps": ["gap 1", "gap 2", "gap 3"],
+    "recommendation": "Specific SEO recommendation for Riddler to pitch"
+  },
+
+  "performance_marketing": {
+    "score": 30,
+    "status": "Weak",
+    "meta_ads": "e.g. Running 2-3 active ads, all static images, no video, no offer-based creatives",
+    "google_ads": "e.g. No Google Ads activity detected",
+    "ad_creative_quality": "e.g. Generic product shots, no lifestyle, no testimonials, weak copy",
+    "targeting_sophistication": "e.g. Likely broad targeting, no retargeting assets",
+    "offer_strategy": "e.g. No visible discount or urgency mechanism in ads",
+    "estimated_spend": "e.g. Low — likely under ₹50K/month based on ad volume",
+    "retargeting": "e.g. No evidence of retargeting campaigns",
+    "positives": ["positive 1"],
+    "gaps": ["gap 1", "gap 2", "gap 3"],
+    "recommendation": "What Riddler should pitch for paid marketing"
+  },
+
+  "social_media": {
+    "score": 35,
+    "status": "Weak",
+    "platforms": {
+      "instagram": {"present": true, "followers": "e.g. ~8,000", "posting_frequency": "e.g. 2-3x per week", "content_mix": "e.g. 80% static, 20% reels", "engagement_quality": "e.g. Low — 1-2% ER, mostly likes", "last_post": "e.g. 3 days ago"},
+      "facebook": {"present": true, "followers": "e.g. ~2,000", "posting_frequency": "e.g. Inconsistent", "content_mix": "e.g. Shared from Instagram", "engagement_quality": "e.g. Very low", "last_post": "e.g. 2 weeks ago"},
+      "youtube": {"present": false, "followers": "N/A", "posting_frequency": "N/A", "content_mix": "N/A", "engagement_quality": "N/A", "last_post": "N/A"},
+      "linkedin": {"present": false, "followers": "N/A", "posting_frequency": "N/A", "content_mix": "N/A", "engagement_quality": "N/A", "last_post": "N/A"},
+      "twitter": {"present": false, "followers": "N/A", "posting_frequency": "N/A", "content_mix": "N/A", "engagement_quality": "N/A", "last_post": "N/A"}
+    },
+    "content_quality": "e.g. Inconsistent visual identity, mix of professional and phone shots",
+    "brand_voice": "e.g. No clear tone — alternates between formal and casual",
+    "viral_potential": "e.g. Low — no shareable formats, no trending audio usage",
+    "community_engagement": "e.g. Not responding to comments, no UGC reposting",
+    "positives": ["positive 1", "positive 2"],
+    "gaps": ["gap 1", "gap 2", "gap 3"],
+    "recommendation": "What Riddler should pitch for social media management"
+  },
+
+  "influencer_marketing": {
+    "score": 10,
+    "status": "Missing",
+    "current_activity": "e.g. No influencer activity detected",
+    "creator_type_fit": "e.g. Micro-influencers in outdoor/adventure and travel niches would work well",
+    "estimated_budget_needed": "e.g. ₹2-5L per campaign for meaningful reach",
+    "platform_fit": "e.g. Instagram and YouTube are primary channels for this category",
+    "competitor_influencer_activity": "e.g. Competitors are actively using influencers — brand is losing share of voice",
+    "opportunity": "e.g. First-mover advantage in using regional language influencers for this category",
+    "positives": ["positive 1"],
+    "gaps": ["gap 1", "gap 2"],
+    "recommendation": "What Riddler should pitch for influencer marketing"
+  },
+
+  "content_marketing": {
+    "score": 15,
+    "status": "Missing",
+    "blog": "e.g. No blog present",
+    "email_marketing": "e.g. No visible email capture, no newsletter",
+    "video_content": "e.g. No YouTube channel, no long-form video",
+    "ugc_strategy": "e.g. No UGC collection or display mechanism",
+    "content_calendar": "e.g. No evidence of planned content strategy",
+    "seo_content": "e.g. No category guides, buying guides, or informational content",
+    "positives": ["positive 1"],
+    "gaps": ["gap 1", "gap 2", "gap 3"],
+    "recommendation": "What Riddler should pitch for content marketing"
+  },
+
+  "marketplace_presence": {
+    "score": 20,
+    "status": "Weak",
+    "amazon": "e.g. Listed but poorly optimised — no A+ content, low review count",
+    "flipkart": "e.g. Present with basic listing",
+    "meesho": "e.g. Not present",
+    "nykaa": "e.g. Not applicable for this category",
+    "cred": "e.g. Not applicable",
+    "other": "e.g. Own website is primary channel",
+    "positives": ["positive 1"],
+    "gaps": ["gap 1", "gap 2"],
+    "recommendation": "Marketplace recommendation"
+  },
+
+  "competitors": [
+    {"name": "Competitor 1", "website": "url", "strengths": "what they do well", "weaknesses": "where they fall short", "estimated_scale": "e.g. 5x larger", "threat_level": "High"},
+    {"name": "Competitor 2", "website": "url", "strengths": "...", "weaknesses": "...", "estimated_scale": "...", "threat_level": "Medium"},
+    {"name": "Competitor 3", "website": "url", "strengths": "...", "weaknesses": "...", "estimated_scale": "...", "threat_level": "Low"}
+  ],
+
+  "market_opportunity": {
+    "market_size": "e.g. ₹8,000 Cr India market growing 22% YoY",
+    "growth_trend": "e.g. D2C in this category up 3x since 2021",
+    "underserved_segments": "e.g. Tier 2 cities, regional language content, mid-price segment",
+    "timing": "e.g. Good time to invest — category is pre-peak, first movers will build durable SEO advantage"
+  },
+
+  "red_flags": ["anything suspicious, risky, or that could complicate the pitch or engagement 1", "red flag 2"],
+  "quick_wins": ["something Riddler can show results on fast 1", "quick win 2", "quick win 3"],
+  "recommended_entry_point": "Which service to lead with and why — based on where the biggest gap meets the easiest win",
+  "estimated_budget_appetite": "e.g. Likely ₹50K-1L/month based on current activity level and brand scale"
 }`;
 
   try {
     const raw = await callClaude(prompt);
-    let parsed;
-    try { parsed = JSON.parse(raw.trim()); }
-    catch(e) { const m = raw.match(/\{[\s\S]*\}/); if(m) parsed = JSON.parse(m[0]); }
-    if (!parsed) throw new Error('parse fail');
-    window._d = parsed;
-    document.getElementById('brandName').value = parsed.brand_name||'';
-    document.getElementById('tagline').value = parsed.tagline_hook||'';
-    sections = [
-      {id:'pitch_hook',title:'Pitch hook',content:parsed.pitch_hook||'',tags:[],included:true,editing:false,highlight:true},
-      {id:'gaps',title:'Key gaps (4 cards in deck)',content:(parsed.gap_cards||[]).map(g=>`${g.number}. ${g.title}\n${g.body}`).join('\n\n'),tags:[],included:true,editing:false},
-      {id:'ads',title:'Ad activity',content:parsed.ads_activity||'',tags:(parsed.ads_gaps||[]).map(g=>({text:g,type:'gap'})),included:true,editing:false},
-      {id:'seo',title:'SEO & keywords',content:parsed.seo_keywords||'',tags:(parsed.seo_gaps||[]).map(g=>({text:g,type:'gap'})),included:true,editing:false},
-      {id:'social',title:'Social media',content:parsed.social_media||'',tags:(parsed.social_gaps||[]).map(g=>({text:g,type:'gap'})),included:true,editing:false},
-      {id:'competitors',title:'Competitor landscape',content:parsed.competitors||'',tags:[],included:true,editing:false},
-      {id:'flags',title:'Flags',content:parsed.flags||'None',tags:[],included:true,editing:false},
-    ];
-    setStatus('Research complete. Review, pick a theme, then download deck.');
-    document.getElementById('metaSection').style.display='block';
-    renderCards();
-    document.getElementById('genRow').style.display='flex';
-  } catch(e) { setStatus('Research failed. Make sure riddler-ai-proxy.aayush-5a9.workers.dev is live.'); }
-  document.getElementById('researchBtn').disabled=false;
+    let d;
+    try { d = JSON.parse(raw.trim()); }
+    catch(e) { const m = raw.match(/\{[\s\S]*\}/); if(m) d = JSON.parse(m[0]); }
+    if (!d) throw new Error('parse fail');
+    renderReport(d, url);
+    setStatus('');
+  } catch(e) {
+    setStatus('Audit failed. Check your Worker is live at riddler-ai-proxy.aayush-5a9.workers.dev');
+  }
+  document.getElementById('auditBtn').disabled = false;
 }
 
-function renderCards() {
-  const c = document.getElementById('cards'); c.innerHTML='';
-  sections.forEach((s,i) => {
-    const card = document.createElement('div');
-    card.className=`card${s.included?'':' excluded'}${s.highlight?' highlight':''}`;
-    const tagsHtml=(s.tags||[]).map(t=>`<span class="tag ${t.type}">${t.text}</span>`).join('');
-    card.innerHTML=`<div class="card-top"><div class="card-label">${s.title}</div><div class="card-actions"><button class="btn-sm" onclick="toggleEdit(${i})">${s.editing?'Done':'Edit'}</button><button class="btn-sm ${s.included?'excl':'incl'}" onclick="toggleInclude(${i})">${s.included?'Exclude':'Include'}</button></div></div><div class="card-body">${s.editing?`<textarea id="edit_${i}">${s.content}</textarea>`:`<div style="white-space:pre-line">${s.content}</div>`}${tagsHtml?`<div class="tags">${tagsHtml}</div>`:''}</div><div class="add-note-row"><input type="text" id="note_${i}" placeholder="Add a custom note..." /><button class="btn-sm" onclick="addNote(${i})">+ Add</button></div>`;
-    c.appendChild(card);
+function renderReport(d, url) {
+  // Header
+  document.getElementById('reportHeader').innerHTML = `
+    <div>
+      <div class="report-brand-name">${d.brand_name||'Brand'}</div>
+      <div class="report-url">${url}</div>
+      <div style="margin-top:8px;font-size:13px;color:var(--text2);line-height:1.6;max-width:560px">${d.brand_description||''}</div>
+      <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
+        <span class="status-pill ${scorePill(d.overall_score)}">${statusLabel(d.overall_score)}</span>
+        <span style="font-size:12px;color:var(--text3);padding:3px 9px;background:var(--surface2);border-radius:20px;border:1px solid var(--border)">${d.vertical||'Brand'}</span>
+      </div>
+    </div>
+    <div style="text-align:right;flex-shrink:0">
+      <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Overall score</div>
+      <div style="font-size:36px;font-weight:700;font-family:'DM Mono',monospace;color:${scoreColor(d.overall_score)}">${d.overall_score}<span style="font-size:18px;color:var(--text3)">/100</span></div>
+      <div class="overall-score"><div class="score-bar"><div class="score-fill" style="width:${d.overall_score}%;background:${scoreColor(d.overall_score)}"></div></div></div>
+      <div style="font-size:12px;color:var(--text2);margin-top:10px;max-width:220px;text-align:right;line-height:1.5">${d.overall_summary||''}</div>
+    </div>`;
+
+  // Pitch intel
+  const intel = d.pitch_intel||[];
+  document.getElementById('pitchIntel').innerHTML = `
+    <div class="pitch-intel-label">Pre-meeting pitch intel</div>
+    <div class="intel-items">${intel.map((item,i)=>`<div class="intel-item"><div class="intel-num">${String(i+1).padStart(2,'0')}</div><div class="intel-text">${item}</div></div>`).join('')}</div>
+    <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border2);display:flex;gap:24px;flex-wrap:wrap">
+      <div><div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Recommended entry point</div><div style="font-size:13px;color:var(--text)">${d.recommended_entry_point||''}</div></div>
+      <div><div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Estimated budget appetite</div><div style="font-size:13px;color:var(--text)">${d.estimated_budget_appetite||''}</div></div>
+    </div>`;
+
+  // Score grid
+  const areas = [
+    {label:'Website',key:'website'},{label:'SEO',key:'seo'},{label:'Paid Marketing',key:'performance_marketing'},
+    {label:'Social Media',key:'social_media'},{label:'Influencer',key:'influencer_marketing'},{label:'Content',key:'content_marketing'}
+  ];
+  document.getElementById('scoreGrid').innerHTML = areas.map(a=>{
+    const sc = d[a.key]?.score||0;
+    return `<div class="score-card">
+      <div class="score-card-label">${a.label}</div>
+      <div class="score-card-val" style="color:${scoreColor(sc)}">${sc}<span style="font-size:13px;color:var(--text3)">/100</span></div>
+      <div class="score-card-bar"><div class="score-card-fill" style="width:${sc}%;background:${scoreColor(sc)}"></div></div>
+      <div style="margin-top:8px"><span class="status-pill ${scorePill(sc)}">${statusLabel(sc)}</span></div>
+    </div>`;
+  }).join('');
+
+  // Audit sections
+  const sections = [
+    { key:'website', icon:'🌐', iconBg:'#0a1520', title:'Website audit', subtitle:'Platform, speed, UX, conversion, tracking', render: renderWebsite },
+    { key:'seo', icon:'🔍', iconBg:'#0a1a0a', title:'SEO audit', subtitle:'Rankings, keywords, content, technical', render: renderSEO },
+    { key:'performance_marketing', icon:'📈', iconBg:'#1a0a0a', title:'Performance marketing', subtitle:'Meta Ads, Google Ads, creatives, targeting', render: renderPerfMarketing },
+    { key:'social_media', icon:'📱', iconBg:'#0a0a1a', title:'Social media audit', subtitle:'All platforms, content quality, engagement', render: renderSocial },
+    { key:'influencer_marketing', icon:'🎯', iconBg:'#12081a', title:'Influencer marketing', subtitle:'Current activity, fit, opportunity', render: renderInfluencer },
+    { key:'content_marketing', icon:'✍️', iconBg:'#0a100a', title:'Content marketing', subtitle:'Blog, email, video, UGC, SEO content', render: renderContent },
+    { key:'marketplace_presence', icon:'🛒', iconBg:'#1a0f00', title:'Marketplace presence', subtitle:'Amazon, Flipkart, Meesho, Nykaa', render: renderMarketplace },
+    { key:'competitors', icon:'⚔️', iconBg:'#100a0a', title:'Competitor analysis', subtitle:'Direct competitors, strengths, threat level', render: renderCompetitors },
+    { key:'market_opportunity', icon:'🚀', iconBg:'#0a1510', title:'Market opportunity', subtitle:'Market size, growth, timing, segments', render: renderMarket },
+  ];
+
+  const container = document.getElementById('auditSections');
+  container.innerHTML = '';
+
+  // Red flags + quick wins first
+  const rfqw = document.createElement('div');
+  rfqw.style.cssText = 'display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px';
+  rfqw.innerHTML = `
+    <div style="background:var(--red-bg);border:1px solid var(--red-border);border-radius:12px;padding:18px 20px">
+      <div style="font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--red);margin-bottom:12px">Red flags</div>
+      ${(d.red_flags||[]).map(f=>`<div style="display:flex;gap:8px;margin-bottom:8px;align-items:flex-start"><span style="color:var(--red);flex-shrink:0">▲</span><span style="font-size:13px;color:var(--text);line-height:1.5">${f}</span></div>`).join('')}
+    </div>
+    <div style="background:var(--green-bg);border:1px solid var(--green-border);border-radius:12px;padding:18px 20px">
+      <div style="font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--green);margin-bottom:12px">Quick wins for Riddler</div>
+      ${(d.quick_wins||[]).map(f=>`<div style="display:flex;gap:8px;margin-bottom:8px;align-items:flex-start"><span style="color:var(--green);flex-shrink:0">✓</span><span style="font-size:13px;color:var(--text);line-height:1.5">${f}</span></div>`).join('')}
+    </div>`;
+  container.appendChild(rfqw);
+
+  sections.forEach((sec, idx) => {
+    const secData = d[sec.key];
+    if (!secData) return;
+    const score = Array.isArray(secData) ? null : secData.score;
+    const el = document.createElement('div');
+    el.className = 'audit-section';
+    el.innerHTML = `
+      <div class="section-header" onclick="toggleSection(${idx})">
+        <div class="section-left">
+          <div class="section-icon" style="background:${sec.iconBg}">${sec.icon}</div>
+          <div>
+            <div class="section-title">${sec.title}</div>
+            <div class="section-subtitle">${sec.subtitle}</div>
+          </div>
+        </div>
+        <div class="section-right">
+          ${score !== null && score !== undefined ? `<div class="section-score" style="color:${scoreColor(score)}">${score}/100</div><span class="status-pill ${scorePill(score)}">${statusLabel(score)}</span>` : ''}
+          <div class="chevron" id="chev_${idx}">▼</div>
+        </div>
+      </div>
+      <div class="section-body" id="body_${idx}">${sec.render(secData, d)}</div>`;
+    container.appendChild(el);
   });
+
+  document.getElementById('report').classList.add('visible');
+  document.getElementById('report').scrollIntoView({behavior:'smooth'});
 }
-function toggleEdit(i){if(sections[i].editing){const ta=document.getElementById(`edit_${i}`);if(ta)sections[i].content=ta.value;}sections[i].editing=!sections[i].editing;renderCards();}
-function toggleInclude(i){sections[i].included=!sections[i].included;renderCards();}
-function addNote(i){const inp=document.getElementById(`note_${i}`);if(!inp?.value.trim())return;sections[i].tags.push({text:inp.value.trim(),type:'custom'});inp.value='';renderCards();}
-function reset(){sections=[];window._d=null;document.getElementById('cards').innerHTML='';document.getElementById('genRow').style.display='none';document.getElementById('metaSection').style.display='none';document.getElementById('urlInput').value='';setStatus('');}
 
-// ── DECK GENERATION ───────────────────────────────────────────────────
-async function generateDeck() {
-  const d = window._d; if(!d){alert('Run research first.');return;}
-  const brandName = document.getElementById('brandName').value||d.brand_name||'Brand';
-  const tagline = document.getElementById('tagline').value||d.tagline_hook||'Growth Ready.';
-  const T = selectedTheme;
-  setStatus('Generating deck', true);
+function toggleSection(idx) {
+  const body = document.getElementById(`body_${idx}`);
+  const chev = document.getElementById(`chev_${idx}`);
+  body.classList.toggle('open');
+  chev.classList.toggle('open');
+}
 
-  const pres = new PptxGenJS();
-  pres.layout = 'LAYOUT_WIDE';
-  const W=13.3, H=7.5;
+function findings(positives, gaps) {
+  return `<div class="findings-grid">
+    ${(positives||[]).map(p=>`<div class="finding positive"><div class="finding-label">Working</div><div class="finding-text">${p}</div></div>`).join('')}
+    ${(gaps||[]).map(g=>`<div class="finding negative"><div class="finding-label">Gap</div><div class="finding-text">${g}</div></div>`).join('')}
+  </div>`;
+}
 
-  // ── S1: Cover ──
-  let s1=pres.addSlide();
-  s1.background={color:T.bg};
-  s1.addShape(pres.shapes.RECTANGLE,{x:8.5,y:0,w:W-8.5,h:H,fill:{color:T.dark},line:{color:T.dark}});
-  s1.addShape(pres.shapes.LINE,{x:0.5,y:0.55,w:7.5,h:0,line:{color:T.accent,width:1}});
-  s1.addText(`R I D D L E R  M E D I A  ×  ${brandName.toUpperCase()}`,{x:0.5,y:0.28,w:7.5,h:0.3,fontSize:9,color:T.accent,charSpacing:4,fontFace:'Calibri',margin:0});
-  const tagParts=tagline.split(/[.\n]/).map(s=>s.trim()).filter(Boolean);
-  let tagY=1.0;
-  tagParts.forEach((part,i)=>{
-    s1.addText(part+(i<tagParts.length-1?'.':''),{x:0.5,y:tagY,w:8,h:1.0,fontSize:60,bold:true,color:'F5F0E8',fontFace:'Georgia',margin:0});
-    tagY+=0.85;
-  });
-  s1.addText(`A Digital Growth Strategy Built Specifically for ${brandName}`,{x:0.5,y:tagY+0.15,w:7.5,h:0.4,fontSize:13,color:'C8C0B0',fontFace:'Calibri',margin:0});
-  const cx=8.5+(W-8.5)/2;
-  s1.addShape(pres.shapes.OVAL,{x:cx-1.3,y:0.9,w:2.6,h:2.6,fill:{color:'FFFFFF',transparency:100},line:{color:T.accent,width:1.5}});
-  s1.addText('✦',{x:cx-0.4,y:1.7,w:0.8,h:0.8,fontSize:22,color:T.accent,align:'center',fontFace:'Calibri',margin:0});
-  s1.addText('Performance-Led',{x:8.6,y:4.8,w:W-8.8,h:0.35,fontSize:11,color:'A09080',align:'center',fontFace:'Calibri',margin:0});
-  s1.addText('Digital Growth',{x:8.6,y:5.15,w:W-8.8,h:0.35,fontSize:12,color:'D4C8B0',align:'center',fontFace:'Calibri',margin:0});
-  s1.addShape(pres.shapes.LINE,{x:9.2,y:5.6,w:W-9.6,h:0,line:{color:T.accent,width:0.75}});
-  s1.addText('R i d d l e r  M e d i a',{x:8.6,y:5.7,w:W-8.8,h:0.35,fontSize:10,color:T.accent,align:'center',charSpacing:3,fontFace:'Calibri',margin:0});
+function rec(text) {
+  return `<div class="rec-box"><div class="rec-box-label">Riddler recommendation</div><div class="rec-box-text">${text}</div></div>`;
+}
 
-  // ── S2: Where They Stand ──
-  let s2=pres.addSlide();
-  s2.background={color:T.light};
-  s2.addText(`Where ${brandName} Stands Today`,{x:0.4,y:0.2,w:12.5,h:0.85,fontSize:34,bold:true,color:T.bg,fontFace:'Georgia',margin:0});
-  s2.addText('An honest look at what is working and where growth is being left behind',{x:0.4,y:1.0,w:12.5,h:0.35,fontSize:12,color:'777777',fontFace:'Calibri',margin:0});
-  s2.addShape(pres.shapes.RECTANGLE,{x:0.4,y:1.5,w:6.0,h:0.42,fill:{color:T.bg},line:{color:T.bg}});
-  s2.addText("W H A T ' S  W O R K I N G",{x:0.4,y:1.5,w:6.0,h:0.42,fontSize:10,color:'F5F0E8',bold:true,align:'center',charSpacing:3,fontFace:'Calibri',margin:0});
-  s2.addShape(pres.shapes.RECTANGLE,{x:6.7,y:1.5,w:6.2,h:0.42,fill:{color:T.red},line:{color:T.red}});
-  s2.addText("W H E R E  G R O W T H  I S  L E A K I N G",{x:6.7,y:1.5,w:6.2,h:0.42,fontSize:10,color:'F5E8E8',bold:true,align:'center',charSpacing:3,fontFace:'Calibri',margin:0});
-  (d.strengths||[]).slice(0,4).forEach((str,i)=>{
-    const parts=str.split(':'),title=(parts[0]||'').trim(),desc=(parts[1]||'').trim(),rowY=2.05+i*1.05;
-    s2.addShape(pres.shapes.RECTANGLE,{x:0.4,y:rowY,w:0.06,h:0.85,fill:{color:T.bg},line:{color:T.bg}});
-    s2.addShape(pres.shapes.RECTANGLE,{x:0.46,y:rowY,w:5.94,h:0.85,fill:{color:'FFFFFF'},line:{color:'EEEEEE',width:0.5}});
-    s2.addText(title,{x:0.62,y:rowY+0.04,w:5.6,h:0.28,fontSize:11,bold:true,color:'333333',fontFace:'Calibri',margin:0});
-    s2.addText(desc,{x:0.62,y:rowY+0.32,w:5.6,h:0.46,fontSize:10,color:'555555',fontFace:'Calibri',margin:0});
-  });
-  (d.gaps||[]).slice(0,4).forEach((gap,i)=>{
-    const parts=gap.split(':'),title=(parts[0]||'').trim(),desc=(parts[1]||'').trim(),rowY=2.05+i*1.05;
-    s2.addShape(pres.shapes.RECTANGLE,{x:6.7,y:rowY,w:0.06,h:0.85,fill:{color:T.red},line:{color:T.red}});
-    s2.addShape(pres.shapes.RECTANGLE,{x:6.76,y:rowY,w:6.14,h:0.85,fill:{color:'FFFFFF'},line:{color:'EEEEEE',width:0.5}});
-    s2.addText(title,{x:6.92,y:rowY+0.04,w:5.8,h:0.28,fontSize:11,bold:true,color:T.red,fontFace:'Calibri',margin:0});
-    s2.addText(desc,{x:6.92,y:rowY+0.32,w:5.8,h:0.46,fontSize:10,color:'555555',fontFace:'Calibri',margin:0});
-  });
-  s2.addText('Riddler Media',{x:0.4,y:7.1,w:12.5,h:0.3,fontSize:9,color:'AAAAAA',align:'right',fontFace:'Calibri',margin:0});
+function renderWebsite(d) {
+  return `
+    <div class="metrics-row">
+      <div class="metric"><div class="metric-label">Platform</div><div class="metric-value" style="font-size:13px">${d.platform||'Unknown'}</div></div>
+      <div class="metric"><div class="metric-label">Load Speed</div><div class="metric-value" style="font-size:12px;color:var(--text2)">${d.load_speed||'Unknown'}</div></div>
+      <div class="metric"><div class="metric-label">Tracking</div><div class="metric-value" style="font-size:12px;color:var(--text2)">${d.tracking||'Unknown'}</div></div>
+    </div>
+    <div style="margin-top:14px;display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      ${[['Mobile Experience',d.mobile_experience],['Design Quality',d.design_quality],['CTA Clarity',d.cta_clarity],['Trust Signals',d.trust_signals],['Conversion Elements',d.conversion_elements]].map(([label,val])=>`
+        <div style="background:var(--surface2);border-radius:8px;padding:12px 14px">
+          <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px">${label}</div>
+          <div style="font-size:13px;color:var(--text);line-height:1.5">${val||'N/A'}</div>
+        </div>`).join('')}
+    </div>
+    ${findings(d.positives, d.gaps)}
+    ${rec(d.recommendation||'')}`;
+}
 
-  // ── S3: Market ──
-  let s3=pres.addSlide();
-  s3.background={color:T.light};
-  s3.addText('The Market Is Moving.',{x:0.5,y:0.3,w:12.3,h:0.75,fontSize:34,bold:true,color:T.bg,fontFace:'Georgia',margin:0});
-  s3.addText('The Question Is Who Captures It.',{x:0.5,y:1.0,w:12.3,h:0.6,fontSize:26,color:'555555',fontFace:'Georgia',italic:true,margin:0});
-  [{val:d.market_stat1||'₹8,000 Cr+',label:d.market_stat1_label||'India market size, growing fast year on year'},{val:d.market_stat2||'3x',label:d.market_stat2_label||'Growth in D2C brand searches since 2021'},{val:'Top 3',label:'Google positions capture 68% of all organic clicks in any category'}].forEach((st,i)=>{
-    const sx=0.5+i*4.2;
-    s3.addText(st.val,{x:sx,y:2.0,w:3.8,h:0.85,fontSize:44,bold:true,color:T.accent,fontFace:'Georgia',margin:0});
-    s3.addText(st.label,{x:sx,y:2.82,w:3.8,h:0.8,fontSize:11,color:'666666',fontFace:'Calibri',margin:0});
-  });
-  s3.addShape(pres.shapes.LINE,{x:0.5,y:3.8,w:12.3,h:0,line:{color:'CCCCCC',width:0.5}});
-  s3.addText(`${brandName} has the product range, the direct brand presence, and a real customer base. What is missing is the digital infrastructure to turn all of that into consistent, scalable online revenue.`,{x:0.5,y:4.0,w:12.3,h:1.1,fontSize:13,color:'444444',fontFace:'Calibri',margin:0});
-  s3.addText('Riddler Media',{x:0.5,y:7.1,w:12.3,h:0.3,fontSize:9,color:'AAAAAA',align:'right',fontFace:'Calibri',margin:0});
+function renderSEO(d) {
+  return `
+    <div class="metrics-row">
+      <div class="metric"><div class="metric-label">Est. Organic Traffic</div><div class="metric-value" style="font-size:12px;color:var(--text2)">${d.estimated_organic_traffic||'Unknown'}</div></div>
+      <div class="metric"><div class="metric-label">Backlink Profile</div><div class="metric-value" style="font-size:12px;color:var(--text2)">${d.backlink_profile||'Unknown'}</div></div>
+      <div class="metric"><div class="metric-label">Domain Age</div><div class="metric-value" style="font-size:12px;color:var(--text2)">${d.domain_age||'Unknown'}</div></div>
+    </div>
+    <div style="margin-top:14px">
+      <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Ranking keywords</div>
+      <div class="keyword-list">${(d.ranking_keywords||[]).map(k=>`<span class="keyword target">${k}</span>`).join('')}</div>
+    </div>
+    <div style="margin-top:12px">
+      <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Keyword gaps / opportunities</div>
+      <div class="keyword-list">${(d.keyword_gaps||[]).map(k=>`<span class="keyword gap">${k}</span>`).join('')}</div>
+    </div>
+    <div style="margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      ${[['Content Strategy',d.content_strategy],['Technical SEO',d.technical_seo],['Local SEO',d.local_seo]].map(([label,val])=>`
+        <div style="background:var(--surface2);border-radius:8px;padding:12px 14px">
+          <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px">${label}</div>
+          <div style="font-size:13px;color:var(--text);line-height:1.5">${val||'N/A'}</div>
+        </div>`).join('')}
+    </div>
+    ${findings(d.positives, d.gaps)}
+    ${rec(d.recommendation||'')}`;
+}
 
-  // ── S4: What We Found ──
-  let s4=pres.addSlide();
-  s4.background={color:T.light};
-  s4.addText('What We Found When We Looked Closely',{x:0.4,y:0.15,w:12.5,h:0.85,fontSize:32,bold:true,color:T.bg,fontFace:'Georgia',margin:0});
-  s4.addText(d.what_we_found_subtitle||'4 high-impact gaps identified in your current digital presence',{x:0.4,y:0.95,w:12.5,h:0.35,fontSize:12,color:'777777',fontFace:'Calibri',margin:0});
-  const gcards=d.gap_cards||[];
-  [{x:0.4,y:1.45},{x:6.95,y:1.45},{x:0.4,y:4.05},{x:6.95,y:4.05}].forEach((p,i)=>{
-    const gc=gcards[i]||{};const cw=6.2,ch=2.4;
-    s4.addShape(pres.shapes.RECTANGLE,{x:p.x,y:p.y,w:cw,h:ch,fill:{color:'FFFFFF'},line:{color:'E5E5E5',width:0.5}});
-    s4.addShape(pres.shapes.RECTANGLE,{x:p.x,y:p.y,w:0.06,h:ch,fill:{color:T.red},line:{color:T.red}});
-    s4.addShape(pres.shapes.OVAL,{x:p.x+0.18,y:p.y+0.18,w:0.52,h:0.52,fill:{color:T.red},line:{color:T.red}});
-    s4.addText(gc.number||String(i+1).padStart(2,'0'),{x:p.x+0.18,y:p.y+0.18,w:0.52,h:0.52,fontSize:11,bold:true,color:'FFFFFF',align:'center',valign:'middle',fontFace:'Calibri',margin:0});
-    s4.addText(gc.title||'',{x:p.x+0.85,y:p.y+0.15,w:cw-1.05,h:0.4,fontSize:13,bold:true,color:'333333',fontFace:'Calibri',margin:0});
-    s4.addShape(pres.shapes.LINE,{x:p.x+0.85,y:p.y+0.6,w:cw-1.1,h:0,line:{color:'DDDDDD',width:0.5}});
-    s4.addText(gc.body||'',{x:p.x+0.18,y:p.y+0.72,w:cw-0.36,h:1.55,fontSize:11,color:'555555',fontFace:'Calibri',margin:0});
-  });
-  s4.addText('Riddler Media',{x:0.4,y:7.1,w:12.5,h:0.3,fontSize:9,color:'AAAAAA',align:'right',fontFace:'Calibri',margin:0});
+function renderPerfMarketing(d) {
+  return `
+    <div style="margin-top:4px;display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      ${[['Meta Ads',d.meta_ads],['Google Ads',d.google_ads],['Creative Quality',d.ad_creative_quality],['Targeting',d.targeting_sophistication],['Offer Strategy',d.offer_strategy],['Retargeting',d.retargeting],['Estimated Spend',d.estimated_spend]].map(([label,val])=>`
+        <div style="background:var(--surface2);border-radius:8px;padding:12px 14px">
+          <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px">${label}</div>
+          <div style="font-size:13px;color:var(--text);line-height:1.5">${val||'N/A'}</div>
+        </div>`).join('')}
+    </div>
+    ${findings(d.positives, d.gaps)}
+    ${rec(d.recommendation||'')}`;
+}
 
-  // ── S5: Approach ──
-  let s5=pres.addSlide();
-  s5.background={color:T.light};
-  s5.addText(`Our Approach for ${brandName}`,{x:0.4,y:0.2,w:12.5,h:0.65,fontSize:28,bold:true,color:T.bg,fontFace:'Georgia',margin:0});
-  s5.addText('A sequenced growth system where each phase amplifies the one before it',{x:0.4,y:0.82,w:12.5,h:0.35,fontSize:12,color:'777777',fontFace:'Calibri',margin:0});
-  [{num:'Phase 1',title:'Foundation and\nGrowth Readiness',sub:'Built to convert from day one',pts:['Credibility and trust established','Conversion leaks sealed','Ready for investment'],dark:true},{num:'Phase 2',title:'Organic\nVisibility',sub:'Capture demand that already exists',pts:['Free inbound traffic','Long-term brand authority','Compounding returns'],dark:false},{num:'Phase 3',title:'Paid\nGrowth',sub:'Revenue on demand, with clear returns',pts:['Immediate revenue pipeline','Measurable return on spend','Controlled and scalable'],dark:false},{num:'Phase 4',title:'Brand and\nDistribution',sub:'More channels, more customers',pts:['Broader brand recognition','New buyer segments reached','Reduced channel dependency'],dark:false}].forEach((ph,i)=>{
-    const px=0.3+i*3.2,pw=3.0;
-    s5.addShape(pres.shapes.RECTANGLE,{x:px,y:1.35,w:pw,h:5.55,fill:{color:ph.dark?T.bg:'FFFFFF'},line:{color:ph.dark?T.bg:'E0E0E0',width:0.5}});
-    s5.addText(ph.num,{x:px+0.15,y:1.5,w:pw-0.3,h:0.35,fontSize:10,color:ph.dark?T.accent:'999999',fontFace:'Calibri',margin:0});
-    s5.addText(ph.title,{x:px+0.15,y:1.85,w:pw-0.3,h:0.85,fontSize:15,bold:true,color:ph.dark?'F5F0E8':'333333',fontFace:'Georgia',margin:0});
-    s5.addShape(pres.shapes.LINE,{x:px+0.15,y:2.78,w:pw-0.3,h:0,line:{color:ph.dark?T.accent:'E0E0E0',width:0.75}});
-    s5.addText(ph.sub,{x:px+0.15,y:2.88,w:pw-0.3,h:0.5,fontSize:11,color:ph.dark?'C8C0B0':'666666',fontFace:'Calibri',italic:true,margin:0});
-    ph.pts.forEach((pt,j)=>{s5.addText(pt,{x:px+0.2,y:3.55+j*0.6,w:pw-0.4,h:0.52,fontSize:10,color:ph.dark?'D4C8B0':'555555',fontFace:'Calibri',bullet:true,margin:0});});
-  });
-  s5.addText(d.phase_narrative||'Every phase is designed so the next one performs better. This is not a menu of services, it is a system.',{x:0.4,y:7.05,w:12.5,h:0.35,fontSize:10,color:'888888',fontFace:'Calibri',italic:true,margin:0});
+function renderSocial(d) {
+  const platforms = d.platforms||{};
+  const platNames = {instagram:'Instagram',facebook:'Facebook',youtube:'YouTube',linkedin:'LinkedIn',twitter:'Twitter/X'};
+  return `
+    <div style="margin-top:4px;overflow-x:auto">
+      <table class="comp-table">
+        <tr><th>Platform</th><th>Status</th><th>Followers</th><th>Frequency</th><th>Content Mix</th><th>Engagement</th></tr>
+        ${Object.entries(platforms).map(([key,p])=>`
+          <tr>
+            <td style="font-weight:500">${platNames[key]||key}</td>
+            <td><span class="status-pill ${p.present?'pill-moderate':'pill-missing'}">${p.present?'Active':'Absent'}</span></td>
+            <td style="font-family:'DM Mono',monospace;font-size:12px">${p.followers||'N/A'}</td>
+            <td>${p.posting_frequency||'N/A'}</td>
+            <td>${p.content_mix||'N/A'}</td>
+            <td>${p.engagement_quality||'N/A'}</td>
+          </tr>`).join('')}
+      </table>
+    </div>
+    <div style="margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      ${[['Content Quality',d.content_quality],['Brand Voice',d.brand_voice],['Viral Potential',d.viral_potential],['Community Engagement',d.community_engagement]].map(([label,val])=>`
+        <div style="background:var(--surface2);border-radius:8px;padding:12px 14px">
+          <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px">${label}</div>
+          <div style="font-size:13px;color:var(--text);line-height:1.5">${val||'N/A'}</div>
+        </div>`).join('')}
+    </div>
+    ${findings(d.positives, d.gaps)}
+    ${rec(d.recommendation||'')}`;
+}
 
-  // ── S6: 30-60-90 ──
-  let s6=pres.addSlide();
-  s6.background={color:T.bg};
-  s6.addText('30  60  90 Day Execution Plan',{x:0.5,y:0.25,w:12.3,h:0.7,fontSize:28,bold:true,color:'F5F0E8',fontFace:'Georgia',margin:0});
-  [{days:'Days 1-30',title:'Foundation and Signal',items:['Digital presence review and audit','Behind-the-scenes groundwork','Growth tooling set up','Brand communication framework','Starting point benchmarks locked']},{days:'Days 31-60',title:'Optimisation and Traction',items:['Visibility improvements go live','First growth campaigns launched','Content plan activated','Key page improvements begin','Weekly results reviews']},{days:'Days 61-90',title:'Scale and Compound',items:['Best-performing activity scaled','Organic and content compounding','New channel strategy initiated','Trust-building programme launched','Month 4 roadmap presented']}].forEach((pl,i)=>{
-    const px=0.4+i*4.3,pw=4.1;
-    s6.addShape(pres.shapes.RECTANGLE,{x:px,y:1.2,w:pw,h:5.7,fill:{color:'FFFFFF',transparency:92},line:{color:'FFFFFF',transparency:75,width:0.5}});
-    s6.addText(pl.days,{x:px+0.2,y:1.35,w:pw-0.4,h:0.35,fontSize:10,color:T.accent,fontFace:'Calibri',bold:true,margin:0});
-    s6.addText(pl.title,{x:px+0.2,y:1.7,w:pw-0.4,h:0.55,fontSize:15,bold:true,color:'F5F0E8',fontFace:'Georgia',margin:0});
-    s6.addShape(pres.shapes.LINE,{x:px+0.2,y:2.32,w:pw-0.4,h:0,line:{color:T.accent,width:0.75}});
-    pl.items.forEach((item,j)=>{s6.addText(item,{x:px+0.2,y:2.52+j*0.76,w:pw-0.4,h:0.68,fontSize:11,color:'C8C0B0',fontFace:'Calibri',bullet:true,margin:0});});
-  });
-  s6.addText('Results build progressively. Early phases prioritise data and foundation over aggressive spend.',{x:0.5,y:7.1,w:12.3,h:0.3,fontSize:10,color:'666666',fontFace:'Calibri',italic:true,margin:0});
+function renderInfluencer(d) {
+  return `
+    <div style="margin-top:4px;display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      ${[['Current Activity',d.current_activity],['Creator Type Fit',d.creator_type_fit],['Platform Fit',d.platform_fit],['Competitor Activity',d.competitor_influencer_activity],['Est. Budget Needed',d.estimated_budget_needed],['Opportunity',d.opportunity]].map(([label,val])=>`
+        <div style="background:var(--surface2);border-radius:8px;padding:12px 14px">
+          <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px">${label}</div>
+          <div style="font-size:13px;color:var(--text);line-height:1.5">${val||'N/A'}</div>
+        </div>`).join('')}
+    </div>
+    ${findings(d.positives, d.gaps)}
+    ${rec(d.recommendation||'')}`;
+}
 
-  // ── S7: Investment ──
-  let s7=pres.addSlide();
-  s7.background={color:T.bg};
-  s7.addText('Investment Plans',{x:0.4,y:0.18,w:12.5,h:0.75,fontSize:36,bold:true,color:'F5F0E8',fontFace:'Georgia',margin:0});
-  s7.addText(`Choose the engagement that fits where ${brandName} is today`,{x:0.4,y:0.88,w:12.5,h:0.35,fontSize:12,color:'999999',fontFace:'Calibri',margin:0});
-  const plans=[{name:'Launch',price:'₹30K',desc:'Entry-level growth setup with foundational work and monthly reporting'},{name:'Perf. Mktg',price:'₹60K',desc:'Managed paid growth with ongoing optimisation and structured reviews'},{name:'Growth',price:'₹1L',desc:'Paid growth plus organic visibility, with conversion improvements and content direction',rec:true},{name:'Scale',price:'₹1.5L',desc:'Full multi-channel growth covering paid, organic, and brand positioning'},{name:'Integrated',price:'₹2L',desc:'Complete digital growth partnership covering all channels and brand authority'}];
-  const recIdx=plans.findIndex(p=>p.rec);
-  plans.forEach((pl,i)=>{
-    const isRec=i===recIdx,px=0.3+i*2.55,pw=2.4;
-    if(isRec){s7.addShape(pres.shapes.RECTANGLE,{x:px-0.05,y:1.3,w:pw+0.1,h:0.4,fill:{color:T.accent},line:{color:T.accent}});s7.addText('R E C O M M E N D E D',{x:px-0.05,y:1.3,w:pw+0.1,h:0.4,fontSize:9,bold:true,color:T.bg,align:'center',charSpacing:2,fontFace:'Calibri',margin:0});}
-    s7.addShape(pres.shapes.RECTANGLE,{x:px,y:1.7,w:pw,h:5.4,fill:{color:isRec?T.red:T.bg},line:{color:'FFFFFF',transparency:80,width:0.5}});
-    s7.addText(pl.name,{x:px+0.1,y:1.85,w:pw-0.2,h:0.45,fontSize:13,bold:true,color:'F5F0E8',align:'center',fontFace:'Calibri',margin:0});
-    s7.addText(pl.price,{x:px+0.1,y:2.3,w:pw-0.2,h:0.9,fontSize:36,bold:true,color:T.accent,align:'center',fontFace:'Georgia',margin:0});
-    s7.addText('/month',{x:px+0.1,y:3.18,w:pw-0.2,h:0.3,fontSize:11,color:'999999',align:'center',fontFace:'Calibri',margin:0});
-    if(isRec){s7.addShape(pres.shapes.LINE,{x:px+0.2,y:3.56,w:pw-0.4,h:0,line:{color:'FFFFFF',transparency:70,width:0.5}});}
-    s7.addText(pl.desc,{x:px+0.15,y:3.72,w:pw-0.3,h:3.1,fontSize:10,color:'C8C0B0',fontFace:'Calibri',align:'center',margin:0});
-  });
-  s7.addText('Ad spend is separate and paid directly to platforms  |  Minimum 3-month engagement recommended  |  Influencer marketing fee: 10% of campaign budget',{x:0.4,y:7.17,w:12.5,h:0.28,fontSize:9,color:'666666',align:'center',fontFace:'Calibri',margin:0});
+function renderContent(d) {
+  return `
+    <div style="margin-top:4px;display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      ${[['Blog',d.blog],['Email Marketing',d.email_marketing],['Video Content',d.video_content],['UGC Strategy',d.ugc_strategy],['Content Calendar',d.content_calendar],['SEO Content',d.seo_content]].map(([label,val])=>`
+        <div style="background:var(--surface2);border-radius:8px;padding:12px 14px">
+          <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px">${label}</div>
+          <div style="font-size:13px;color:var(--text);line-height:1.5">${val||'N/A'}</div>
+        </div>`).join('')}
+    </div>
+    ${findings(d.positives, d.gaps)}
+    ${rec(d.recommendation||'')}`;
+}
 
-  // ── S8: Why Riddler ──
-  let s8=pres.addSlide();
-  s8.background={color:T.light};
-  s8.addText('Why Riddler Media',{x:0.4,y:0.2,w:12.5,h:0.65,fontSize:30,bold:true,color:T.bg,fontFace:'Georgia',margin:0});
-  [{icon:'✦',title:'We Did the Homework First',body:`We looked at your brand, your buyers, and your competitive landscape before writing a single slide. This deck was built for ${brandName}, not adapted from a template.`},{icon:'↗',title:'Sequence Over Scatter',body:'We do not sell standalone services. Every engagement follows a deliberate order so each phase strengthens the one that follows. Your investment compounds, not scatters.'},{icon:'◎',title:'Outcome Accountability',body:'We track what actually matters: revenue driven, buyers acquired, and brand growth, not just activity. You always know what you are getting back.'},{icon:'◈',title:'Built for Brands at Your Stage',body:`We work with brands that have a real product, real buyers, and the ambition to grow direct. That is exactly where ${brandName} is right now.`}].forEach((r,i)=>{
-    const p=[{x:0.4,y:1.15},{x:6.8,y:1.15},{x:0.4,y:3.85},{x:6.8,y:3.85}][i];
-    s8.addText(r.icon,{x:p.x,y:p.y,w:0.55,h:0.55,fontSize:20,color:T.bg,fontFace:'Calibri',margin:0});
-    s8.addText(r.title,{x:p.x+0.65,y:p.y+0.05,w:5.8,h:0.44,fontSize:15,bold:true,color:'333333',fontFace:'Calibri',margin:0});
-    s8.addShape(pres.shapes.LINE,{x:p.x,y:p.y+0.68,w:6.2,h:0,line:{color:'DDDDDD',width:0.5}});
-    s8.addText(r.body,{x:p.x,y:p.y+0.82,w:6.2,h:1.85,fontSize:12,color:'555555',fontFace:'Calibri',margin:0});
-  });
-  s8.addText('Riddler Media',{x:0.4,y:7.1,w:12.5,h:0.3,fontSize:9,color:'AAAAAA',align:'right',fontFace:'Calibri',margin:0});
+function renderMarketplace(d) {
+  return `
+    <div style="margin-top:4px;display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      ${[['Amazon',d.amazon],['Flipkart',d.flipkart],['Meesho',d.meesho],['Nykaa',d.nykaa],['CRED',d.cred],['Other',d.other]].map(([label,val])=>`
+        <div style="background:var(--surface2);border-radius:8px;padding:12px 14px">
+          <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px">${label}</div>
+          <div style="font-size:13px;color:var(--text);line-height:1.5">${val||'N/A'}</div>
+        </div>`).join('')}
+    </div>
+    ${findings(d.positives, d.gaps)}
+    ${rec(d.recommendation||'')}`;
+}
 
-  // ── S9: CTA ──
-  let s9=pres.addSlide();
-  s9.background={color:T.bg};
-  s9.addShape(pres.shapes.RECTANGLE,{x:8.1,y:0,w:W-8.1,h:H,fill:{color:T.dark},line:{color:T.dark}});
-  s9.addText('One Conversation.',{x:0.5,y:1.3,w:7.3,h:0.85,fontSize:42,bold:true,color:'F5F0E8',fontFace:'Georgia',margin:0});
-  s9.addText('✦',{x:0.5,y:2.25,w:0.6,h:0.6,fontSize:22,color:T.accent,fontFace:'Calibri',margin:0});
-  s9.addText("That's All",{x:0.5,y:2.92,w:7.3,h:0.72,fontSize:36,bold:true,color:'F5F0E8',fontFace:'Georgia',italic:true,margin:0});
-  s9.addText('It Takes.',{x:0.5,y:3.6,w:7.3,h:0.72,fontSize:36,bold:true,color:'F5F0E8',fontFace:'Georgia',italic:true,margin:0});
-  s9.addText('We are ready to begin work within 3 working days of sign-off.',{x:0.5,y:4.55,w:7.3,h:0.4,fontSize:12,color:'C8C0B0',fontFace:'Calibri',margin:0});
-  s9.addText('R I D D L E R  M E D I A',{x:8.3,y:1.0,w:W-8.5,h:0.4,fontSize:11,bold:true,color:T.accent,charSpacing:4,align:'center',fontFace:'Calibri',margin:0});
-  s9.addText("Let's schedule a 30-minute call to align on scope, answer your questions, and confirm next steps.",{x:8.3,y:1.6,w:W-8.5,h:1.2,fontSize:12,color:'C8C0B0',fontFace:'Calibri',align:'center',margin:0});
-  s9.addShape(pres.shapes.RECTANGLE,{x:8.6,y:3.1,w:W-9.0,h:0.55,fill:{color:T.accent},line:{color:T.accent}});
-  s9.addText('Book a Discovery Call',{x:8.6,y:3.1,w:W-9.0,h:0.55,fontSize:13,bold:true,color:T.bg,align:'center',valign:'middle',fontFace:'Calibri',margin:0});
-  s9.addText('Performance-Led',{x:8.3,y:5.5,w:W-8.5,h:0.35,fontSize:11,color:'A09080',align:'center',fontFace:'Calibri',margin:0});
-  s9.addText('Digital Growth',{x:8.3,y:5.85,w:W-8.5,h:0.35,fontSize:12,color:'D4C8B0',align:'center',fontFace:'Calibri',margin:0});
-  s9.addShape(pres.shapes.LINE,{x:9.0,y:6.28,w:W-9.8,h:0,line:{color:T.accent,width:0.75}});
-  s9.addText('R i d d l e r  M e d i a',{x:8.3,y:6.38,w:W-8.5,h:0.35,fontSize:10,color:T.accent,align:'center',charSpacing:3,fontFace:'Calibri',margin:0});
+function renderCompetitors(competitors) {
+  if (!Array.isArray(competitors)) return '';
+  return `
+    <table class="comp-table" style="margin-top:8px">
+      <tr><th>Brand</th><th>Strengths</th><th>Weaknesses</th><th>Scale</th><th>Threat</th></tr>
+      ${competitors.map(c=>{
+        const tColor = c.threat_level==='High'?'var(--red)':c.threat_level==='Medium'?'var(--amber)':'var(--green)';
+        return `<tr>
+          <td><div style="font-weight:500">${c.name||''}</div><div style="font-size:11px;color:var(--text3);font-family:'DM Mono',monospace">${c.website||''}</div></td>
+          <td>${c.strengths||''}</td>
+          <td>${c.weaknesses||''}</td>
+          <td>${c.estimated_scale||''}</td>
+          <td><span style="color:${tColor};font-weight:600;font-size:12px">${c.threat_level||''}</span></td>
+        </tr>`;
+      }).join('')}
+    </table>`;
+}
 
-  const fileName=`Riddler_Media_${brandName.replace(/\s+/g,'_')}.pptx`;
-  await pres.writeFile({fileName});
-  setStatus(`Deck downloaded: ${fileName}`);
+function renderMarket(d) {
+  return `
+    <div class="metrics-row" style="margin-top:8px">
+      <div class="metric"><div class="metric-label">Market Size</div><div class="metric-value" style="font-size:12px;color:var(--text)">${d.market_size||'N/A'}</div></div>
+      <div class="metric"><div class="metric-label">Growth Trend</div><div class="metric-value" style="font-size:12px;color:var(--text)">${d.growth_trend||'N/A'}</div></div>
+    </div>
+    <div style="margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div style="background:var(--surface2);border-radius:8px;padding:12px 14px">
+        <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px">Underserved segments</div>
+        <div style="font-size:13px;color:var(--text);line-height:1.5">${d.underserved_segments||'N/A'}</div>
+      </div>
+      <div style="background:var(--surface2);border-radius:8px;padding:12px 14px">
+        <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px">Timing assessment</div>
+        <div style="font-size:13px;color:var(--text);line-height:1.5">${d.timing||'N/A'}</div>
+      </div>
+    </div>`;
+}
+
+function reset() {
+  document.getElementById('report').classList.remove('visible');
+  document.getElementById('urlInput').value = '';
+  setStatus('');
 }
 </script>
 </body>
