@@ -289,72 +289,31 @@ async function startAudit() {
 
   document.getElementById('report').classList.remove('visible');
   document.getElementById('auditBtn').disabled = true;
-  const results = {};
+  setStatus('Running full audit — fetching website, social media, SEO data and ads', true);
 
   try {
-    // PHASE 1 — Website
-    setStatus('Phase 1/5 — Fetching and analysing website', true);
-    const p1 = await callFetchAudit('website', { website: url }, brandName, brandDescription, notes);
-    results.website = parseJSON(p1) || {};
+    const res = await fetch(PROXY + '/audit', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        websiteUrl: url,
+        brandName,
+        brandDescription,
+        instagramUrl: instagram,
+        linkedinUrl: linkedin,
+        facebookUrl: facebook,
+        youtubeUrl: youtube,
+        metaAdsUrl: metaAds,
+        notes,
+      })
+    });
 
-    // PHASE 2 — Social Media
-    setStatus('Phase 2/5 — Fetching social media profiles', true);
-    const socialUrls = {};
-    if (instagram) socialUrls.instagram = instagram;
-    if (linkedin) socialUrls.linkedin = linkedin;
-    if (facebook) socialUrls.facebook = facebook;
-    if (youtube) socialUrls.youtube = youtube;
-    const p2 = await callFetchAudit('social', Object.keys(socialUrls).length ? socialUrls : { search: url }, brandName, brandDescription, notes);
-    results.social_media = parseJSON(p2) || {};
+    const result = await res.json();
+    if (result.error) throw new Error(result.error);
+    if (!result.data) throw new Error('No data returned');
 
-    // PHASE 3 — Ads
-    setStatus('Phase 3/5 — Fetching ad activity', true);
-    const adUrls = metaAds ? { meta_ad_library: metaAds } : { website: url };
-    const p3 = await callFetchAudit('ads', adUrls, brandName, brandDescription, notes);
-    results.performance_marketing = parseJSON(p3) || {};
-
-    // PHASE 4 — SEO + Competitors
-    setStatus('Phase 4/5 — Fetching SEO and competitor data', true);
-    const p4 = await callFetchAudit('seo', { website: url }, brandName, brandDescription, notes);
-    const p4data = parseJSON(p4) || {};
-    results.seo = p4data.seo || {};
-    results.competitors = p4data.competitors || [];
-    results.market_opportunity = p4data.market_opportunity || {};
-
-    // Check if we got meaningful data
-    const hasData = results.website.score || results.social_media.score || results.seo.score;
-    if (!hasData) throw new Error('All phases returned empty — please try again.');
-
-    // PHASE 5 — Compile
-    setStatus('Phase 5/5 — Compiling report', true);
-    const gaps = [...(results.website.gaps||[]).slice(0,2), ...(results.social_media.gaps||[]).slice(0,2), ...(results.performance_marketing.gaps||[]).slice(0,2)].join(', ');
-    const p5 = await callFetchAudit('compile', {}, brandName, brandDescription, notes, gaps);
-    const p5data = parseJSON(p5) || {};
-
-    const d = {
-      brand_name: brandName,
-      brand_description: p5data.brand_description || '',
-      vertical: p5data.vertical || '',
-      overall_score: p5data.overall_score || 40,
-      overall_summary: p5data.overall_summary || '',
-      pitch_intel: p5data.pitch_intel || [],
-      website: results.website,
-      seo: results.seo,
-      performance_marketing: results.performance_marketing,
-      social_media: results.social_media,
-      influencer_marketing: p5data.influencer_marketing || {},
-      content_marketing: p5data.content_marketing || {},
-      marketplace_presence: p5data.marketplace_presence || {},
-      competitors: results.competitors,
-      market_opportunity: results.market_opportunity,
-      red_flags: p5data.red_flags || [],
-      quick_wins: p5data.quick_wins || [],
-      recommended_entry_point: p5data.recommended_entry_point || '',
-      estimated_budget_appetite: p5data.estimated_budget_appetite || '',
-    };
-
-    window._auditData = d;
-    renderReport(d, url);
+    window._auditData = result.data;
+    renderReport(result.data, url);
     setStatus('');
 
   } catch(e) {
