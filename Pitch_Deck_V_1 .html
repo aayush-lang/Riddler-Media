@@ -35,6 +35,8 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min
 .url-input{flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:14px;padding:0 14px;height:42px;font-family:'DM Mono',monospace}
 .url-input:focus{outline:none;border-color:var(--accent)}
 .url-input::placeholder{color:var(--text3)}
+.select-input{flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:14px;padding:0 14px;height:42px;font-family:'DM Sans',sans-serif;cursor:pointer;appearance:none;-webkit-appearance:none}
+.select-input:focus{outline:none;border-color:var(--accent)}
 .btn-primary{height:42px;padding:0 20px;font-size:13px;font-weight:600;border-radius:8px;border:none;cursor:pointer;background:var(--accent);color:#0a0a0a;white-space:nowrap}
 .btn-primary:hover{background:var(--accent-dim)}
 .btn-primary:disabled{opacity:.4;cursor:not-allowed}
@@ -109,6 +111,47 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min
 .rfw-box{border-radius:12px;padding:18px 20px}
 .rfw-label{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin-bottom:12px}
 .rfw-item{display:flex;gap:8px;margin-bottom:8px;align-items:flex-start;font-size:13px;line-height:1.5}
+
+/* ── HEALTH SCORE CARD ── */
+.health-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:24px 28px;margin-bottom:16px;display:flex;align-items:center;gap:28px}
+.health-grade{width:72px;height:72px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:32px;font-weight:700;font-family:'DM Mono',monospace;flex-shrink:0;border:3px solid}
+.health-info{flex:1}
+.health-label{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);margin-bottom:4px}
+.health-title{font-size:20px;font-weight:600;margin-bottom:4px}
+.health-sub{font-size:13px;color:var(--text2);line-height:1.5}
+.health-score-num{font-size:13px;font-family:'DM Mono',monospace;color:var(--text2);margin-top:4px}
+
+/* ── BENCHMARKS CARD ── */
+.bench-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:22px 26px;margin-bottom:16px}
+.bench-label{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text2);margin-bottom:16px}
+.bench-row{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.bench-section{font-size:12px;font-weight:500;color:var(--text);width:140px;flex-shrink:0}
+.bench-bars{flex:1;display:flex;flex-direction:column;gap:4px}
+.bench-bar-wrap{position:relative;height:6px;background:var(--surface3);border-radius:3px;overflow:visible}
+.bench-bar-brand{height:100%;border-radius:3px;transition:width .6s ease}
+.bench-bar-avg{position:absolute;top:-3px;width:2px;height:12px;background:var(--text3);border-radius:1px}
+.bench-labels{display:flex;justify-content:space-between;font-size:10px;color:var(--text3);margin-top:2px}
+.bench-diff{font-size:11px;font-weight:600;font-family:'DM Mono',monospace;width:80px;text-align:right;flex-shrink:0}
+.bench-diff.above{color:var(--green)}
+.bench-diff.average{color:var(--amber)}
+.bench-diff.below{color:var(--red)}
+
+/* ── PRIORITY GAPS ── */
+.gaps-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:22px 26px;margin-bottom:16px}
+.gaps-label{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text2);margin-bottom:16px}
+.gap-item{display:flex;gap:14px;align-items:flex-start;padding:14px 0;border-bottom:1px solid var(--border)}
+.gap-item:last-child{border-bottom:none;padding-bottom:0}
+.gap-num{font-size:11px;font-weight:700;color:var(--text3);font-family:'DM Mono',monospace;flex-shrink:0;width:20px;margin-top:2px}
+.gap-body{flex:1}
+.gap-top{display:flex;align-items:center;gap:8px;margin-bottom:4px;flex-wrap:wrap}
+.gap-title{font-size:13px;font-weight:500;color:var(--text)}
+.gap-section-tag{font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;padding:2px 8px;border-radius:12px;background:var(--surface3);color:var(--text3);border:1px solid var(--border)}
+.gap-consequence{font-size:12px;color:var(--text2);line-height:1.5;margin-bottom:4px}
+.gap-fix{font-size:12px;color:var(--accent);line-height:1.5}
+.impact-high{background:var(--red-bg);color:var(--red);border:1px solid var(--red-border)}
+.impact-medium{background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-border)}
+.impact-low{background:var(--surface2);color:var(--text3);border:1px solid var(--border)}
+
 @media print{.gate,.topbar,.input-card,.status,.actions-row{display:none!important}.report{display:block!important}.section-body{display:block!important}.chevron{display:none}}
 </style>
 </head>
@@ -142,6 +185,13 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min
       <div>
         <div class="input-label">Brand name *</div>
         <input type="text" class="url-input" id="brandNameInput" placeholder="e.g. GoldenRed Diamond" style="width:100%" />
+      </div>
+      <div>
+        <div class="input-label">Brand type *</div>
+        <select class="select-input" id="brandTypeInput" style="width:100%">
+          <option value="d2c">D2C (Direct to Consumer)</option>
+          <option value="b2b">B2B</option>
+        </select>
       </div>
       <div>
         <div class="input-label">What they do *</div>
@@ -186,7 +236,13 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min
   <div class="report" id="report">
     <div class="report-header" id="reportHeader"></div>
     <div class="pitch-intel" id="pitchIntel"></div>
+    <!-- NEW: Health Score -->
+    <div id="healthScoreCard"></div>
     <div class="score-grid" id="scoreGrid"></div>
+    <!-- NEW: Competitive Benchmarks -->
+    <div id="benchmarksCard"></div>
+    <!-- NEW: Priority Gaps -->
+    <div id="priorityGapsCard"></div>
     <div class="rfw" id="rfqw"></div>
     <div id="auditSections"></div>
     <div class="actions-row">
@@ -218,34 +274,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
 function setStatus(msg, loading) {
   document.getElementById('status').innerHTML = loading
-    ? `${msg}&nbsp;<span class="dots"><span></span><span></span><span></span></span>` : msg;
-}
-
-async function callFetchAudit(phase, urls, brandName, brandDescription, notes, extraContent) {
-  await new Promise(r => setTimeout(r, 5000));
-  const res = await fetch(PROXY + '/fetch-audit', {
-    method:'POST', headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({ phase, urls, brandName, brandDescription, notes, extraContent })
-  });
-  const data = await res.json();
-  if (data.error) throw new Error(data.error);
-  return data.text || '';
-}
-
-async function callClaude(prompt) {
-  await new Promise(r => setTimeout(r, 5000));
-  const res = await fetch(PROXY, {
-    method:'POST', headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: 1500,
-      messages: [{ role:'user', content: prompt }]
-    })
-  });
-  const data = await res.json();
-  if (data.error) throw new Error(typeof data.error === 'object' ? data.error.message : data.error);
-  const textBlocks = (data.content||[]).filter(b => b.type === 'text').map(b => b.text);
-  return textBlocks.join('') || '';
+    ? msg + '&nbsp;<span class="dots"><span></span><span></span><span></span></span>' : msg;
 }
 
 function parseJSON(raw) {
@@ -256,16 +285,7 @@ function parseJSON(raw) {
     try {
       const m = raw.match(/\{[\s\S]*\}/);
       if (m) return JSON.parse(m[0]);
-    } catch(e2) {
-      // Try fixing common issues — unescaped apostrophes
-      try {
-        const m = raw.match(/\{[\s\S]*\}/);
-        if (m) {
-          const fixed = m[0].replace(/([^\\])'([^,\{\}\[\]:])/g, "$1\\'$2");
-          return JSON.parse(fixed);
-        }
-      } catch(e3) {}
-    }
+    } catch(e2) {}
   }
   return null;
 }
@@ -280,6 +300,7 @@ async function startAudit() {
   if (!url || !brandName) { alert('Brand name and website URL are required.'); return; }
 
   const brandDescription = document.getElementById('brandDescInput').value.trim();
+  const brandType = document.getElementById('brandTypeInput').value;
   const instagram = document.getElementById('instagramInput').value.trim();
   const linkedin = document.getElementById('linkedinInput').value.trim();
   const facebook = document.getElementById('facebookInput').value.trim();
@@ -299,6 +320,7 @@ async function startAudit() {
         websiteUrl: url,
         brandName,
         brandDescription,
+        brandType,
         instagramUrl: instagram,
         linkedinUrl: linkedin,
         facebookUrl: facebook,
@@ -317,7 +339,7 @@ async function startAudit() {
     setStatus('');
 
   } catch(e) {
-    setStatus(`Audit failed: ${e.message}`);
+    setStatus('Audit failed: ' + e.message);
   }
   document.getElementById('auditBtn').disabled = false;
 }
@@ -343,7 +365,7 @@ async function downloadPDF() {
       pdf.addImage(canvas.toDataURL('image/jpeg',0.9),'JPEG',0,-y,imgW,imgH);
       y+=pH; pg++;
     }
-    pdf.save(`Riddler_Audit_${brandName.replace(/\s+/g,'_')}.pdf`);
+    pdf.save('Riddler_Audit_' + brandName.replace(/\s+/g,'_') + '.pdf');
   } catch(e) {
     alert('PDF failed. Use Print (Cmd+P) → Save as PDF instead.');
   }
@@ -352,51 +374,146 @@ async function downloadPDF() {
 }
 
 function renderReport(d, url) {
-  const os = d.overall_score||0;
+  // Use computed_scores if available, fallback to Claude scores
+  const cs = d.computed_scores || {};
+  const getScore = (key) => cs[key]?.score ?? d[key]?.score ?? 0;
 
-  document.getElementById('reportHeader').innerHTML = `
-    <div>
-      <div class="report-brand-name">${d.brand_name||'Brand'}</div>
-      <div class="report-url">${url}</div>
-      <div style="margin-top:8px;font-size:13px;color:var(--text2);line-height:1.6;max-width:520px">${d.brand_description||''}</div>
-      <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
-        <span class="status-pill ${scorePill(os)}">${statusLabel(os)}</span>
-        <span style="font-size:12px;color:var(--text3);padding:3px 9px;background:var(--surface2);border-radius:20px;border:1px solid var(--border)">${d.vertical||''}</span>
-      </div>
-    </div>
-    <div style="text-align:right;flex-shrink:0">
-      <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Overall score</div>
-      <div style="font-size:36px;font-weight:700;font-family:'DM Mono',monospace;color:${scoreColor(os)}">${os}<span style="font-size:18px;color:var(--text3)">/100</span></div>
-      <div style="display:flex;align-items:center;gap:8px;margin-top:6px"><div class="score-bar"><div class="score-fill" style="width:${os}%;background:${scoreColor(os)}"></div></div></div>
-      <div style="font-size:12px;color:var(--text2);margin-top:8px;max-width:200px;text-align:right;line-height:1.5">${d.overall_summary||''}</div>
-    </div>`;
+  const os = d.health_score?.score || d.overall_score || 0;
 
+  // ── REPORT HEADER ──
+  document.getElementById('reportHeader').innerHTML =
+    '<div>' +
+    '<div class="report-brand-name">' + (d.brand_name||'Brand') + '</div>' +
+    '<div class="report-url">' + url + '</div>' +
+    '<div style="margin-top:8px;font-size:13px;color:var(--text2);line-height:1.6;max-width:520px">' + (d.brand_description||'') + '</div>' +
+    '<div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">' +
+    '<span class="status-pill ' + scorePill(os) + '">' + statusLabel(os) + '</span>' +
+    '<span style="font-size:12px;color:var(--text3);padding:3px 9px;background:var(--surface2);border-radius:20px;border:1px solid var(--border)">' + (d.vertical||'') + '</span>' +
+    '</div></div>' +
+    '<div style="text-align:right;flex-shrink:0">' +
+    '<div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Overall score</div>' +
+    '<div style="font-size:36px;font-weight:700;font-family:\'DM Mono\',monospace;color:' + scoreColor(os) + '">' + os + '<span style="font-size:18px;color:var(--text3)">/100</span></div>' +
+    '<div style="display:flex;align-items:center;gap:8px;margin-top:6px"><div class="score-bar"><div class="score-fill" style="width:' + os + '%;background:' + scoreColor(os) + '"></div></div></div>' +
+    '<div style="font-size:12px;color:var(--text2);margin-top:8px;max-width:200px;text-align:right;line-height:1.5">' + (d.overall_summary||'') + '</div>' +
+    '</div>';
+
+  // ── PITCH INTEL ──
   const intel = d.pitch_intel||[];
-  document.getElementById('pitchIntel').innerHTML = `
-    <div class="pitch-intel-label">Pre-meeting pitch intel</div>
-    ${intel.map((item,i)=>`<div class="intel-item"><div class="intel-num">${String(i+1).padStart(2,'0')}</div><div class="intel-text">${item}</div></div>`).join('')}
-    <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border2);display:flex;gap:24px;flex-wrap:wrap">
-      <div><div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Entry point</div><div style="font-size:13px;color:var(--text)">${d.recommended_entry_point||''}</div></div>
-      <div><div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Budget appetite</div><div style="font-size:13px;color:var(--text)">${d.estimated_budget_appetite||''}</div></div>
-    </div>`;
+  document.getElementById('pitchIntel').innerHTML =
+    '<div class="pitch-intel-label">Pre-meeting pitch intel</div>' +
+    intel.map(function(item,i){ return '<div class="intel-item"><div class="intel-num">' + String(i+1).padStart(2,'0') + '</div><div class="intel-text">' + item + '</div></div>'; }).join('') +
+    '<div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border2);display:flex;gap:24px;flex-wrap:wrap">' +
+    '<div><div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Entry point</div><div style="font-size:13px;color:var(--text)">' + (d.recommended_entry_point||'') + '</div></div>' +
+    '<div><div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Budget appetite</div><div style="font-size:13px;color:var(--text)">' + (d.estimated_budget_appetite||'') + '</div></div>' +
+    '</div>';
 
-  const areas=[{label:'Website',key:'website'},{label:'SEO',key:'seo'},{label:'Paid Marketing',key:'performance_marketing'},{label:'Social Media',key:'social_media'},{label:'Influencer',key:'influencer_marketing'},{label:'Content',key:'content_marketing'}];
-  document.getElementById('scoreGrid').innerHTML = areas.map(a=>{
-    const sc=d[a.key]?.score||0;
-    return `<div class="score-card"><div class="score-card-label">${a.label}</div><div style="font-size:20px;font-weight:700;font-family:'DM Mono',monospace;color:${scoreColor(sc)}">${sc}<span style="font-size:12px;color:var(--text3)">/100</span></div><div class="score-card-bar"><div style="height:100%;border-radius:2px;width:${sc}%;background:${scoreColor(sc)}"></div></div><div style="margin-top:8px"><span class="status-pill ${scorePill(sc)}">${statusLabel(sc)}</span></div></div>`;
+  // ── HEALTH SCORE CARD (NEW) ──
+  const hs = d.health_score;
+  if (hs) {
+    const gradeColor = hs.color || scoreColor(hs.score);
+    document.getElementById('healthScoreCard').innerHTML =
+      '<div class="health-card">' +
+      '<div class="health-grade" style="color:' + gradeColor + ';border-color:' + gradeColor + ';background:' + gradeColor + '18">' + (hs.grade||'?') + '</div>' +
+      '<div class="health-info">' +
+      '<div class="health-label">Digital Health Score</div>' +
+      '<div class="health-title" style="color:' + gradeColor + '">' + (hs.label||'') + '</div>' +
+      '<div class="health-sub">' + (d.overall_summary||'') + '</div>' +
+      '<div class="health-score-num">' + hs.score + '/100 weighted across all channels</div>' +
+      '</div>' +
+      '</div>';
+  } else {
+    document.getElementById('healthScoreCard').innerHTML = '';
+  }
+
+  // ── SCORE GRID (uses computed scores) ──
+  const areas = [
+    {label:'Website',key:'website'},
+    {label:'SEO',key:'seo'},
+    {label:'Paid Marketing',key:'performance_marketing'},
+    {label:'Social Media',key:'social_media'},
+    {label:'Influencer',key:'influencer_marketing'},
+    {label:'Content',key:'content_marketing'}
+  ];
+  document.getElementById('scoreGrid').innerHTML = areas.map(function(a){
+    const sc = getScore(a.key);
+    return '<div class="score-card">' +
+      '<div class="score-card-label">' + a.label + '</div>' +
+      '<div style="font-size:20px;font-weight:700;font-family:\'DM Mono\',monospace;color:' + scoreColor(sc) + '">' + sc + '<span style="font-size:12px;color:var(--text3)">/100</span></div>' +
+      '<div class="score-card-bar"><div style="height:100%;border-radius:2px;width:' + sc + '%;background:' + scoreColor(sc) + '"></div></div>' +
+      '<div style="margin-top:8px"><span class="status-pill ' + scorePill(sc) + '">' + statusLabel(sc) + '</span></div>' +
+      '</div>';
   }).join('');
 
-  document.getElementById('rfqw').innerHTML = `
-    <div class="rfw-box" style="background:var(--red-bg);border:1px solid var(--red-border)">
-      <div class="rfw-label" style="color:var(--red)">Red flags</div>
-      ${(d.red_flags||[]).map(f=>`<div class="rfw-item" style="color:var(--text)"><span style="color:var(--red);flex-shrink:0">▲</span>${f}</div>`).join('')}
-    </div>
-    <div class="rfw-box" style="background:var(--green-bg);border:1px solid var(--green-border)">
-      <div class="rfw-label" style="color:var(--green)">Quick wins for Riddler</div>
-      ${(d.quick_wins||[]).map(f=>`<div class="rfw-item" style="color:var(--text)"><span style="color:var(--green);flex-shrink:0">✓</span>${f}</div>`).join('')}
-    </div>`;
+  // ── COMPETITIVE BENCHMARKS (NEW) ──
+  const bench = d.competitive_benchmarks;
+  if (bench && bench.comparison) {
+    const sectionLabels = {website:'Website',seo:'SEO',performance_marketing:'Paid Marketing',social_media:'Social Media',content_marketing:'Content',influencer_marketing:'Influencer'};
+    let benchHTML = '<div class="bench-card"><div class="bench-label">Competitive benchmarks vs ' + (bench.vertical||'industry') + ' average</div>';
+    Object.entries(bench.comparison).forEach(function(entry){
+      const key = entry[0]; const data = entry[1];
+      const label = sectionLabels[key] || key;
+      const brandPct = Math.min(data.brand_score, 100);
+      const avgPct = Math.min(data.industry_avg, 100);
+      const diffClass = data.status === 'above_average' ? 'above' : data.status === 'average' ? 'average' : 'below';
+      const diffSign = data.diff >= 0 ? '+' : '';
+      benchHTML +=
+        '<div class="bench-row">' +
+        '<div class="bench-section">' + label + '</div>' +
+        '<div class="bench-bars">' +
+        '<div class="bench-bar-wrap">' +
+        '<div class="bench-bar-brand" style="width:' + brandPct + '%;height:6px;background:' + scoreColor(data.brand_score) + ';border-radius:3px"></div>' +
+        '<div class="bench-bar-avg" style="left:' + avgPct + '%"></div>' +
+        '</div>' +
+        '<div class="bench-labels"><span>0</span><span style="color:var(--text3);font-size:10px">| avg: ' + data.industry_avg + '</span><span>100</span></div>' +
+        '</div>' +
+        '<div class="bench-diff ' + diffClass + '">' + diffSign + data.diff + ' pts</div>' +
+        '</div>';
+    });
+    benchHTML += '<div style="margin-top:12px;font-size:11px;color:var(--text3);display:flex;gap:16px;align-items:center"><span style="display:inline-flex;align-items:center;gap:6px"><span style="width:12px;height:2px;background:var(--text3);display:inline-block"></span> Industry average</span><span style="display:inline-flex;align-items:center;gap:6px"><span style="width:12px;height:6px;background:var(--green);border-radius:2px;display:inline-block"></span> Brand score</span></div></div>';
+    document.getElementById('benchmarksCard').innerHTML = benchHTML;
+  } else {
+    document.getElementById('benchmarksCard').innerHTML = '';
+  }
 
-  const sections=[
+  // ── PRIORITY GAPS (NEW) ──
+  const gaps = d.priority_gaps;
+  if (gaps && gaps.length > 0) {
+    let gapsHTML = '<div class="gaps-card"><div class="gaps-label">Priority gaps — ranked by business impact</div>';
+    gaps.forEach(function(gap, i){
+      const impactClass = gap.impact === 'HIGH' ? 'impact-high' : gap.impact === 'MEDIUM' ? 'impact-medium' : 'impact-low';
+      gapsHTML +=
+        '<div class="gap-item">' +
+        '<div class="gap-num">' + String(i+1).padStart(2,'0') + '</div>' +
+        '<div class="gap-body">' +
+        '<div class="gap-top">' +
+        '<div class="gap-title">' + (gap.gap||'') + '</div>' +
+        '<span class="status-pill ' + impactClass + '">' + (gap.impact||'') + '</span>' +
+        '<span class="gap-section-tag">' + (gap.section||'') + '</span>' +
+        (gap.effort ? '<span class="gap-section-tag">Effort: ' + gap.effort + '</span>' : '') +
+        '</div>' +
+        '<div class="gap-consequence">' + (gap.consequence||'') + '</div>' +
+        '<div class="gap-fix">Fix: ' + (gap.fix||'') + '</div>' +
+        '</div></div>';
+    });
+    gapsHTML += '</div>';
+    document.getElementById('priorityGapsCard').innerHTML = gapsHTML;
+  } else {
+    document.getElementById('priorityGapsCard').innerHTML = '';
+  }
+
+  // ── RED FLAGS + QUICK WINS ──
+  document.getElementById('rfqw').innerHTML =
+    '<div class="rfw-box" style="background:var(--red-bg);border:1px solid var(--red-border)">' +
+    '<div class="rfw-label" style="color:var(--red)">Red flags</div>' +
+    (d.red_flags||[]).map(function(f){ return '<div class="rfw-item" style="color:var(--text)"><span style="color:var(--red);flex-shrink:0">▲</span>' + f + '</div>'; }).join('') +
+    '</div>' +
+    '<div class="rfw-box" style="background:var(--green-bg);border:1px solid var(--green-border)">' +
+    '<div class="rfw-label" style="color:var(--green)">Quick wins for Riddler</div>' +
+    (d.quick_wins||[]).map(function(f){ return '<div class="rfw-item" style="color:var(--text)"><span style="color:var(--green);flex-shrink:0">✓</span>' + f + '</div>'; }).join('') +
+    '</div>';
+
+  // ── AUDIT SECTIONS ──
+  const sections = [
     {key:'website',icon:'🌐',bg:'#0a1520',title:'Website audit',sub:'Platform, speed, UX, conversion, tracking',render:renderWebsite},
     {key:'seo',icon:'🔍',bg:'#0a1a0a',title:'SEO audit',sub:'Rankings, keywords, content, technical',render:renderSEO},
     {key:'performance_marketing',icon:'📈',bg:'#1a0a0a',title:'Performance marketing',sub:'Meta Ads, Google Ads, creatives, targeting',render:renderPerf},
@@ -410,23 +527,24 @@ function renderReport(d, url) {
 
   const container = document.getElementById('auditSections');
   container.innerHTML = '';
-  sections.forEach((sec,idx)=>{
-    const sd = d[sec.key]; if(!sd) return;
-    const score = Array.isArray(sd)?null:sd.score;
+  sections.forEach(function(sec, idx){
+    const sd = d[sec.key]; if (!sd) return;
+    // Use computed score for sections that have it
+    const computedScore = cs[sec.key]?.score;
+    const score = computedScore != null ? computedScore : (Array.isArray(sd) ? null : sd.score);
     const el = document.createElement('div');
     el.className = 'audit-section';
-    el.innerHTML = `
-      <div class="section-header" onclick="toggleSection(${idx})">
-        <div class="section-left">
-          <div class="section-icon" style="background:${sec.bg}">${sec.icon}</div>
-          <div><div class="section-title">${sec.title}</div><div class="section-subtitle">${sec.sub}</div></div>
-        </div>
-        <div class="section-right">
-          ${score!=null?`<div style="font-size:13px;font-weight:600;font-family:'DM Mono',monospace;color:${scoreColor(score)}">${score}/100</div><span class="status-pill ${scorePill(score)}">${statusLabel(score)}</span>`:''}
-          <div class="chevron" id="chev_${idx}">▼</div>
-        </div>
-      </div>
-      <div class="section-body" id="body_${idx}">${sec.render(sd)}</div>`;
+    el.innerHTML =
+      '<div class="section-header" onclick="toggleSection(' + idx + ')">' +
+      '<div class="section-left">' +
+      '<div class="section-icon" style="background:' + sec.bg + '">' + sec.icon + '</div>' +
+      '<div><div class="section-title">' + sec.title + '</div><div class="section-subtitle">' + sec.sub + '</div></div>' +
+      '</div>' +
+      '<div class="section-right">' +
+      (score != null ? '<div style="font-size:13px;font-weight:600;font-family:\'DM Mono\',monospace;color:' + scoreColor(score) + '">' + score + '/100</div><span class="status-pill ' + scorePill(score) + '">' + statusLabel(score) + '</span>' : '') +
+      '<div class="chevron" id="chev_' + idx + '">▼</div>' +
+      '</div></div>' +
+      '<div class="section-body" id="body_' + idx + '">' + sec.render(sd) + '</div>';
     container.appendChild(el);
   });
 
@@ -435,39 +553,56 @@ function renderReport(d, url) {
 }
 
 function toggleSection(idx){
-  document.getElementById(`body_${idx}`).classList.toggle('open');
-  document.getElementById(`chev_${idx}`).classList.toggle('open');
+  document.getElementById('body_' + idx).classList.toggle('open');
+  document.getElementById('chev_' + idx).classList.toggle('open');
 }
 
 function detailGrid(items){
-  return `<div class="detail-grid">${items.map(([l,v])=>`<div class="detail-item"><div class="detail-item-label">${l}</div><div class="detail-item-val">${v||'N/A'}</div></div>`).join('')}</div>`;
+  return '<div class="detail-grid">' + items.map(function(item){ return '<div class="detail-item"><div class="detail-item-label">' + item[0] + '</div><div class="detail-item-val">' + (item[1]||'N/A') + '</div></div>'; }).join('') + '</div>';
 }
-function findingsHTML(pos,gaps){
+function findingsHTML(pos, gaps){
   const p = Array.isArray(pos) ? pos : (pos ? [String(pos)] : []);
   const g = Array.isArray(gaps) ? gaps : (gaps ? [String(gaps)] : []);
-  return `<div class="findings-grid">${p.map(x=>`<div class="finding positive"><div class="finding-label">Working</div><div class="finding-text">${x}</div></div>`).join('')}${g.map(x=>`<div class="finding negative"><div class="finding-label">Gap</div><div class="finding-text">${x}</div></div>`).join('')}</div>`;
+  return '<div class="findings-grid">' + p.map(function(x){ return '<div class="finding positive"><div class="finding-label">Working</div><div class="finding-text">' + x + '</div></div>'; }).join('') + g.map(function(x){ return '<div class="finding negative"><div class="finding-label">Gap</div><div class="finding-text">' + x + '</div></div>'; }).join('') + '</div>';
 }
 function recHTML(text){
-  return `<div class="rec-box"><div class="rec-box-label">Riddler recommendation</div><div class="rec-box-text">${text||''}</div></div>`;
+  return '<div class="rec-box"><div class="rec-box-label">Riddler recommendation</div><div class="rec-box-text">' + (text||'') + '</div></div>';
 }
 
 function renderWebsite(d){
-  return detailGrid([['Platform',d.platform],['Load Speed',d.load_speed],['Mobile Experience',d.mobile_experience],['Design Quality',d.design_quality],['CTA Clarity',d.cta_clarity],['Trust Signals',d.trust_signals],['Tracking',d.tracking],['Conversion Elements',d.conversion_elements]])+findingsHTML(d.positives,d.gaps)+recHTML(d.recommendation);
+  return detailGrid([['Platform',d.platform],['Load Speed',d.load_speed||d.mobile_score],['Mobile Score',d.mobile_score],['Desktop Score',d.desktop_score],['LCP',d.lcp],['CLS',d.cls],['SSL Grade',d.ssl_grade],['Tracking',d.tracking],['Email Tool',d.email_tool],['CTA Clarity',d.cta_clarity],['Trust Signals',d.trust_signals],['Design Quality',d.design_quality]])+findingsHTML(d.positives,d.gaps)+recHTML(d.recommendation);
 }
 function renderSEO(d){
-  const rkw = Array.isArray(d.ranking_keywords) ? d.ranking_keywords : (d.ranking_keywords ? [d.ranking_keywords] : []);
+  const rkw = Array.isArray(d.ranking_keywords) ? d.ranking_keywords : (d.top_keywords || (d.ranking_keywords ? [d.ranking_keywords] : []));
   const kgap = Array.isArray(d.keyword_gaps) ? d.keyword_gaps : (d.keyword_gaps ? [d.keyword_gaps] : []);
-  return `<div class="metrics-row"><div class="metric"><div class="metric-label">Est. Traffic</div><div class="metric-value">${d.estimated_organic_traffic||'N/A'}</div></div><div class="metric"><div class="metric-label">Domain Age</div><div class="metric-value">${d.domain_age||'N/A'}</div></div><div class="metric"><div class="metric-label">Backlinks</div><div class="metric-value">${d.backlink_profile||'N/A'}</div></div></div>
-  <div style="margin-top:12px"><div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Ranking keywords</div><div class="keyword-list">${rkw.map(k=>`<span class="keyword target">${k}</span>`).join('')}</div></div>
-  <div style="margin-top:10px"><div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Keyword gaps</div><div class="keyword-list">${kgap.map(k=>`<span class="keyword gap">${k}</span>`).join('')}</div></div>`+detailGrid([['Content Strategy',d.content_strategy],['Technical SEO',d.technical_seo],['Local SEO',d.local_seo]])+findingsHTML(d.positives,d.gaps)+recHTML(d.recommendation);
+  return '<div class="metrics-row">' +
+    '<div class="metric"><div class="metric-label">Est. Traffic</div><div class="metric-value">' + (d.estimated_organic_traffic||d.organic_traffic||'N/A') + '</div></div>' +
+    '<div class="metric"><div class="metric-label">Domain Authority</div><div class="metric-value">' + (d.domain_authority||'N/A') + '</div></div>' +
+    '<div class="metric"><div class="metric-label">Backlinks</div><div class="metric-value">' + (d.backlink_profile||d.linking_domains||'N/A') + '</div></div>' +
+    '<div class="metric"><div class="metric-label">Spam Score</div><div class="metric-value">' + (d.spam_score||'N/A') + '</div></div>' +
+    '</div>' +
+    '<div style="margin-top:12px"><div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Ranking keywords</div><div class="keyword-list">' + rkw.map(function(k){ return '<span class="keyword target">' + k + '</span>'; }).join('') + '</div></div>' +
+    '<div style="margin-top:10px"><div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Keyword gaps</div><div class="keyword-list">' + kgap.map(function(k){ return '<span class="keyword gap">' + k + '</span>'; }).join('') + '</div></div>' +
+    detailGrid([['Content Strategy',d.content_strategy],['Technical SEO',d.technical_seo],['Local SEO',d.local_seo]]) +
+    findingsHTML(d.positives,d.gaps) + recHTML(d.recommendation);
 }
 function renderPerf(d){
-  return detailGrid([['Meta Ads',d.meta_ads],['Google Ads',d.google_ads],['Creative Quality',d.ad_creative_quality],['Targeting',d.targeting_sophistication],['Offer Strategy',d.offer_strategy],['Est. Spend',d.estimated_spend],['Retargeting',d.retargeting]])+findingsHTML(d.positives,d.gaps)+recHTML(d.recommendation);
+  return detailGrid([['Meta Ads',d.meta_ads],['Google Ads',d.google_ads],['Has Pixel',d.has_pixel!=null?(d.has_pixel?'Yes':'No'):null],['Retargeting',d.retargeting],['Offer Strategy',d.offer_strategy]])+findingsHTML(d.positives,d.gaps)+recHTML(d.recommendation);
 }
 function renderSocial(d){
-  const pn={instagram:'Instagram',facebook:'Facebook',youtube:'YouTube',linkedin:'LinkedIn',twitter:'Twitter/X'};
-  const plats=d.platforms||{};
-  return `<div style="overflow-x:auto;margin-top:8px"><table class="comp-table"><tr><th>Platform</th><th>Status</th><th>Followers</th><th>Frequency</th><th>Content Mix</th><th>Engagement</th></tr>${Object.entries(plats).map(([k,p])=>`<tr><td style="font-weight:500">${pn[k]||k}</td><td><span class="status-pill ${p.present?'pill-moderate':'pill-missing'}">${p.present?'Active':'Absent'}</span></td><td style="font-family:'DM Mono',monospace;font-size:12px">${p.followers||'N/A'}</td><td>${p.posting_frequency||'N/A'}</td><td>${p.content_mix||'N/A'}</td><td>${p.engagement_quality||'N/A'}</td></tr>`).join('')}</table></div>`+detailGrid([['Content Quality',d.content_quality],['Brand Voice',d.brand_voice],['Viral Potential',d.viral_potential],['Community Engagement',d.community_engagement]])+findingsHTML(d.positives,d.gaps)+recHTML(d.recommendation);
+  const pn = {instagram:'Instagram',facebook:'Facebook',youtube:'YouTube',linkedin:'LinkedIn',twitter:'Twitter/X'};
+  const plats = d.platforms||{};
+  const tableRows = Object.entries(plats).map(function(entry){
+    const k = entry[0]; const p = entry[1];
+    const followers = p.followers || p.subscribers || 'N/A';
+    const freq = p.posting_frequency || p.videos || 'N/A';
+    const mix = p.content_mix || p.last_upload || 'N/A';
+    const eng = p.engagement_quality || p.total_views || 'N/A';
+    return '<tr><td style="font-weight:500">' + (pn[k]||k) + '</td><td><span class="status-pill ' + (p.present?'pill-moderate':'pill-missing') + '">' + (p.present?'Active':'Absent') + '</span></td><td style="font-family:\'DM Mono\',monospace;font-size:12px">' + followers + '</td><td>' + freq + '</td><td>' + mix + '</td><td>' + eng + '</td></tr>';
+  }).join('');
+  return '<div style="overflow-x:auto;margin-top:8px"><table class="comp-table"><tr><th>Platform</th><th>Status</th><th>Followers</th><th>Frequency</th><th>Content Mix</th><th>Engagement</th></tr>' + tableRows + '</table></div>' +
+    detailGrid([['Content Quality',d.content_quality],['Brand Voice',d.brand_voice],['Viral Potential',d.viral_potential],['Community Engagement',d.community_engagement]]) +
+    findingsHTML(d.positives,d.gaps) + recHTML(d.recommendation);
 }
 function renderInfluencer(d){
   return detailGrid([['Current Activity',d.current_activity],['Creator Type Fit',d.creator_type_fit],['Platform Fit',d.platform_fit],['Competitor Activity',d.competitor_influencer_activity],['Est. Budget Needed',d.estimated_budget_needed],['Opportunity',d.opportunity]])+findingsHTML(d.positives,d.gaps)+recHTML(d.recommendation);
@@ -479,8 +614,12 @@ function renderMarketplace(d){
   return detailGrid([['Amazon',d.amazon],['Flipkart',d.flipkart],['Meesho',d.meesho],['Nykaa',d.nykaa],['CRED',d.cred],['Other',d.other]])+findingsHTML(d.positives,d.gaps)+recHTML(d.recommendation);
 }
 function renderCompetitors(competitors){
-  if(!Array.isArray(competitors)) return '';
-  return `<table class="comp-table" style="margin-top:8px"><tr><th>Brand</th><th>Strengths</th><th>Weaknesses</th><th>Scale</th><th>Threat</th></tr>${competitors.map(c=>{const tc=c.threat_level==='High'?'var(--red)':c.threat_level==='Medium'?'var(--amber)':'var(--green)';return `<tr><td style="font-weight:500">${c.name||''}<br><span style="font-size:11px;color:var(--text3);font-family:'DM Mono',monospace">${c.website||''}</span></td><td>${c.strengths||''}</td><td>${c.weaknesses||''}</td><td>${c.estimated_scale||''}</td><td style="color:${tc};font-weight:600;font-size:12px">${c.threat_level||''}</td></tr>`;}).join('')}</table>`;
+  if (!Array.isArray(competitors)) return '';
+  return '<table class="comp-table" style="margin-top:8px"><tr><th>Brand</th><th>Strengths</th><th>Weaknesses</th><th>Scale</th><th>Threat</th></tr>' +
+    competitors.map(function(c){
+      const tc = c.threat_level==='High'?'var(--red)':c.threat_level==='Medium'?'var(--amber)':'var(--green)';
+      return '<tr><td style="font-weight:500">' + (c.name||'') + '<br><span style="font-size:11px;color:var(--text3);font-family:\'DM Mono\',monospace">' + (c.website||'') + '</span></td><td>' + (c.strengths||'') + '</td><td>' + (c.weaknesses||'') + '</td><td>' + (c.estimated_scale||'') + '</td><td style="color:' + tc + ';font-weight:600;font-size:12px">' + (c.threat_level||'') + '</td></tr>';
+    }).join('') + '</table>';
 }
 function renderMarket(d){
   return detailGrid([['Market Size',d.market_size],['Growth Trend',d.growth_trend],['Underserved Segments',d.underserved_segments],['Timing',d.timing]]);
@@ -495,6 +634,7 @@ function reset(){
   document.getElementById('facebookInput').value='';
   document.getElementById('youtubeInput').value='';
   document.getElementById('metaAdsInput').value='';
+  document.getElementById('notesInput').value='';
   document.getElementById('notesInput').value='';
   setStatus('');
   window._auditData=null;
