@@ -144,6 +144,10 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min
         <input type="text" class="url-input" id="brandNameInput" placeholder="e.g. GoldenRed Diamond" style="width:100%" />
       </div>
       <div>
+        <div class="input-label">What they do *</div>
+        <input type="text" class="url-input" id="brandDescInput" placeholder="e.g. B2B spice exporter targeting international buyers" style="width:100%" />
+      </div>
+      <div>
         <div class="input-label">Website URL *</div>
         <input type="text" class="url-input" id="urlInput" placeholder="https://brandwebsite.com" style="width:100%" />
       </div>
@@ -217,6 +221,17 @@ function setStatus(msg, loading) {
     ? `${msg}&nbsp;<span class="dots"><span></span><span></span><span></span></span>` : msg;
 }
 
+async function callFetchAudit(phase, urls, brandName, brandDescription, notes, extraContent) {
+  await new Promise(r => setTimeout(r, 5000));
+  const res = await fetch(PROXY + '/fetch-audit', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ phase, urls, brandName, brandDescription, notes, extraContent })
+  });
+  const data = await res.json();
+  if (data.error) throw new Error(data.error);
+  return data.text || '';
+}
+
 async function callClaude(prompt) {
   await new Promise(r => setTimeout(r, 5000));
   const res = await fetch(PROXY, {
@@ -264,6 +279,7 @@ async function startAudit() {
   const brandName = document.getElementById('brandNameInput').value.trim();
   if (!url || !brandName) { alert('Brand name and website URL are required.'); return; }
 
+  const brandDescription = document.getElementById('brandDescInput').value.trim();
   const instagram = document.getElementById('instagramInput').value.trim();
   const linkedin = document.getElementById('linkedinInput').value.trim();
   const facebook = document.getElementById('facebookInput').value.trim();
@@ -277,25 +293,29 @@ async function startAudit() {
 
   try {
     // PHASE 1 — Website
-    setStatus('Phase 1/5 — Analysing website', true);
-    const p1 = await callClaude(`Analyse website ${url} for a digital marketing pitch. Use double quotes only, no apostrophes in values. Return JSON only with keys: platform, load_speed, mobile_experience, design_quality, cta_clarity, trust_signals, tracking, conversion_elements, score(0-100), positives(array), gaps(array), recommendation`);
+    setStatus('Phase 1/5 — Fetching and analysing website', true);
+    const p1 = await callFetchAudit('website', { website: url }, brandName, brandDescription, notes);
     results.website = parseJSON(p1) || {};
 
     // PHASE 2 — Social Media
-    setStatus('Phase 2/5 — Checking social media', true);
-    const socials = [instagram,linkedin,facebook,youtube].filter(Boolean).join(', ') || `${brandName} social media`;
-    const p2 = await callClaude(`Check social profiles: ${socials}. Use double quotes only, no apostrophes in values. Return JSON only with keys: score(0-100), platforms(object with instagram/facebook/youtube/linkedin/twitter each having present,followers,posting_frequency,content_mix,engagement_quality,last_post), content_quality, brand_voice, viral_potential, community_engagement, positives(array), gaps(array), recommendation`);
+    setStatus('Phase 2/5 — Fetching social media profiles', true);
+    const socialUrls = {};
+    if (instagram) socialUrls.instagram = instagram;
+    if (linkedin) socialUrls.linkedin = linkedin;
+    if (facebook) socialUrls.facebook = facebook;
+    if (youtube) socialUrls.youtube = youtube;
+    const p2 = await callFetchAudit('social', Object.keys(socialUrls).length ? socialUrls : { search: url }, brandName, brandDescription, notes);
     results.social_media = parseJSON(p2) || {};
 
     // PHASE 3 — Ads
-    setStatus('Phase 3/5 — Checking ad activity', true);
-    const adSrc = metaAds || `${brandName} ads`;
-    const p3 = await callClaude(`Check paid ads for ${brandName}. Meta Ad Library: ${adSrc}. Use double quotes only, no apostrophes in values. Return JSON only with keys: score(0-100), meta_ads, google_ads, ad_creative_quality, targeting_sophistication, offer_strategy, estimated_spend, retargeting, positives(array), gaps(array), recommendation`);
+    setStatus('Phase 3/5 — Fetching ad activity', true);
+    const adUrls = metaAds ? { meta_ad_library: metaAds } : { website: url };
+    const p3 = await callFetchAudit('ads', adUrls, brandName, brandDescription, notes);
     results.performance_marketing = parseJSON(p3) || {};
 
     // PHASE 4 — SEO + Competitors
-    setStatus('Phase 4/5 — SEO and competitors', true);
-    const p4 = await callClaude(`Research SEO and competitors for ${brandName} at ${url}. Use double quotes only, no apostrophes in values. Return JSON only with keys: seo(object with score,domain_age,estimated_organic_traffic,ranking_keywords,keyword_gaps,content_strategy,technical_seo,backlink_profile,local_seo,positives,gaps,recommendation), competitors(array of objects with name,website,strengths,weaknesses,estimated_scale,threat_level), market_opportunity(object with market_size,growth_trend,underserved_segments,timing)`);
+    setStatus('Phase 4/5 — Fetching SEO and competitor data', true);
+    const p4 = await callFetchAudit('seo', { website: url }, brandName, brandDescription, notes);
     const p4data = parseJSON(p4) || {};
     results.seo = p4data.seo || {};
     results.competitors = p4data.competitors || [];
@@ -303,12 +323,12 @@ async function startAudit() {
 
     // Check if we got meaningful data
     const hasData = results.website.score || results.social_media.score || results.seo.score;
-    if (!hasData) throw new Error('All phases returned empty — rate limit hit. Wait 2 minutes and try again.');
+    if (!hasData) throw new Error('All phases returned empty — please try again.');
 
     // PHASE 5 — Compile
     setStatus('Phase 5/5 — Compiling report', true);
     const gaps = [...(results.website.gaps||[]).slice(0,2), ...(results.social_media.gaps||[]).slice(0,2), ...(results.performance_marketing.gaps||[]).slice(0,2)].join(', ');
-    const p5 = await callClaude(`Brand: ${brandName}. Vertical: ${results.seo?.vertical||'D2C'}. Top gaps: ${gaps}. Use double quotes only, no apostrophes. Return JSON only with keys: overall_score(0-100), brand_description, vertical, overall_summary, pitch_intel(array of 4 strings), influencer_marketing(object with score,current_activity,creator_type_fit,estimated_budget_needed,platform_fit,competitor_influencer_activity,opportunity,positives,gaps,recommendation), content_marketing(object with score,blog,email_marketing,video_content,ugc_strategy,content_calendar,seo_content,positives,gaps,recommendation), marketplace_presence(object with score,amazon,flipkart,meesho,nykaa,cred,other,positives,gaps,recommendation), red_flags(array of 2), quick_wins(array of 3), recommended_entry_point, estimated_budget_appetite`);
+    const p5 = await callFetchAudit('compile', {}, brandName, brandDescription, notes, gaps);
     const p5data = parseJSON(p5) || {};
 
     const d = {
@@ -510,7 +530,7 @@ function renderMarket(d){
 function reset(){
   document.getElementById('report').classList.remove('visible');
   document.getElementById('urlInput').value='';
-  document.getElementById('brandNameInput').value='';
+  document.getElementById('brandDescInput').value='';
   document.getElementById('instagramInput').value='';
   document.getElementById('linkedinInput').value='';
   document.getElementById('facebookInput').value='';
